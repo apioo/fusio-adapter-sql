@@ -25,10 +25,7 @@ use Fusio\Adapter\Sql\Action\SqlExecute;
 use Fusio\Adapter\Sql\Tests\DbTestCase;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
-use Fusio\Engine\Model\Connection;
 use Fusio\Engine\ResponseInterface;
-use Fusio\Engine\Test\CallbackConnection;
-use Fusio\Engine\Test\EngineTestCaseTrait;
 use PSX\Record\Record;
 
 /**
@@ -40,24 +37,8 @@ use PSX\Record\Record;
  */
 class SqlExecuteTest extends DbTestCase
 {
-    use EngineTestCaseTrait;
-
     public function testHandle()
     {
-        $connection = new Connection();
-        $connection->setId(1);
-        $connection->setName('foo');
-        $connection->setClass(CallbackConnection::class);
-        $connection->setConfig([
-            'callback' => function(){
-                return $this->connection;
-            },
-        ]);
-
-        $this->getConnectionRepository()->add($connection);
-
-        $action = $this->getActionFactory()->factory(SqlExecute::class);
-
         $parameters = $this->getParameters([
             'connection' => 1,
             'sql'        => 'INSERT INTO app_news (title, content, date) VALUES ({{ body.get("title")|prepare }}, {{ body.get("content")|prepare }}, {{ "2015-02-27 19:59:15"|prepare }})',
@@ -68,6 +49,7 @@ class SqlExecuteTest extends DbTestCase
             'content' => 'ipsum'
         ]);
 
+        $action   = $this->getActionFactory()->factory(SqlExecute::class);
         $response = $action->handle($this->getRequest('POST', [], [], [], $body), $parameters, $this->getContext());
 
         $body = [];

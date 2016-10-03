@@ -25,10 +25,7 @@ use Fusio\Adapter\Sql\Action\SqlBuilder;
 use Fusio\Adapter\Sql\Tests\DbTestCase;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
-use Fusio\Engine\Model\Connection;
 use Fusio\Engine\ResponseInterface;
-use Fusio\Engine\Test\CallbackConnection;
-use Fusio\Engine\Test\EngineTestCaseTrait;
 use PSX\Data\Record\Transformer;
 
 /**
@@ -40,22 +37,8 @@ use PSX\Data\Record\Transformer;
  */
 class SqlBuilderTest extends DbTestCase
 {
-    use EngineTestCaseTrait;
-
     public function testHandle()
     {
-        $connection = new Connection();
-        $connection->setId(1);
-        $connection->setName('foo');
-        $connection->setClass(CallbackConnection::class);
-        $connection->setConfig([
-            'callback' => function(){
-                return $this->connection;
-            },
-        ]);
-
-        $this->getConnectionRepository()->add($connection);
-
         $parameters = $this->getParameters([
             'connection' => 1,
             'definition' => json_encode([

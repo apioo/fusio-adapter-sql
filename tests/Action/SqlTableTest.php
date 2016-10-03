@@ -25,10 +25,7 @@ use Fusio\Adapter\Sql\Action\SqlTable;
 use Fusio\Adapter\Sql\Tests\DbTestCase;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
-use Fusio\Engine\Model\Connection;
 use Fusio\Engine\ResponseInterface;
-use Fusio\Engine\Test\CallbackConnection;
-use Fusio\Engine\Test\EngineTestCaseTrait;
 use PSX\Record\Record;
 
 /**
@@ -40,24 +37,8 @@ use PSX\Record\Record;
  */
 class SqlTableTest extends DbTestCase
 {
-    use EngineTestCaseTrait;
-
     public function testHandleGetCollection()
     {
-        $connection = new Connection();
-        $connection->setId(1);
-        $connection->setName('foo');
-        $connection->setClass(CallbackConnection::class);
-        $connection->setConfig([
-            'callback' => function(){
-                return $this->connection;
-            },
-        ]);
-
-        $this->getConnectionRepository()->add($connection);
-
-        $action = $this->getActionFactory()->factory(SqlTable::class);
-
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
@@ -65,6 +46,7 @@ class SqlTableTest extends DbTestCase
             'primaryKey' => 'id',
         ]);
 
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
         $result = [
@@ -92,20 +74,6 @@ class SqlTableTest extends DbTestCase
 
     public function testHandleGetEntity()
     {
-        $connection = new Connection();
-        $connection->setId(1);
-        $connection->setName('foo');
-        $connection->setClass(CallbackConnection::class);
-        $connection->setConfig([
-            'callback' => function(){
-                return $this->connection;
-            },
-        ]);
-
-        $this->getConnectionRepository()->add($connection);
-
-        $action = $this->getActionFactory()->factory(SqlTable::class);
-
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
@@ -113,6 +81,7 @@ class SqlTableTest extends DbTestCase
             'primaryKey' => 'id',
         ]);
 
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
         $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
 
         $result = [
@@ -130,20 +99,6 @@ class SqlTableTest extends DbTestCase
 
     public function testHandlePost()
     {
-        $connection = new Connection();
-        $connection->setId(1);
-        $connection->setName('foo');
-        $connection->setClass(CallbackConnection::class);
-        $connection->setConfig([
-            'callback' => function(){
-                return $this->connection;
-            },
-        ]);
-
-        $this->getConnectionRepository()->add($connection);
-
-        $action = $this->getActionFactory()->factory(SqlTable::class);
-
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
@@ -156,6 +111,7 @@ class SqlTableTest extends DbTestCase
         $body['content'] = 'ipsum';
         $body['date'] = '2015-02-27 19:59:15';
 
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
         $response = $action->handle($this->getRequest('POST', [], [], [], $body), $parameters, $this->getContext());
 
         $result = [
@@ -182,20 +138,6 @@ class SqlTableTest extends DbTestCase
 
     public function testHandlePut()
     {
-        $connection = new Connection();
-        $connection->setId(1);
-        $connection->setName('foo');
-        $connection->setClass(CallbackConnection::class);
-        $connection->setConfig([
-            'callback' => function(){
-                return $this->connection;
-            },
-        ]);
-
-        $this->getConnectionRepository()->add($connection);
-
-        $action = $this->getActionFactory()->factory(SqlTable::class);
-
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
@@ -208,6 +150,7 @@ class SqlTableTest extends DbTestCase
         $body['content'] = 'ipsum';
         $body['date'] = '2015-02-27 19:59:15';
 
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
         $response = $action->handle($this->getRequest('PUT', ['id' => 1], [], [], $body), $parameters, $this->getContext());
 
         $result = [
@@ -234,20 +177,6 @@ class SqlTableTest extends DbTestCase
 
     public function testHandleDelete()
     {
-        $connection = new Connection();
-        $connection->setId(1);
-        $connection->setName('foo');
-        $connection->setClass(CallbackConnection::class);
-        $connection->setConfig([
-            'callback' => function(){
-                return $this->connection;
-            },
-        ]);
-
-        $this->getConnectionRepository()->add($connection);
-
-        $action = $this->getActionFactory()->factory(SqlTable::class);
-
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
@@ -255,6 +184,7 @@ class SqlTableTest extends DbTestCase
             'primaryKey' => 'id',
         ]);
 
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
         $response = $action->handle($this->getRequest('DELETE', ['id' => 1]), $parameters, $this->getContext());
 
         $result = [

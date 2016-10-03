@@ -25,10 +25,7 @@ use Fusio\Adapter\Sql\Action\SqlFetchRow;
 use Fusio\Adapter\Sql\Tests\DbTestCase;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
-use Fusio\Engine\Model\Connection;
 use Fusio\Engine\ResponseInterface;
-use Fusio\Engine\Test\CallbackConnection;
-use Fusio\Engine\Test\EngineTestCaseTrait;
 
 /**
  * SqlFetchRowTest
@@ -39,29 +36,14 @@ use Fusio\Engine\Test\EngineTestCaseTrait;
  */
 class SqlFetchRowTest extends DbTestCase
 {
-    use EngineTestCaseTrait;
-
     public function testHandle()
     {
-        $connection = new Connection();
-        $connection->setId(1);
-        $connection->setName('foo');
-        $connection->setClass(CallbackConnection::class);
-        $connection->setConfig([
-            'callback' => function(){
-                return $this->connection;
-            },
-        ]);
-
-        $this->getConnectionRepository()->add($connection);
-
-        $action = $this->getActionFactory()->factory(SqlFetchRow::class);
-
         $parameters = $this->getParameters([
             'connection' => 1,
             'sql'        => 'SELECT * FROM app_news WHERE id = {{ request.uriFragments.get("news_id")|prepare }}',
         ]);
 
+        $action   = $this->getActionFactory()->factory(SqlFetchRow::class);
         $response = $action->handle($this->getRequest('GET', ['news_id' => 2]), $parameters, $this->getContext());
 
         $this->assertInstanceOf(ResponseInterface::class, $response);

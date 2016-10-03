@@ -23,6 +23,9 @@ namespace Fusio\Adapter\Sql\Tests;
 
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
+use Fusio\Engine\Model\Connection;
+use Fusio\Engine\Test\CallbackConnection;
+use Fusio\Engine\Test\EngineTestCaseTrait;
 
 /**
  * DbTestCase
@@ -33,12 +36,31 @@ use Doctrine\DBAL\DriverManager;
  */
 class DbTestCase extends \PHPUnit_Extensions_Database_TestCase
 {
+    use EngineTestCaseTrait;
+
     protected static $con;
 
     /**
      * @var \Doctrine\DBAL\Connection
      */
     protected $connection;
+
+    protected function setUp()
+    {
+        parent::setUp();
+
+        $connection = new Connection();
+        $connection->setId(1);
+        $connection->setName('foo');
+        $connection->setClass(CallbackConnection::class);
+        $connection->setConfig([
+            'callback' => function(){
+                return $this->connection;
+            },
+        ]);
+
+        $this->getConnectionRepository()->add($connection);
+    }
 
     protected function getConnection()
     {

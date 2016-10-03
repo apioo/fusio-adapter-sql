@@ -25,10 +25,7 @@ use Fusio\Adapter\Sql\Action\SqlFetchAll;
 use Fusio\Adapter\Sql\Tests\DbTestCase;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
-use Fusio\Engine\Model\Connection;
 use Fusio\Engine\ResponseInterface;
-use Fusio\Engine\Test\CallbackConnection;
-use Fusio\Engine\Test\EngineTestCaseTrait;
 
 /**
  * SqlFetchAllTest
@@ -39,30 +36,15 @@ use Fusio\Engine\Test\EngineTestCaseTrait;
  */
 class SqlFetchAllTest extends DbTestCase
 {
-    use EngineTestCaseTrait;
-
     public function testHandle()
     {
-        $connection = new Connection();
-        $connection->setId(1);
-        $connection->setName('foo');
-        $connection->setClass(CallbackConnection::class);
-        $connection->setConfig([
-            'callback' => function(){
-                return $this->connection;
-            },
-        ]);
-
-        $this->getConnectionRepository()->add($connection);
-
-        $action = $this->getActionFactory()->factory(SqlFetchAll::class);
-
         $parameters = $this->getParameters([
             'connection'   => 1,
             'propertyName' => 'foo',
             'sql'          => 'SELECT * FROM app_news ORDER BY id DESC',
         ]);
 
+        $action   = $this->getActionFactory()->factory(SqlFetchAll::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
         $result = [];
