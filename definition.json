@@ -1,13 +1,13 @@
 {
-    "actionClass": [
-        "Fusio\\Adapter\\Sql\\Action\\SqlBuilder",
-        "Fusio\\Adapter\\Sql\\Action\\SqlExecute",
-        "Fusio\\Adapter\\Sql\\Action\\SqlFetchAll",
-        "Fusio\\Adapter\\Sql\\Action\\SqlFetchRow",
-        "Fusio\\Adapter\\Sql\\Action\\SqlTable"
-    ],
-    "connectionClass": [
-        "Fusio\\Adapter\\Sql\\Connection\\DBAL",
-        "Fusio\\Adapter\\Sql\\Connection\\DBALAdvanced"
-    ]
+  "actionClass": [
+    "Fusio\\Adapter\\Sql\\Action\\SqlBuilder",
+    "Fusio\\Adapter\\Sql\\Action\\SqlExecute",
+    "Fusio\\Adapter\\Sql\\Action\\SqlFetchAll",
+    "Fusio\\Adapter\\Sql\\Action\\SqlFetchRow",
+    "Fusio\\Adapter\\Sql\\Action\\SqlTable"
+  ],
+  "connectionClass": [
+    "Fusio\\Adapter\\Sql\\Connection\\DBAL",
+    "Fusio\\Adapter\\Sql\\Connection\\DBALAdvanced"
+  ]
 }
