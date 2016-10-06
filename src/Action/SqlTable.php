@@ -22,15 +22,13 @@
 namespace Fusio\Adapter\Sql\Action;
 
 use Doctrine\DBAL\Connection;
-use Fusio\Engine\ActionInterface;
-use Fusio\Engine\ConnectorInterface;
+use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
-use Fusio\Engine\Response\FactoryInterface as ResponseFactoryInterface;
 use PSX\Http\Exception as StatusCode;
 
 /**
@@ -40,20 +38,8 @@ use PSX\Http\Exception as StatusCode;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class SqlTable implements ActionInterface
+class SqlTable extends ActionAbstract
 {
-    /**
-     * @Inject
-     * @var \Fusio\Engine\ConnectorInterface
-     */
-    protected $connector;
-
-    /**
-     * @Inject
-     * @var \Fusio\Engine\Response\FactoryInterface
-     */
-    protected $response;
-    
     public function getName()
     {
         return 'SQL-Table';
@@ -115,16 +101,6 @@ class SqlTable implements ActionInterface
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
         $builder->add($elementFactory->newInput('columns', 'Columns', 'text', 'Comma seperated list of columns which you want to expose i.e. <code>id,title,date</code>'));
         $builder->add($elementFactory->newInput('primaryKey', 'Primary Key', 'text', 'Name of the primary key column'));
-    }
-
-    public function setConnector(ConnectorInterface $connector)
-    {
-        $this->connector = $connector;
-    }
-
-    public function setResponse(ResponseFactoryInterface $response)
-    {
-        $this->response = $response;
     }
 
     protected function doGet(RequestInterface $request, Connection $connection, $table, array $columns, $primaryKey)

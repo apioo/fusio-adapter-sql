@@ -22,16 +22,13 @@
 namespace Fusio\Adapter\Sql\Action;
 
 use Doctrine\DBAL\Connection;
-use Fusio\Engine\ActionInterface;
-use Fusio\Engine\ConnectorInterface;
+use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
-use Fusio\Engine\Response\FactoryInterface as ResponseFactoryInterface;
-use Fusio\Engine\Template\FactoryInterface;
 use PSX\Http\Exception as StatusCode;
 use PSX\Sql\Builder;
 use PSX\Sql\Field;
@@ -45,26 +42,8 @@ use PSX\Sql\Reference;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class SqlBuilder implements ActionInterface
+class SqlBuilder extends ActionAbstract
 {
-    /**
-     * @Inject
-     * @var \Fusio\Engine\ConnectorInterface
-     */
-    protected $connector;
-
-    /**
-     * @Inject
-     * @var \Fusio\Engine\Template\FactoryInterface
-     */
-    protected $templateFactory;
-
-    /**
-     * @Inject
-     * @var \Fusio\Engine\Response\FactoryInterface
-     */
-    protected $response;
-
     public function getName()
     {
         return 'SQL-Builder';
@@ -99,21 +78,6 @@ class SqlBuilder implements ActionInterface
         $builder->add($elementFactory->newTextArea('definition', 'Definition', 'json', 'The JSON definition to build a nested response. Click <a ng-click="help.showDialog(\'help/action/sql-builder.md\')">here</a> for more informations about the JSON format.'));
     }
 
-    public function setConnector(ConnectorInterface $connector)
-    {
-        $this->connector = $connector;
-    }
-
-    public function setTemplateFactory(FactoryInterface $templateFactory)
-    {
-        $this->templateFactory = $templateFactory;
-    }
-
-    public function setResponse(ResponseFactoryInterface $response)
-    {
-        $this->response = $response;
-    }
-    
     protected function parseDefinition($connection, array $definition)
     {
         $result = [];
