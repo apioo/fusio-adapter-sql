@@ -125,7 +125,7 @@ class SqlTableTest extends DbTestCase
         $this->assertEquals($result, $response->getBody());
         
         // check whether the entry was inserted
-        $row    = $this->connection->fetchAssoc('SELECT * FROM app_news ORDER BY id DESC');
+        $row    = $this->connection->fetchAssoc('SELECT id, title, content, date FROM app_news ORDER BY id DESC');
         $expect = [
             'id'      => 3,
             'title'   => 'lorem',
@@ -164,7 +164,7 @@ class SqlTableTest extends DbTestCase
         $this->assertEquals($result, $response->getBody());
 
         // check whether the entry was inserted
-        $row    = $this->connection->fetchAssoc('SELECT * FROM app_news WHERE id = 1');
+        $row    = $this->connection->fetchAssoc('SELECT id, title, content, date FROM app_news WHERE id = 1');
         $expect = [
             'id'      => 1,
             'title'   => 'lorem',
@@ -197,7 +197,7 @@ class SqlTableTest extends DbTestCase
         $this->assertEquals([], $response->getHeaders());
         $this->assertEquals($result, $response->getBody());
 
-        $row = $this->connection->fetchAssoc('SELECT * FROM app_news WHERE id = 1');
+        $row = $this->connection->fetchAssoc('SELECT id, title, content, date FROM app_news WHERE id = 1');
 
         $this->assertEmpty($row);
     }

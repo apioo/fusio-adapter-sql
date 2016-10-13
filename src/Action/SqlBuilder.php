@@ -30,6 +30,7 @@ use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Exception as StatusCode;
+use PSX\Json\Parser;
 use PSX\Sql\Builder;
 use PSX\Sql\Field;
 use PSX\Sql\Provider;
@@ -59,7 +60,7 @@ class SqlBuilder extends ActionAbstract
 
             $builder = new Builder();
             $result  = $builder->build(
-                $this->parseDefinition($connection, json_decode($definition, true))
+                $this->parseDefinition($connection, Parser::decode($definition, true))
             );
 
             if (empty($result)) {
@@ -155,6 +156,10 @@ class SqlBuilder extends ActionAbstract
 
             case 'replace':
                 return new Field\Replace($value);
+                break;
+
+            case 'json':
+                return new Field\Json($value);
                 break;
 
             default:

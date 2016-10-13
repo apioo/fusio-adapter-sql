@@ -61,7 +61,7 @@ class SqlExecuteTest extends DbTestCase
         $this->assertEquals([], $response->getHeaders());
         $this->assertEquals($body, $response->getBody());
 
-        $row    = $this->connection->fetchAssoc('SELECT * FROM app_news ORDER BY id DESC');
+        $row    = $this->connection->fetchAssoc('SELECT id, title, content, date FROM app_news ORDER BY id DESC');
         $expect = [
             'id'      => 3,
             'title'   => 'lorem',

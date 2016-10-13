@@ -40,7 +40,7 @@ class SqlFetchRowTest extends DbTestCase
     {
         $parameters = $this->getParameters([
             'connection' => 1,
-            'sql'        => 'SELECT * FROM app_news WHERE id = {{ request.uriFragments.get("news_id")|prepare }}',
+            'sql'        => 'SELECT id, title, content, date FROM app_news WHERE id = {{ request.uriFragments.get("news_id")|prepare }}',
         ]);
 
         $action   = $this->getActionFactory()->factory(SqlFetchRow::class);

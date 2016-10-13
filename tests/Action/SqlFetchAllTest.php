@@ -41,7 +41,7 @@ class SqlFetchAllTest extends DbTestCase
         $parameters = $this->getParameters([
             'connection'   => 1,
             'propertyName' => 'foo',
-            'sql'          => 'SELECT * FROM app_news ORDER BY id DESC',
+            'sql'          => 'SELECT id, title, content, date FROM app_news ORDER BY id DESC',
         ]);
 
         $action   = $this->getActionFactory()->factory(SqlFetchAll::class);

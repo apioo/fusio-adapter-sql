@@ -97,6 +97,7 @@ class DbTestCase extends \PHPUnit_Extensions_Database_TestCase
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
         $table->addColumn('title', 'string');
         $table->addColumn('content', 'text');
+        $table->addColumn('tags', 'text', ['notnull' => false]);
         $table->addColumn('date', 'datetime');
         $table->setPrimaryKey(['id']);
 

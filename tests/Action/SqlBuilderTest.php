@@ -46,11 +46,12 @@ class SqlBuilderTest extends DbTestCase
                     '!value' => 'SELECT COUNT(*) AS cnt FROM app_news'
                 ],
                 'entry' => [
-                    '!collection' => 'SELECT id, title, content, date FROM app_news ORDER BY id DESC',
+                    '!collection' => 'SELECT id, title, content, tags, date FROM app_news ORDER BY id DESC',
                     'definition' => [
                         'id' => 'id|integer',
                         'title' => 'title',
                         'content' => 'content',
+                        'keywords' => 'tags|json',
                         'date' => 'date|datetime',
                     ]
                 ]
@@ -69,12 +70,19 @@ class SqlBuilderTest extends DbTestCase
             "id": 2,
             "title": "bar",
             "content": "foo",
+            "keywords": [
+                "foo"
+            ],
             "date": "2015-02-27T19:59:15+00:00"
         },
         {
             "id": 1,
             "title": "foo",
             "content": "bar",
+            "keywords": [
+                "foo",
+                "bar"
+            ],
             "date": "2015-02-27T19:59:15+00:00"
         }
     ]
