@@ -42,8 +42,6 @@ class SqlTableTest extends DbTestCase
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
-            'columns'    => 'id,title,content,date',
-            'primaryKey' => 'id',
         ]);
 
         $action   = $this->getActionFactory()->factory(SqlTable::class);
@@ -58,11 +56,13 @@ class SqlTableTest extends DbTestCase
                 'title' => 'bar',
                 'content' => 'foo',
                 'date' => '2015-02-27 19:59:15',
+                'tags' => '["foo"]',
             ],[
                 'id' => 1,
                 'title' => 'foo',
                 'content' => 'bar',
                 'date' => '2015-02-27 19:59:15',
+                'tags' => '["foo","bar"]',
             ]]
         ];
 
@@ -77,8 +77,6 @@ class SqlTableTest extends DbTestCase
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
-            'columns'    => 'id,title,content,date',
-            'primaryKey' => 'id',
         ]);
 
         $action   = $this->getActionFactory()->factory(SqlTable::class);
@@ -89,6 +87,7 @@ class SqlTableTest extends DbTestCase
             'title' => 'foo',
             'content' => 'bar',
             'date' => '2015-02-27 19:59:15',
+            'tags' => '["foo","bar"]',
         ];
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
@@ -102,8 +101,6 @@ class SqlTableTest extends DbTestCase
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
-            'columns'    => 'id,title,content,date',
-            'primaryKey' => 'id',
         ]);
 
         $body = new Record();
@@ -113,19 +110,21 @@ class SqlTableTest extends DbTestCase
 
         $action   = $this->getActionFactory()->factory(SqlTable::class);
         $response = $action->handle($this->getRequest('POST', [], [], [], $body), $parameters, $this->getContext());
+        $body     = $response->getBody();
 
         $result = [
             'success' => true,
             'message' => 'Entry successful created',
+            'id'      => 3,
         ];
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertEquals(201, $response->getStatusCode());
         $this->assertEquals([], $response->getHeaders());
-        $this->assertEquals($result, $response->getBody());
-        
+        $this->assertEquals($result, $body);
+
         // check whether the entry was inserted
-        $row    = $this->connection->fetchAssoc('SELECT id, title, content, date FROM app_news ORDER BY id DESC');
+        $row    = $this->connection->fetchAssoc('SELECT id, title, content, date FROM app_news WHERE id = :id', ['id' => $body['id']]);
         $expect = [
             'id'      => 3,
             'title'   => 'lorem',
@@ -141,8 +140,6 @@ class SqlTableTest extends DbTestCase
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
-            'columns'    => 'id,title,content,date',
-            'primaryKey' => 'id',
         ]);
 
         $body = new Record();
@@ -180,8 +177,6 @@ class SqlTableTest extends DbTestCase
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
-            'columns'    => 'id,title,content,date',
-            'primaryKey' => 'id',
         ]);
 
         $action   = $this->getActionFactory()->factory(SqlTable::class);
