@@ -1,6 +1,6 @@
 {
   "name": "fusio/adapter-sql",
-  "description": "Adapter which helps to work with relational databases",
+  "description": "Provides actions and connections to work with relational databases",
   "homepage": "http://fusio-project.org",
   "keywords": ["fusio-adapter"],
   "license": "AGPL-3.0",
