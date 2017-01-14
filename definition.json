@@ -3,7 +3,7 @@
     "Fusio\\Adapter\\Sql\\Action\\SqlTable"
   ],
   "connectionClass": [
-    "Fusio\\Adapter\\Sql\\Connection\\DBAL",
-    "Fusio\\Adapter\\Sql\\Connection\\DBALAdvanced"
+    "Fusio\\Adapter\\Sql\\Connection\\Sql",
+    "Fusio\\Adapter\\Sql\\Connection\\SqlAdvanced"
   ]
 }
