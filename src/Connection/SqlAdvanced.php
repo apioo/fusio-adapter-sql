@@ -28,17 +28,17 @@ use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 
 /**
- * DBALAdvanced
+ * SqlAdvanced
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class DBALAdvanced implements ConnectionInterface
+class SqlAdvanced implements ConnectionInterface
 {
     public function getName()
     {
-        return 'SQL-Connection (advanced)';
+        return 'SQL (advanced)';
     }
 
     /**
@@ -54,6 +54,6 @@ class DBALAdvanced implements ConnectionInterface
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
     {
-        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Uses an specific URL which contains all database connection informations. Click <a ng-click="help.showDialog(\'help/connection/dbal_advanced.md\')">here</a> for more informations.'));
+        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Uses an specific URL which contains all database connection informations. Click <a ng-click="help.showDialog(\'help/connection/dbal_advanced.md\')">here</a> for more information.'));
     }
 }

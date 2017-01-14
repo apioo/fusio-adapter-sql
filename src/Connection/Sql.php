@@ -28,17 +28,17 @@ use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 
 /**
- * DBAL
+ * Sql
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class DBAL implements ConnectionInterface
+class Sql implements ConnectionInterface
 {
     public function getName()
     {
-        return 'SQL-Connection';
+        return 'SQL';
     }
 
     /**
