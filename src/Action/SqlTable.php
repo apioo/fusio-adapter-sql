@@ -32,7 +32,6 @@ use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Exception as StatusCode;
-use PSX\Sql\TypeMapper;
 
 /**
  * SqlTable
@@ -251,13 +250,12 @@ class SqlTable extends ActionAbstract
 
     protected function getTable(Connection $connection, $tableName)
     {
-        $key = __CLASS__ . $tableName;
-        if (!$this->cacheProvider->contains($key)) {
-            $table = $connection->getSchemaManager()->listTableDetails($tableName);
+        $key   = __CLASS__ . $tableName;
+        $table = $this->cache->get($key);
 
-            $this->cacheProvider->save($key, $table);
-        } else {
-            $table = $this->cacheProvider->fetch($key);
+        if ($table === null) {
+            $table = $connection->getSchemaManager()->listTableDetails($tableName);
+            $this->cache->set($key, $table);
         }
 
         return $table;
