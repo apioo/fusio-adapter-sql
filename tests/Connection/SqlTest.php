@@ -48,11 +48,7 @@ class SqlTest extends \PHPUnit_Framework_TestCase
         $connectionFactory = $this->getConnectionFactory()->factory(Sql::class);
 
         $config = new Parameters([
-            'type'     => 'pdo_mysql',
-            'host'     => 'localhost',
-            'username' => 'roots',
-            'password' => null,
-            'database' => 'test',
+            'url' => 'sqlite:///:memory:',
         ]);
 
         $connection = $connectionFactory->getConnection($config);
@@ -85,11 +81,7 @@ class SqlTest extends \PHPUnit_Framework_TestCase
         $connectionFactory = $this->getConnectionFactory()->factory(Sql::class);
 
         $config = new Parameters([
-            'type'     => 'pdo_mysql',
-            'host'     => 'localhost',
-            'username' => 'roots',
-            'password' => null,
-            'database' => 'test',
+            'url' => 'sqlite:///:memory:',
         ]);
 
         $connection = $connectionFactory->getConnection($config);
