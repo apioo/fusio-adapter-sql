@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Sql\Tests\Connection;
 
 use Doctrine\DBAL\Connection;
 use Fusio\Adapter\Sql\Connection\Sql;
+use Fusio\Engine\Connection\PingableInterface;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
 use Fusio\Engine\Form\Element\Input;
@@ -43,8 +44,8 @@ class SqlTest extends \PHPUnit_Framework_TestCase
 
     public function testGetConnection()
     {
-        /** @var Sql $connection */
-        $connection = $this->getConnectionFactory()->factory(Sql::class);
+        /** @var Sql $connectionFactory */
+        $connectionFactory = $this->getConnectionFactory()->factory(Sql::class);
 
         $config = new Parameters([
             'type'     => 'pdo_mysql',
@@ -54,9 +55,9 @@ class SqlTest extends \PHPUnit_Framework_TestCase
             'database' => 'test',
         ]);
 
-        $sql = $connection->getConnection($config);
+        $connection = $connectionFactory->getConnection($config);
 
-        $this->assertInstanceOf(Connection::class, $sql);
+        $this->assertInstanceOf(Connection::class, $connection);
     }
 
     public function testConfigure()
@@ -76,5 +77,24 @@ class SqlTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Input::class, $elements[2]);
         $this->assertInstanceOf(Input::class, $elements[3]);
         $this->assertInstanceOf(Input::class, $elements[4]);
+    }
+
+    public function testPing()
+    {
+        /** @var Sql $connectionFactory */
+        $connectionFactory = $this->getConnectionFactory()->factory(Sql::class);
+
+        $config = new Parameters([
+            'type'     => 'pdo_mysql',
+            'host'     => 'localhost',
+            'username' => 'roots',
+            'password' => null,
+            'database' => 'test',
+        ]);
+
+        $connection = $connectionFactory->getConnection($config);
+
+        $this->assertInstanceOf(PingableInterface::class, $connection);
+        $this->assertTrue($connectionFactory->ping($connection));
     }
 }

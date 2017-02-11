@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Sql\Tests\Connection;
 
 use Doctrine\DBAL\Connection;
 use Fusio\Adapter\Sql\Connection\SqlAdvanced;
+use Fusio\Engine\Connection\PingableInterface;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
 use Fusio\Engine\Form\Element\Input;
@@ -42,16 +43,16 @@ class SqlAdvancedTest extends \PHPUnit_Framework_TestCase
 
     public function testGetConnection()
     {
-        /** @var SqlAdvanced $connection */
-        $connection = $this->getConnectionFactory()->factory(SqlAdvanced::class);
+        /** @var SqlAdvanced $connectionFactory */
+        $connectionFactory = $this->getConnectionFactory()->factory(SqlAdvanced::class);
 
         $config = new Parameters([
             'url' => 'sqlite:///:memory:',
         ]);
 
-        $sql = $connection->getConnection($config);
+        $connection = $connectionFactory->getConnection($config);
 
-        $this->assertInstanceOf(Connection::class, $sql);
+        $this->assertInstanceOf(Connection::class, $connection);
     }
 
     public function testConfigure()
@@ -67,5 +68,20 @@ class SqlAdvancedTest extends \PHPUnit_Framework_TestCase
         $elements = $builder->getForm()->getProperty('element');
         $this->assertEquals(1, count($elements));
         $this->assertInstanceOf(Input::class, $elements[0]);
+    }
+
+    public function testPing()
+    {
+        /** @var SqlAdvanced $connectionFactory */
+        $connectionFactory = $this->getConnectionFactory()->factory(SqlAdvanced::class);
+
+        $config = new Parameters([
+            'url' => 'sqlite:///:memory:',
+        ]);
+
+        $connection = $connectionFactory->getConnection($config);
+
+        $this->assertInstanceOf(PingableInterface::class, $connection);
+        $this->assertTrue($connectionFactory->ping($connection));
     }
 }
