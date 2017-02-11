@@ -21,8 +21,10 @@
 
 namespace Fusio\Adapter\Sql\Connection;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Fusio\Engine\ConnectionInterface;
+use Fusio\Engine\Connection\PingableInterface;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
@@ -34,7 +36,7 @@ use Fusio\Engine\ParametersInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class Sql implements ConnectionInterface
+class Sql implements ConnectionInterface, PingableInterface
 {
     public function getName()
     {
@@ -80,5 +82,14 @@ class Sql implements ConnectionInterface
         $builder->add($elementFactory->newInput('username', 'Username', 'text', 'The name of the database user'));
         $builder->add($elementFactory->newInput('password', 'Password', 'password', 'The password of the database user'));
         $builder->add($elementFactory->newInput('database', 'Database', 'text', 'The name of the database which is used upon connection'));
+    }
+
+    public function ping($connection)
+    {
+        if ($connection instanceof Connection) {
+            return $connection->ping();
+        } else {
+            return false;
+        }
     }
 }

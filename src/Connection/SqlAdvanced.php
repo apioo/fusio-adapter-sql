@@ -21,7 +21,9 @@
 
 namespace Fusio\Adapter\Sql\Connection;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Fusio\Engine\Connection\PingableInterface;
 use Fusio\Engine\ConnectionInterface;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
@@ -34,7 +36,7 @@ use Fusio\Engine\ParametersInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class SqlAdvanced implements ConnectionInterface
+class SqlAdvanced implements ConnectionInterface, PingableInterface
 {
     public function getName()
     {
@@ -55,5 +57,14 @@ class SqlAdvanced implements ConnectionInterface
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
     {
         $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Uses an specific URL which contains all database connection informations. Click <a ng-click="help.showDialog(\'help/connection/dbal_advanced.md\')">here</a> for more information.'));
+    }
+
+    public function ping($connection)
+    {
+        if ($connection instanceof Connection) {
+            return $connection->ping();
+        } else {
+            return false;
+        }
     }
 }
