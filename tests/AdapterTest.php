@@ -21,19 +21,20 @@
 
 namespace Fusio\Adapter\Sql\Tests;
 
-use Fusio\Engine\Test\DefinitionTestCase;
+use Fusio\Adapter\Sql\Adapter;
+use Fusio\Engine\Test\AdapterTestCase;
 
 /**
- * DefinitionTest
+ * AdapterTest
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class DefinitionTest extends DefinitionTestCase
+class AdapterTest extends AdapterTestCase
 {
-    protected function getDefinition()
+    protected function getAdapterClass()
     {
-        return __DIR__ . '/../definition.json';
+        return Adapter::class;
     }
 }
