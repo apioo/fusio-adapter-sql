@@ -47,29 +47,35 @@ class SqlTableTest extends DbTestCase
         $action   = $this->getActionFactory()->factory(SqlTable::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
-        $result = [
-            'totalResults' => 2,
-            'itemsPerPage' => 16,
-            'startIndex' => 0,
-            'entry' => [[
-                'id' => '2',
-                'title' => 'bar',
-                'content' => 'foo',
-                'date' => '2015-02-27 19:59:15',
-                'tags' => '["foo"]',
-            ],[
-                'id' => '1',
-                'title' => 'foo',
-                'content' => 'bar',
-                'date' => '2015-02-27 19:59:15',
-                'tags' => '["foo","bar"]',
-            ]]
-        ];
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "2",
+            "title": "bar",
+            "content": "foo",
+            "tags": "[\"foo\"]",
+            "date": "2015-02-27 19:59:15"
+        },
+        {
+            "id": "1",
+            "title": "foo",
+            "content": "bar",
+            "tags": "[\"foo\",\"bar\"]",
+            "date": "2015-02-27 19:59:15"
+        }
+    ]
+}
+JSON;
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals([], $response->getHeaders());
-        $this->assertEquals($result, $response->getBody());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
     public function testHandleGetEntity()
@@ -82,18 +88,21 @@ class SqlTableTest extends DbTestCase
         $action   = $this->getActionFactory()->factory(SqlTable::class);
         $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
 
-        $result = [
-            'id' => '1',
-            'title' => 'foo',
-            'content' => 'bar',
-            'date' => '2015-02-27 19:59:15',
-            'tags' => '["foo","bar"]',
-        ];
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "id": "1",
+    "title": "foo",
+    "content": "bar",
+    "tags": "[\"foo\",\"bar\"]",
+    "date": "2015-02-27 19:59:15"
+}
+JSON;
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals([], $response->getHeaders());
-        $this->assertEquals($result, $response->getBody());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
     public function testHandlePost()
