@@ -14,7 +14,7 @@
   "require": {
     "php": ">=5.6",
     "doctrine/dbal": "^2.5",
-    "fusio/engine": "^0.6@dev"
+    "fusio/engine": "^0.7@dev"
   },
   "require-dev": {
     "phpunit/phpunit": "^5.6",
