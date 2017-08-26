@@ -254,8 +254,14 @@ class SqlTable extends ActionAbstract
         $table = $this->cache->get($key);
 
         if ($table === null) {
-            $table = $connection->getSchemaManager()->listTableDetails($tableName);
-            $this->cache->set($key, $table);
+            $sm = $connection->getSchemaManager();
+
+            if ($sm->tablesExist([$tableName])) {
+                $table = $connection->getSchemaManager()->listTableDetails($tableName);
+                $this->cache->set($key, $table);
+            } else {
+                throw new StatusCode\InternalServerErrorException('Table ' . $tableName . ' does not exist on connection');
+            }
         }
 
         return $table;
