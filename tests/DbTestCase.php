@@ -101,6 +101,10 @@ class DbTestCase extends \PHPUnit_Extensions_Database_TestCase
         $table->addColumn('date', 'datetime');
         $table->setPrimaryKey(['id']);
 
+        $table = $toSchema->createTable('app_invalid');
+        $table->addColumn('id', 'integer');
+        $table->addColumn('title', 'string');
+
         $queries = $fromSchema->getMigrateToSql($toSchema, $connection->getDatabasePlatform());
         foreach ($queries as $query) {
             $connection->query($query);

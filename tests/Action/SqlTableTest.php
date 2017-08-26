@@ -206,6 +206,96 @@ JSON;
         $this->assertEmpty($row);
     }
 
+    /**
+     * @expectedException \PSX\Http\Exception\InternalServerErrorException
+     * @expectedExceptionMessage Table foo does not exist on connection
+     */
+    public function testHandleInvalidTable()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'foo',
+        ]);
+
+        $action = $this->getActionFactory()->factory(SqlTable::class);
+        $action->handle($this->getRequest('GET'), $parameters, $this->getContext());
+    }
+
+    /**
+     * @expectedException \PSX\Http\Exception\InternalServerErrorException
+     * @expectedExceptionMessage Primary column not available
+     */
+    public function testHandleNoPkTable()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_invalid',
+        ]);
+
+        $action = $this->getActionFactory()->factory(SqlTable::class);
+        $action->handle($this->getRequest('GET'), $parameters, $this->getContext());
+    }
+
+    /**
+     * @expectedException \PSX\Http\Exception\BadRequestException
+     * @expectedExceptionMessage No valid data provided
+     */
+    public function testHandlePostNoData()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+        ]);
+
+        $action = $this->getActionFactory()->factory(SqlTable::class);
+        $action->handle($this->getRequest('POST'), $parameters, $this->getContext());
+    }
+
+    /**
+     * @expectedException \PSX\Http\Exception\MethodNotAllowedException
+     * @expectedExceptionMessage Method not allowed
+     */
+    public function testHandlePostWithId()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+        ]);
+
+        $action = $this->getActionFactory()->factory(SqlTable::class);
+        $action->handle($this->getRequest('POST', ['id' => 1]), $parameters, $this->getContext());
+    }
+
+    /**
+     * @expectedException \PSX\Http\Exception\MethodNotAllowedException
+     * @expectedExceptionMessage Method not allowed
+     */
+    public function testHandlePutWithoutId()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+        ]);
+
+        $action = $this->getActionFactory()->factory(SqlTable::class);
+        $action->handle($this->getRequest('PUT'), $parameters, $this->getContext());
+    }
+
+    /**
+     * @expectedException \PSX\Http\Exception\MethodNotAllowedException
+     * @expectedExceptionMessage Method not allowed
+     */
+    public function testHandleDeleteWithoutId()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+        ]);
+
+        $action = $this->getActionFactory()->factory(SqlTable::class);
+        $action->handle($this->getRequest('DELETE'), $parameters, $this->getContext());
+    }
+
     public function testGetForm()
     {
         $action  = $this->getActionFactory()->factory(SqlTable::class);
