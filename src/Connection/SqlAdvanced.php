@@ -56,7 +56,7 @@ class SqlAdvanced implements ConnectionInterface, PingableInterface
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
     {
-        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Uses an specific URL which contains all database connection informations. Click <a ng-click="help.showDialog(\'help/connection/dbal_advanced.md\')">here</a> for more information.'));
+        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Uses an specific URL which contains all database connection information. Click <a ng-click="help.showDialog(\'help/connection/dbal_advanced.md\')">here</a> for more information.'));
     }
 
     public function ping($connection)
