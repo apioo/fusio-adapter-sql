@@ -22,7 +22,7 @@
 namespace Fusio\Adapter\Sql\Tests\Action;
 
 use Fusio\Adapter\Sql\Tests\DbTestCase;
-use Fusio\Engine\ResponseInterface;
+use PSX\Http\Environment\HttpResponseInterface;
 
 /**
  * SqlBuilderTest
@@ -73,7 +73,7 @@ class SqlBuilderTest extends DbTestCase
 }
 JSON;
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals([], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
