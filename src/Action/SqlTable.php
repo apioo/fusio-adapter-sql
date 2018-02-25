@@ -34,7 +34,8 @@ use Fusio\Engine\RequestInterface;
 use PSX\Http\Exception as StatusCode;
 
 /**
- * SqlTable
+ * Action which allows you to create an API endpoint based on any database 
+ * table
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
@@ -58,27 +59,39 @@ class SqlTable extends ActionAbstract
                 throw new ConfigurationException('No table name provided');
             }
 
+            $id    = (int) $request->getUriFragment('id');
             $table = $this->getTable($connection, $tableName);
 
             switch ($request->getMethod()) {
                 case 'GET':
-                    return $this->doGet($request, $connection, $table);
+                    return $this->doGet($request, $connection, $table, $id);
                     break;
 
                 case 'POST':
+                    if (!empty($id)) {
+                        throw new StatusCode\MethodNotAllowedException('Method not allowed', ['GET', 'POST']);
+                    }
+
                     return $this->doPost($request, $connection, $table);
                     break;
 
                 case 'PUT':
-                    return $this->doPut($request, $connection, $table);
+                    if (empty($id)) {
+                        throw new StatusCode\MethodNotAllowedException('Method not allowed', ['GET', 'PUT', 'DELETE']);
+                    }
+
+                    return $this->doPut($request, $connection, $table, $id);
                     break;
 
                 case 'DELETE':
-                    return $this->doDelete($request, $connection, $table);
+                    if (empty($id)) {
+                        throw new StatusCode\MethodNotAllowedException('Method not allowed', ['GET', 'PUT', 'DELETE']);
+                    }
+
+                    return $this->doDelete($request, $connection, $table, $id);
                     break;
             }
 
-            $id = $request->getUriFragment('id');
             if (empty($id)) {
                 throw new StatusCode\MethodNotAllowedException('Method not allowed', ['GET', 'POST']);
             } else {
@@ -95,9 +108,8 @@ class SqlTable extends ActionAbstract
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
     }
 
-    protected function doGet(RequestInterface $request, Connection $connection, Table $table)
+    protected function doGet(RequestInterface $request, Connection $connection, Table $table, $id)
     {
-        $id = $request->getUriFragment('id');
         if (empty($id)) {
             return $this->doGetCollection(
                 $request,
@@ -200,52 +212,37 @@ class SqlTable extends ActionAbstract
 
     protected function doPost(RequestInterface $request, Connection $connection, Table $table)
     {
-        $id = $request->getUriFragment('id');
-        if (empty($id)) {
-            $connection->insert($table->getName(), $this->getData($request, $table));
+        $connection->insert($table->getName(), $this->getData($request, $table));
 
-            return $this->response->build(201, [], [
-                'success' => true,
-                'message' => 'Entry successful created',
-                'id'      => $connection->lastInsertId()
-            ]);
-        } else {
-            throw new StatusCode\MethodNotAllowedException('Method not allowed', ['GET', 'POST']);
-        }
+        return $this->response->build(201, [], [
+            'success' => true,
+            'message' => 'Entry successful created',
+            'id'      => $connection->lastInsertId()
+        ]);
     }
 
-    protected function doPut(RequestInterface $request, Connection $connection, Table $table)
+    protected function doPut(RequestInterface $request, Connection $connection, Table $table, $id)
     {
-        $id = $request->getUriFragment('id');
-        if (!empty($id)) {
-            $primaryKey = $this->getPrimaryKey($table);
+        $primaryKey = $this->getPrimaryKey($table);
 
-            $connection->update($table->getName(), $this->getData($request, $table), [$primaryKey => $id]);
+        $connection->update($table->getName(), $this->getData($request, $table), [$primaryKey => $id]);
 
-            return $this->response->build(200, [], [
-                'success' => true,
-                'message' => 'Entry successful updated'
-            ]);
-        } else {
-            throw new StatusCode\MethodNotAllowedException('Method not allowed', ['GET', 'PUT', 'DELETE']);
-        }
+        return $this->response->build(200, [], [
+            'success' => true,
+            'message' => 'Entry successful updated'
+        ]);
     }
 
-    protected function doDelete(RequestInterface $request, Connection $connection, Table $table)
+    protected function doDelete(RequestInterface $request, Connection $connection, Table $table, $id)
     {
-        $id = $request->getUriFragment('id');
-        if (!empty($id)) {
-            $primaryKey = $this->getPrimaryKey($table);
+        $primaryKey = $this->getPrimaryKey($table);
 
-            $connection->delete($table->getName(), [$primaryKey => $id]);
+        $connection->delete($table->getName(), [$primaryKey => $id]);
 
-            return $this->response->build(200, [], [
-                'success' => true,
-                'message' => 'Entry successful deleted'
-            ]);
-        } else {
-            throw new StatusCode\MethodNotAllowedException('Method not allowed', ['GET', 'PUT', 'DELETE']);
-        }
+        return $this->response->build(200, [], [
+            'success' => true,
+            'message' => 'Entry successful deleted'
+        ]);
     }
 
     protected function getTable(Connection $connection, $tableName)
