@@ -65,7 +65,11 @@ class SqlTable extends ActionAbstract
             switch ($request->getMethod()) {
                 case 'HEAD':
                 case 'GET':
-                    return $this->doGet($request, $connection, $table, $id);
+                    if (empty($id)) {
+                        return $this->doGetCollection($request, $connection, $table);
+                    } else {
+                        return $this->doGetEntity($id, $connection, $table);
+                    }
                     break;
 
                 case 'POST':
@@ -107,23 +111,6 @@ class SqlTable extends ActionAbstract
     {
         $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
-    }
-
-    protected function doGet(RequestInterface $request, Connection $connection, Table $table, $id)
-    {
-        if (empty($id)) {
-            return $this->doGetCollection(
-                $request,
-                $connection,
-                $table
-            );
-        } else {
-            return $this->doGetEntity(
-                $id,
-                $connection,
-                $table
-            );
-        }
     }
 
     protected function doGetCollection(RequestInterface $request, Connection $connection, Table $table)
