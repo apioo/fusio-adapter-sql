@@ -63,6 +63,7 @@ class SqlTable extends ActionAbstract
             $table = $this->getTable($connection, $tableName);
 
             switch ($request->getMethod()) {
+                case 'HEAD':
                 case 'GET':
                     return $this->doGet($request, $connection, $table, $id);
                     break;
