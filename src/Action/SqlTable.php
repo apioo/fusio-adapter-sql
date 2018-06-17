@@ -60,13 +60,14 @@ class SqlTable extends ActionAbstract
             }
 
             $id    = (int) $request->getUriFragment('id');
+            $limit = (int) $configuration->get('limit');
             $table = $this->getTable($connection, $tableName);
 
             switch ($request->getMethod()) {
                 case 'HEAD':
                 case 'GET':
                     if (empty($id)) {
-                        return $this->doGetCollection($request, $connection, $table);
+                        return $this->doGetCollection($request, $connection, $table, $limit);
                     } else {
                         return $this->doGetEntity($id, $connection, $table);
                     }
@@ -111,9 +112,10 @@ class SqlTable extends ActionAbstract
     {
         $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
+        $builder->add($elementFactory->newInput('limit', 'Limit', 'number', 'The default limit of the result (default is 16)'));
     }
 
-    protected function doGetCollection(RequestInterface $request, Connection $connection, Table $table)
+    protected function doGetCollection(RequestInterface $request, Connection $connection, Table $table, $limit)
     {
         $startIndex  = (int) $request->getParameter('startIndex');
         $count       = (int) $request->getParameter('count');
@@ -126,7 +128,9 @@ class SqlTable extends ActionAbstract
         $columns     = $this->getAvailableColumns($table);
         $primaryKey  = $this->getPrimaryKey($table);
         $startIndex  = $startIndex < 0 ? 0 : $startIndex;
-        $count       = $count >= 1 && $count <= 32 ? $count : 16;
+
+        $limit       = $limit <= 0 ? 16 : $limit;
+        $count       = $count >= 1 && $count <= $limit ? $count : $limit;
 
         $qb = $connection->createQueryBuilder();
         $qb->select($columns);

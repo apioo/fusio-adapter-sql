@@ -78,6 +78,41 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
+    public function testHandleGetCollectionLimit()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'limit'      => 1,
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
+        $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 1,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "2",
+            "title": "bar",
+            "content": "foo",
+            "tags": "[\"foo\"]",
+            "date": "2015-02-27 19:59:15"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
     public function testHandleGetEntity()
     {
         $parameters = $this->getParameters([
