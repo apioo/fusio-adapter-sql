@@ -186,6 +186,210 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
+    public function testHandleGetCollectionSortByAsc()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
+        $response = $action->handle($this->getRequest(null, [], ['sortBy' => 'title', 'sortOrder' => 'asc']), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "2",
+            "title": "bar"
+        },
+        {
+            "id": "1",
+            "title": "foo"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
+    public function testHandleGetCollectionSortByDesc()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
+        $response = $action->handle($this->getRequest(null, [], ['sortBy' => 'title', 'sortOrder' => 'desc']), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "1",
+            "title": "foo"
+        },
+        {
+            "id": "2",
+            "title": "bar"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
+    public function testHandleGetCollectionFilterContains()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
+        $response = $action->handle($this->getRequest(null, [], ['filterBy' => 'title', 'filterOp' => 'contains', 'filterValue' => 'fo']), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "1",
+            "title": "foo"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
+    public function testHandleGetCollectionFilterEquals()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
+        $response = $action->handle($this->getRequest(null, [], ['filterBy' => 'title', 'filterOp' => 'equals', 'filterValue' => 'bar']), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "2",
+            "title": "bar"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
+    public function testHandleGetCollectionFilterStartsWith()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
+        $response = $action->handle($this->getRequest(null, [], ['filterBy' => 'title', 'filterOp' => 'startsWith', 'filterValue' => 'ba']), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "2",
+            "title": "bar"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
+    public function testHandleGetCollectionFilterPresent()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
+        $response = $action->handle($this->getRequest(null, [], ['filterBy' => 'title', 'filterOp' => 'present', 'filterValue' => 'null']), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "2",
+            "title": "bar"
+        },
+        {
+            "id": "1",
+            "title": "foo"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
     public function testHandleGetEntity()
     {
         $parameters = $this->getParameters([
@@ -211,6 +415,46 @@ JSON;
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals([], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
+    public function testHandleGetEntityColumns()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
+        $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "id": "1",
+    "title": "foo"
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
+    /**
+     * @expectedException \PSX\Http\Exception\NotFoundException
+     */
+    public function testHandleGetEntityInvalid()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+        ]);
+
+        $action = $this->getActionFactory()->factory(SqlTable::class);
+        $action->handle($this->getRequest('GET', ['id' => 5]), $parameters, $this->getContext());
     }
 
     public function testHandlePost()
