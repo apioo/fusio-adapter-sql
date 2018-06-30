@@ -59,17 +59,19 @@ class SqlTable extends ActionAbstract
                 throw new ConfigurationException('No table name provided');
             }
 
-            $id    = (int) $request->getUriFragment('id');
-            $limit = (int) $configuration->get('limit');
-            $table = $this->getTable($connection, $tableName);
+            $id      = (int) $request->getUriFragment('id');
+            $table   = $this->getTable($connection, $tableName);
+            $columns = $configuration->get('columns');
+            $orderBy = $configuration->get('orderBy');
+            $limit   = (int) $configuration->get('limit');
 
             switch ($request->getMethod()) {
                 case 'HEAD':
                 case 'GET':
                     if (empty($id)) {
-                        return $this->doGetCollection($request, $connection, $table, $limit);
+                        return $this->doGetCollection($request, $connection, $table, $columns, $orderBy, $limit);
                     } else {
-                        return $this->doGetEntity($id, $connection, $table);
+                        return $this->doGetEntity($id, $connection, $table, $columns);
                     }
                     break;
 
@@ -112,10 +114,12 @@ class SqlTable extends ActionAbstract
     {
         $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
+        $builder->add($elementFactory->newTag('columns', 'Columns', 'Columns which are selected on the table (default is *)'));
+        $builder->add($elementFactory->newInput('orderBy', 'Order by', 'text', 'The default order by column (default is primary key)'));
         $builder->add($elementFactory->newInput('limit', 'Limit', 'number', 'The default limit of the result (default is 16)'));
     }
 
-    protected function doGetCollection(RequestInterface $request, Connection $connection, Table $table, $limit)
+    protected function doGetCollection(RequestInterface $request, Connection $connection, Table $table, $columns, $orderBy, $limit)
     {
         $startIndex  = (int) $request->getParameter('startIndex');
         $count       = (int) $request->getParameter('count');
@@ -125,27 +129,33 @@ class SqlTable extends ActionAbstract
         $filterOp    = $request->getParameter('filterOp');
         $filterValue = $request->getParameter('filterValue');
 
-        $columns     = $this->getAvailableColumns($table);
+        $allColumns  = $this->getAvailableColumns($table);
         $primaryKey  = $this->getPrimaryKey($table);
-        $startIndex  = $startIndex < 0 ? 0 : $startIndex;
 
+        if (!empty($columns)) {
+            $allColumns = array_intersect($allColumns, $columns);
+        }
+
+        $startIndex  = $startIndex < 0 ? 0 : $startIndex;
         $limit       = $limit <= 0 ? 16 : $limit;
         $count       = $count >= 1 && $count <= $limit ? $count : $limit;
 
         $qb = $connection->createQueryBuilder();
-        $qb->select($columns);
+        $qb->select($allColumns);
         $qb->from($table->getName());
 
-        if (!empty($sortBy) && !empty($sortOrder) && in_array($sortBy, $columns)) {
+        if (!empty($sortBy) && !empty($sortOrder) && in_array($sortBy, $allColumns)) {
             $sortOrder = strtoupper($sortOrder);
             $sortOrder = in_array($sortOrder, ['ASC', 'DESC']) ? $sortOrder : 'DESC';
 
             $qb->orderBy($sortBy, $sortOrder);
+        } elseif (!empty($orderBy) && in_array($orderBy, $allColumns)) {
+            $qb->orderBy($orderBy, 'DESC');
         } else {
             $qb->orderBy($primaryKey, 'DESC');
         }
 
-        if (!empty($filterBy) && !empty($filterOp) && !empty($filterValue) && in_array($filterBy, $columns)) {
+        if (!empty($filterBy) && !empty($filterOp) && !empty($filterValue) && in_array($filterBy, $allColumns)) {
             switch ($filterOp) {
                 case 'contains':
                     $qb->where($filterBy . ' LIKE :filter');
@@ -182,13 +192,17 @@ class SqlTable extends ActionAbstract
         ]);
     }
 
-    protected function doGetEntity($id, Connection $connection, Table $table)
+    protected function doGetEntity($id, Connection $connection, Table $table, $columns)
     {
-        $columns    = $this->getAvailableColumns($table);
+        $allColumns = $this->getAvailableColumns($table);
         $primaryKey = $this->getPrimaryKey($table);
 
+        if (!empty($columns)) {
+            $allColumns = array_intersect($allColumns, $columns);
+        }
+
         $qb = $connection->createQueryBuilder();
-        $qb->select($columns);
+        $qb->select($allColumns);
         $qb->from($table->getName());
         $qb->where($primaryKey . ' = :id');
         $qb->setParameter('id', $id);

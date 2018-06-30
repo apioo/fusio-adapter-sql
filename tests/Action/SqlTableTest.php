@@ -78,6 +78,79 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
+    public function testHandleGetCollectionColumns()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
+        $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "2",
+            "title": "bar"
+        },
+        {
+            "id": "1",
+            "title": "foo"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
+    public function testHandleGetCollectionOrderBy()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+            'orderBy'    => 'title',
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlTable::class);
+        $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "1",
+            "title": "foo"
+        },
+        {
+            "id": "2",
+            "title": "bar"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
     public function testHandleGetCollectionLimit()
     {
         $parameters = $this->getParameters([
