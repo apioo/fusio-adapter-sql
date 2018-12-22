@@ -46,11 +46,10 @@ class SqlBuilderTest extends DbTestCase
     "entries": [
         {
             "id": 2,
+            "price": 29.99,
             "articleNumber": "bar",
             "description": "foo",
-            "articleCount": [
-                "foo"
-            ],
+            "postedAt": "13:37:00",
             "insertDate": "2015-02-27T19:59:15Z",
             "links": {
                 "self": "\/news\/2"
@@ -58,12 +57,10 @@ class SqlBuilderTest extends DbTestCase
         },
         {
             "id": 1,
+            "price": 39.99,
             "articleNumber": "foo",
             "description": "bar",
-            "articleCount": [
-                "foo",
-                "bar"
-            ],
+            "postedAt": "13:37:00",
             "insertDate": "2015-02-27T19:59:15Z",
             "links": {
                 "self": "\/news\/1"

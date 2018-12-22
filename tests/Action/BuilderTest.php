@@ -41,9 +41,11 @@ class BuilderTest extends SqlBuilderAbstract
         $connection = $this->connector->getConnection('foo');
 
         $sql = 'SELECT news.id,
+                       news.price,
                        news.title,
                        news.content,
-                       news.tags,
+                       news.image,
+                       news.posted,
                        news.date
                   FROM app_news news
               ORDER BY news.id DESC';
@@ -55,9 +57,11 @@ class BuilderTest extends SqlBuilderAbstract
             'startIndex' => $startIndex,
             'entries' => $this->doCollection($connection, $sql, $parameters, [
                 'id' => $this->fieldInteger('id'),
+                'price' => $this->fieldNumber('price'),
                 'articleNumber' => 'title',
                 'description' => 'content',
                 'articleCount' => $this->fieldJson('tags'),
+                'postedAt' => 'posted',
                 'insertDate' => $this->fieldDateTime('date'),
                 'links' => [
                     'self' => $this->fieldReplace('/news/{id}'),
