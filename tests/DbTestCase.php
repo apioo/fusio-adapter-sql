@@ -21,11 +21,11 @@
 
 namespace Fusio\Adapter\Sql\Tests;
 
-use Doctrine\DBAL\Configuration;
-use Doctrine\DBAL\DriverManager;
 use Fusio\Engine\Model\Connection;
 use Fusio\Engine\Test\CallbackConnection;
 use Fusio\Engine\Test\EngineTestCaseTrait;
+use PHPUnit\Framework\TestCase;
+use PSX\Sql\Test\DatabaseTestCaseTrait;
 
 /**
  * DbTestCase
@@ -34,20 +34,16 @@ use Fusio\Engine\Test\EngineTestCaseTrait;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class DbTestCase extends \PHPUnit_Extensions_Database_TestCase
+class DbTestCase extends TestCase
 {
     use EngineTestCaseTrait;
-
-    protected static $con;
-
-    /**
-     * @var \Doctrine\DBAL\Connection
-     */
-    protected $connection;
+    use DatabaseTestCaseTrait;
 
     protected function setUp()
     {
         parent::setUp();
+
+        $this->setUpFixture();
 
         $connection = new Connection();
         $connection->setId(1);
@@ -64,52 +60,11 @@ class DbTestCase extends \PHPUnit_Extensions_Database_TestCase
 
     protected function getConnection()
     {
-        if (self::$con === null) {
-            self::$con = $this->newConnection();
-        }
-
-        if ($this->connection === null) {
-            $this->connection = self::$con;
-        }
-
-        return $this->createDefaultDBConnection($this->connection->getWrappedConnection(), 'database');
+        return getConnection();
     }
 
     protected function getDataSet()
     {
-        return $this->createFlatXMLDataSet(__DIR__ . '/fixture.xml');
-    }
-
-    protected function newConnection()
-    {
-        $params = [
-            'memory' => true,
-            'driver' => 'pdo_sqlite',
-        ];
-
-        $config     = new Configuration();
-        $connection = DriverManager::getConnection($params, $config);
-
-        $fromSchema = $connection->getSchemaManager()->createSchema();
-        $toSchema   = new \Doctrine\DBAL\Schema\Schema();
-
-        $table = $toSchema->createTable('app_news');
-        $table->addColumn('id', 'integer', ['autoincrement' => true]);
-        $table->addColumn('title', 'string');
-        $table->addColumn('content', 'text');
-        $table->addColumn('tags', 'text', ['notnull' => false]);
-        $table->addColumn('date', 'datetime');
-        $table->setPrimaryKey(['id']);
-
-        $table = $toSchema->createTable('app_invalid');
-        $table->addColumn('id', 'integer');
-        $table->addColumn('title', 'string');
-
-        $queries = $fromSchema->getMigrateToSql($toSchema, $connection->getDatabasePlatform());
-        foreach ($queries as $query) {
-            $connection->query($query);
-        }
-
-        return $connection;
+        return include __DIR__ . '/fixture.php';
     }
 }
