@@ -24,8 +24,10 @@ function getConnection()
     $table = $toSchema->createTable('app_news');
     $table->addColumn('id', 'integer', ['autoincrement' => true]);
     $table->addColumn('title', 'string');
+    $table->addColumn('price', 'float');
     $table->addColumn('content', 'text');
-    $table->addColumn('tags', 'json_array', ['notnull' => false]);
+    $table->addColumn('image', 'binary');
+    $table->addColumn('posted', 'time');
     $table->addColumn('date', 'datetime');
     $table->setPrimaryKey(['id']);
 
