@@ -55,18 +55,22 @@ class SqlTableTest extends DbTestCase
     "startIndex": 0,
     "entry": [
         {
-            "id": "2",
+            "id": 2,
             "title": "bar",
+            "price": 29.99,
             "content": "foo",
-            "tags": "[\"foo\"]",
-            "date": "2015-02-27 19:59:15"
+            "image": "AAAAAAAAAAAAAAAAAAAAAA==",
+            "posted": "13:37:00",
+            "date": "2015-02-27T19:59:15+00:00"
         },
         {
-            "id": "1",
+            "id": 1,
             "title": "foo",
+            "price": 39.99,
             "content": "bar",
-            "tags": "[\"foo\",\"bar\"]",
-            "date": "2015-02-27 19:59:15"
+            "image": "AAAAAAAAAAAAAAAAAAAAAA==",
+            "posted": "13:37:00",
+            "date": "2015-02-27T19:59:15+00:00"
         }
     ]
 }
@@ -97,11 +101,11 @@ JSON;
     "startIndex": 0,
     "entry": [
         {
-            "id": "2",
+            "id": 2,
             "title": "bar"
         },
         {
-            "id": "1",
+            "id": 1,
             "title": "foo"
         }
     ]
@@ -134,11 +138,11 @@ JSON;
     "startIndex": 0,
     "entry": [
         {
-            "id": "1",
+            "id": 1,
             "title": "foo"
         },
         {
-            "id": "2",
+            "id": 2,
             "title": "bar"
         }
     ]
@@ -170,11 +174,13 @@ JSON;
     "startIndex": 0,
     "entry": [
         {
-            "id": "2",
+            "id": 2,
             "title": "bar",
+            "price": 29.99,
             "content": "foo",
-            "tags": "[\"foo\"]",
-            "date": "2015-02-27 19:59:15"
+            "image": "AAAAAAAAAAAAAAAAAAAAAA==",
+            "posted": "13:37:00",
+            "date": "2015-02-27T19:59:15+00:00"
         }
     ]
 }
@@ -205,11 +211,11 @@ JSON;
     "startIndex": 0,
     "entry": [
         {
-            "id": "2",
+            "id": 2,
             "title": "bar"
         },
         {
-            "id": "1",
+            "id": 1,
             "title": "foo"
         }
     ]
@@ -241,11 +247,11 @@ JSON;
     "startIndex": 0,
     "entry": [
         {
-            "id": "1",
+            "id": 1,
             "title": "foo"
         },
         {
-            "id": "2",
+            "id": 2,
             "title": "bar"
         }
     ]
@@ -277,7 +283,7 @@ JSON;
     "startIndex": 0,
     "entry": [
         {
-            "id": "1",
+            "id": 1,
             "title": "foo"
         }
     ]
@@ -309,7 +315,7 @@ JSON;
     "startIndex": 0,
     "entry": [
         {
-            "id": "2",
+            "id": 2,
             "title": "bar"
         }
     ]
@@ -341,7 +347,7 @@ JSON;
     "startIndex": 0,
     "entry": [
         {
-            "id": "2",
+            "id": 2,
             "title": "bar"
         }
     ]
@@ -373,11 +379,11 @@ JSON;
     "startIndex": 0,
     "entry": [
         {
-            "id": "2",
+            "id": 2,
             "title": "bar"
         },
         {
-            "id": "1",
+            "id": 1,
             "title": "foo"
         }
     ]
@@ -403,11 +409,13 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "id": "1",
+    "id": 1,
     "title": "foo",
+    "price": 39.99,
     "content": "bar",
-    "tags": "[\"foo\",\"bar\"]",
-    "date": "2015-02-27 19:59:15"
+    "image": "AAAAAAAAAAAAAAAAAAAAAA==",
+    "posted": "13:37:00",
+    "date": "2015-02-27T19:59:15+00:00"
 }
 JSON;
 
@@ -431,7 +439,7 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "id": "1",
+    "id": 1,
     "title": "foo"
 }
 JSON;
@@ -466,7 +474,10 @@ JSON;
 
         $body = new Record();
         $body['title'] = 'lorem';
+        $body['price'] = 59.99;
         $body['content'] = 'ipsum';
+        $body['image'] = str_repeat("\0", 16);
+        $body['posted'] = '19:59:15';
         $body['date'] = '2015-02-27 19:59:15';
 
         $action   = $this->getActionFactory()->factory(SqlTable::class);
@@ -485,11 +496,14 @@ JSON;
         $this->assertEquals($result, $body);
 
         // check whether the entry was inserted
-        $row    = $this->connection->fetchAssoc('SELECT id, title, content, date FROM app_news WHERE id = :id', ['id' => $body['id']]);
+        $row    = $this->connection->fetchAssoc('SELECT id, title, price, content, image, posted, date FROM app_news WHERE id = :id', ['id' => $body['id']]);
         $expect = [
             'id'      => 3,
             'title'   => 'lorem',
+            'price'   => '59.99',
             'content' => 'ipsum',
+            'image'   => str_repeat("\0", 16),
+            'posted'  => '19:59:15',
             'date'    => '2015-02-27 19:59:15',
         ];
 
@@ -590,7 +604,7 @@ JSON;
 
     /**
      * @expectedException \PSX\Http\Exception\BadRequestException
-     * @expectedExceptionMessage No valid data provided
+     * @expectedExceptionMessage Column title must not be null
      */
     public function testHandlePostNoData()
     {

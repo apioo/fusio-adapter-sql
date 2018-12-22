@@ -24,6 +24,7 @@ namespace Fusio\Adapter\Sql\Action;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Types;
 use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Exception\ConfigurationException;
@@ -96,7 +97,7 @@ class SqlTable extends ActionAbstract
                         throw new StatusCode\MethodNotAllowedException('Method not allowed', ['GET', 'PUT', 'DELETE']);
                     }
 
-                    return $this->doDelete($request, $connection, $table, $id);
+                    return $this->doDelete($connection, $table, $id);
                     break;
             }
 
@@ -184,11 +185,16 @@ class SqlTable extends ActionAbstract
         $totalCount = (int) $connection->fetchColumn('SELECT COUNT(*) FROM ' . $table->getName());
         $result     = $connection->fetchAll($qb->getSQL(), $qb->getParameters());
 
+        $data = [];
+        foreach ($result as $row) {
+            $data[] = $this->convertRow($row, $connection, $table);
+        }
+
         return $this->response->build(200, [], [
             'totalResults' => $totalCount,
             'itemsPerPage' => $count,
             'startIndex'   => $startIndex,
-            'entry'        => $result,
+            'entry'        => $data,
         ]);
     }
 
@@ -210,7 +216,9 @@ class SqlTable extends ActionAbstract
         $row = $connection->fetchAssoc($qb->getSQL(), $qb->getParameters());
 
         if (!empty($row)) {
-            return $this->response->build(200, [], $row);
+            $data = $this->convertRow($row, $connection, $table);
+
+            return $this->response->build(200, [], $data);
         } else {
             throw new StatusCode\NotFoundException('Entry not available');
         }
@@ -218,7 +226,9 @@ class SqlTable extends ActionAbstract
 
     protected function doPost(RequestInterface $request, Connection $connection, Table $table)
     {
-        $connection->insert($table->getName(), $this->getData($request, $table));
+        $data = $this->getData($request, $table, true);
+
+        $connection->insert($table->getName(), $data);
 
         return $this->response->build(201, [], [
             'success' => true,
@@ -229,9 +239,10 @@ class SqlTable extends ActionAbstract
 
     protected function doPut(RequestInterface $request, Connection $connection, Table $table, $id)
     {
-        $primaryKey = $this->getPrimaryKey($table);
+        $key  = $this->getPrimaryKey($table);
+        $data = $this->getData($request, $table);
 
-        $connection->update($table->getName(), $this->getData($request, $table), [$primaryKey => $id]);
+        $connection->update($table->getName(), $data, [$key => $id]);
 
         return $this->response->build(200, [], [
             'success' => true,
@@ -239,11 +250,11 @@ class SqlTable extends ActionAbstract
         ]);
     }
 
-    protected function doDelete(RequestInterface $request, Connection $connection, Table $table, $id)
+    protected function doDelete(Connection $connection, Table $table, $id)
     {
-        $primaryKey = $this->getPrimaryKey($table);
+        $key = $this->getPrimaryKey($table);
 
-        $connection->delete($table->getName(), [$primaryKey => $id]);
+        $connection->delete($table->getName(), [$key => $id]);
 
         return $this->response->build(200, [], [
             'success' => true,
@@ -270,20 +281,33 @@ class SqlTable extends ActionAbstract
         return $table;
     }
 
-    protected function getData(RequestInterface $request, Table $table)
+    protected function getData(RequestInterface $request, Table $table, $validateNull = false)
     {
-        $columns = $this->getAvailableColumns($table);
-        $body    = $request->getBody();
-
+        $body = $request->getBody();
         $data = [];
-        foreach ($body as $key => $value) {
-            if (in_array($key, $columns)) {
-                $data[$key] = $value;
-            }
-        }
 
-        if (empty($data)) {
-            throw new StatusCode\BadRequestException('No valid data provided');
+        $columns = $table->getColumns();
+        foreach ($columns as $column) {
+            if ($column->getAutoincrement()) {
+                // in case the column is autoincrement we dont need it
+                continue;
+            }
+
+            $value = null;
+            if ($body->hasProperty($column->getName())) {
+                $value = $body->getProperty($column->getName());
+            }
+
+            if ($value === null && $column->getNotnull()) {
+                if ($validateNull) {
+                    throw new StatusCode\BadRequestException('Column ' . $column->getName() . ' must not be null');
+                } else {
+                    // on update we can simply skip those values
+                    continue;
+                }
+            }
+
+            $data[$column->getName()] = $value;
         }
 
         return $data;
@@ -303,5 +327,37 @@ class SqlTable extends ActionAbstract
         } else {
             throw new StatusCode\InternalServerErrorException('Primary column not available');
         }
+    }
+
+    /**
+     * Converts a raw database row to the correct PHP types
+     * 
+     * @param array $row
+     * @param \Doctrine\DBAL\Connection $connection
+     * @param \Doctrine\DBAL\Schema\Table $table
+     * @return array
+     * @throws \Doctrine\DBAL\Schema\SchemaException
+     */
+    protected function convertRow(array $row, Connection $connection, Table $table)
+    {
+        $result = [];
+        foreach ($row as $key => $value) {
+            $type = $table->getColumn($key)->getType();
+            $val  = $type->convertToPHPValue($value, $connection->getDatabasePlatform());
+
+            if ($type instanceof Types\DateTimeType) {
+                $val = $val->format(\DateTime::RFC3339);
+            } elseif ($type instanceof Types\DateTimeTzType) {
+                $val = $val->format(\DateTime::RFC3339_EXTENDED);
+            } elseif ($type instanceof Types\TimeType) {
+                $val = $val->format('H:i:s');
+            } elseif ($type instanceof Types\BinaryType || $type instanceof Types\BlobType) {
+                $val = base64_encode(stream_get_contents($val));
+            }
+
+            $result[$key] = $val;
+        }
+
+        return $result;
     }
 }
