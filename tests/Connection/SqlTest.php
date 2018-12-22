@@ -23,13 +23,13 @@ namespace Fusio\Adapter\Sql\Tests\Connection;
 
 use Doctrine\DBAL\Connection;
 use Fusio\Adapter\Sql\Connection\Sql;
-use Fusio\Engine\Connection\PingableInterface;
 use Fusio\Engine\Form\Builder;
 use Fusio\Engine\Form\Container;
 use Fusio\Engine\Form\Element\Input;
 use Fusio\Engine\Form\Element\Select;
 use Fusio\Engine\Parameters;
 use Fusio\Engine\Test\EngineTestCaseTrait;
+use PHPUnit\Framework\TestCase;
 
 /**
  * SqlTest
@@ -38,7 +38,7 @@ use Fusio\Engine\Test\EngineTestCaseTrait;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class SqlTest extends \PHPUnit_Framework_TestCase
+class SqlTest extends TestCase
 {
     use EngineTestCaseTrait;
 
