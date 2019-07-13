@@ -116,7 +116,7 @@ JSON;
         "price": {
             "type": "float",
             "default": null,
-            "notnull": true,
+            "notnull": false,
             "length": null,
             "precision": 10,
             "scale": 0,
@@ -128,7 +128,7 @@ JSON;
         "content": {
             "type": "text",
             "default": null,
-            "notnull": true,
+            "notnull": false,
             "length": null,
             "precision": 10,
             "scale": 0,
@@ -140,7 +140,7 @@ JSON;
         "image": {
             "type": "blob",
             "default": null,
-            "notnull": true,
+            "notnull": false,
             "length": null,
             "precision": 10,
             "scale": 0,
@@ -152,7 +152,7 @@ JSON;
         "posted": {
             "type": "time",
             "default": null,
-            "notnull": true,
+            "notnull": false,
             "length": null,
             "precision": 10,
             "scale": 0,
@@ -164,7 +164,7 @@ JSON;
         "date": {
             "type": "datetime",
             "default": null,
-            "notnull": true,
+            "notnull": false,
             "length": null,
             "precision": 10,
             "scale": 0,

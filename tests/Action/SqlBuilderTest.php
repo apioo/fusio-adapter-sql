@@ -41,16 +41,23 @@ class SqlBuilderTest extends DbTestCase
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalEntries": 2,
+    "totalEntries": 3,
     "startIndex": 0,
     "entries": [
         {
-            "id": 2,
+            "id": 3,
             "price": 29.99,
             "articleNumber": "bar",
             "description": "foo",
             "postedAt": "13:37:00",
             "insertDate": "2015-02-27T19:59:15Z",
+            "links": {
+                "self": "\/news\/3"
+            }
+        },
+        {
+            "id": 2,
+            "articleNumber": "baz",
             "links": {
                 "self": "\/news\/2"
             }
