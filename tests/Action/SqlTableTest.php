@@ -50,18 +50,27 @@ class SqlTableTest extends DbTestCase
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 2,
+    "totalResults": 3,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
         {
-            "id": 2,
+            "id": 3,
             "title": "bar",
             "price": 29.99,
             "content": "foo",
             "image": "AAAAAAAAAAAAAAAAAAAAAA==",
             "posted": "13:37:00",
             "date": "2015-02-27T19:59:15+00:00"
+        },
+        {
+            "id": 2,
+            "title": "baz",
+            "price": null,
+            "content": null,
+            "image": null,
+            "posted": null,
+            "date": null
         },
         {
             "id": 1,
@@ -96,13 +105,17 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 2,
+    "totalResults": 3,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
         {
-            "id": 2,
+            "id": 3,
             "title": "bar"
+        },
+        {
+            "id": 2,
+            "title": "baz"
         },
         {
             "id": 1,
@@ -133,7 +146,7 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 2,
+    "totalResults": 3,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
@@ -143,6 +156,10 @@ JSON;
         },
         {
             "id": 2,
+            "title": "baz"
+        },
+        {
+            "id": 3,
             "title": "bar"
         }
     ]
@@ -169,12 +186,12 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 2,
+    "totalResults": 3,
     "itemsPerPage": 1,
     "startIndex": 0,
     "entry": [
         {
-            "id": 2,
+            "id": 3,
             "title": "bar",
             "price": 29.99,
             "content": "foo",
@@ -206,13 +223,17 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 2,
+    "totalResults": 3,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
         {
-            "id": 2,
+            "id": 3,
             "title": "bar"
+        },
+        {
+            "id": 2,
+            "title": "baz"
         },
         {
             "id": 1,
@@ -242,7 +263,7 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 2,
+    "totalResults": 3,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
@@ -252,6 +273,10 @@ JSON;
         },
         {
             "id": 2,
+            "title": "baz"
+        },
+        {
+            "id": 3,
             "title": "bar"
         }
     ]
@@ -278,7 +303,7 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 2,
+    "totalResults": 3,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
@@ -310,12 +335,12 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 2,
+    "totalResults": 3,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
         {
-            "id": 2,
+            "id": 3,
             "title": "bar"
         }
     ]
@@ -342,13 +367,17 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 2,
+    "totalResults": 3,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
         {
-            "id": 2,
+            "id": 3,
             "title": "bar"
+        },
+        {
+            "id": 2,
+            "title": "baz"
         }
     ]
 }
@@ -374,13 +403,17 @@ JSON;
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 2,
+    "totalResults": 3,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
         {
-            "id": 2,
+            "id": 3,
             "title": "bar"
+        },
+        {
+            "id": 2,
+            "title": "baz"
         },
         {
             "id": 1,
@@ -487,7 +520,7 @@ JSON;
         $result = [
             'success' => true,
             'message' => 'Entry successful created',
-            'id'      => 3,
+            'id'      => 4,
         ];
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
@@ -498,7 +531,7 @@ JSON;
         // check whether the entry was inserted
         $row    = $this->connection->fetchAssoc('SELECT id, title, price, content, image, posted, date FROM app_news WHERE id = :id', ['id' => $body['id']]);
         $expect = [
-            'id'      => 3,
+            'id'      => 4,
             'title'   => 'lorem',
             'price'   => '59.99',
             'content' => 'ipsum',

@@ -24,11 +24,11 @@ function getConnection()
     $table = $toSchema->createTable('app_news');
     $table->addColumn('id', 'integer', ['autoincrement' => true]);
     $table->addColumn('title', 'string');
-    $table->addColumn('price', 'float');
-    $table->addColumn('content', 'text');
-    $table->addColumn('image', 'binary');
-    $table->addColumn('posted', 'time');
-    $table->addColumn('date', 'datetime');
+    $table->addColumn('price', 'float', ['notnull' => false]);
+    $table->addColumn('content', 'text', ['notnull' => false]);
+    $table->addColumn('image', 'binary', ['notnull' => false]);
+    $table->addColumn('posted', 'time', ['notnull' => false]);
+    $table->addColumn('date', 'datetime', ['notnull' => false]);
     $table->setPrimaryKey(['id']);
 
     $table = $toSchema->createTable('app_invalid');

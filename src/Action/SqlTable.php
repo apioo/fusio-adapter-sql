@@ -345,7 +345,8 @@ class SqlTable extends ActionAbstract
             $type = $table->getColumn($key)->getType();
             $val  = $type->convertToPHPValue($value, $connection->getDatabasePlatform());
 
-            if ($type instanceof Types\DateTimeType) {
+            if ($val === null) {
+            } elseif ($type instanceof Types\DateTimeType) {
                 $val = $val->format(\DateTime::RFC3339);
             } elseif ($type instanceof Types\DateTimeTzType) {
                 $val = $val->format(\DateTime::RFC3339_EXTENDED);
