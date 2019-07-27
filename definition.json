@@ -5,5 +5,8 @@
   "connectionClass": [
     "Fusio\\Adapter\\Sql\\Connection\\Sql",
     "Fusio\\Adapter\\Sql\\Connection\\SqlAdvanced"
+  ],
+  "routesClass": [
+    "Fusio\\Adapter\\Sql\\Routes\\SqlTable"
   ]
 }

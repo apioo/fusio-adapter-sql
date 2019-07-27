@@ -1,0 +1,22 @@
+{
+  "title": "collection",
+  "type": "object",
+  "properties": {
+    "totalResults": {
+      "type": "integer"
+    },
+    "itemsPerPage": {
+      "type": "integer"
+    },
+    "startIndex": {
+      "type": "integer"
+    },
+    "entry": {
+      "type": "array",
+      "items": {
+        "title": "entity",
+        "type": "object"
+      }
+    }
+  }
+}
