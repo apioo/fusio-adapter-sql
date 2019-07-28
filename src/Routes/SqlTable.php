@@ -41,17 +41,17 @@ class SqlTable
         return 'SQL-Table';
     }
 
-    public function setup(SetupInterface $setup, ParametersInterface $configuration)
+    public function setup(SetupInterface $setup, string $basePath, ParametersInterface $configuration)
     {
+        $prefix = implode('-', array_map('ucfirst', array_filter(explode('/', $basePath))));
+
         $schemaParameters = $setup->addSchema('SQL-Table-Parameters', $this->readSchema(__DIR__ . '/schema/sql-table/parameters.json'));
-        $schemaCollection = $setup->addSchema('SQL-Table-Collection', $this->readSchema(__DIR__ . '/schema/sql-table/collection.json'));
-        $schemaEntity = $setup->addSchema('SQL-Table-Entity', $this->readSchema(__DIR__ . '/schema/sql-table/entity.json'));
         $schemaResponse = $setup->addSchema('SQL-Table-Response', $this->readSchema(__DIR__ . '/schema/sql-table/response.json'));
+        $schemaCollection = $setup->addSchema($prefix . '-Collection', $this->readSchema(__DIR__ . '/schema/sql-table/collection.json'));
+        $schemaEntity = $setup->addSchema($prefix . '-Entity', $this->readSchema(__DIR__ . '/schema/sql-table/entity.json'));
 
-        $tableName = $configuration->get('table');
-
-        $action = $setup->addAction(ucfirst($tableName) . '-Sql-Table', SqlTable::class, PhpClass::class, [
-            'table' => $tableName,
+        $action = $setup->addAction($prefix . '-Action', SqlTable::class, PhpClass::class, [
+            'table' => $configuration->get('table'),
         ]);
 
         $setup->addRoute(1, '/', 'Fusio\Impl\Controller\SchemaApiController', [], [
