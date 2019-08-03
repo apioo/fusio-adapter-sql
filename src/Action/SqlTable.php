@@ -35,7 +35,7 @@ use Fusio\Engine\RequestInterface;
 use PSX\Http\Exception as StatusCode;
 
 /**
- * Action which allows you to create an API endpoint based on any database 
+ * Action which allows you to create an API endpoint based on any database
  * table
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
@@ -226,7 +226,7 @@ class SqlTable extends ActionAbstract
 
     protected function doPost(RequestInterface $request, Connection $connection, Table $table)
     {
-        $data = $this->getData($request, $table, true);
+        $data = $this->getData($request, $connection, $table, true);
 
         $connection->insert($table->getName(), $data);
 
@@ -240,7 +240,7 @@ class SqlTable extends ActionAbstract
     protected function doPut(RequestInterface $request, Connection $connection, Table $table, $id)
     {
         $key  = $this->getPrimaryKey($table);
-        $data = $this->getData($request, $table);
+        $data = $this->getData($request, $connection, $table);
 
         $connection->update($table->getName(), $data, [$key => $id]);
 
@@ -281,7 +281,7 @@ class SqlTable extends ActionAbstract
         return $table;
     }
 
-    protected function getData(RequestInterface $request, Table $table, $validateNull = false)
+    protected function getData(RequestInterface $request, Connection $connection, Table $table, $validateNull = false)
     {
         $body = $request->getBody();
         $data = [];
@@ -304,6 +304,17 @@ class SqlTable extends ActionAbstract
                 } else {
                     // on update we can simply skip those values
                     continue;
+                }
+            } elseif ($value instanceof \DateTime) {
+                $platform = $connection->getDatabasePlatform();
+                if ($column->getType() instanceof Types\DateType) {
+                    $value = $value->format($platform->getDateFormatString());
+                } elseif ($column->getType() instanceof Types\DateTimeType) {
+                    $value = $value->format($platform->getDateTimeFormatString());
+                } elseif ($column->getType() instanceof Types\DateTimeTzType) {
+                    $value = $value->format($platform->getDateTimeTzFormatString());
+                } elseif ($column->getType() instanceof Types\TimeType) {
+                    $value = $value->format($platform->getTimeFormatString());
                 }
             }
 
@@ -331,7 +342,7 @@ class SqlTable extends ActionAbstract
 
     /**
      * Converts a raw database row to the correct PHP types
-     * 
+     *
      * @param array $row
      * @param \Doctrine\DBAL\Connection $connection
      * @param \Doctrine\DBAL\Schema\Table $table
@@ -346,6 +357,8 @@ class SqlTable extends ActionAbstract
             $val  = $type->convertToPHPValue($value, $connection->getDatabasePlatform());
 
             if ($val === null) {
+            } elseif ($type instanceof Types\DateType) {
+                $val = $val->format('Y-m-d');
             } elseif ($type instanceof Types\DateTimeType) {
                 $val = $val->format(\DateTime::RFC3339);
             } elseif ($type instanceof Types\DateTimeTzType) {
