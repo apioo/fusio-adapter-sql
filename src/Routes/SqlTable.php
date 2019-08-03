@@ -25,6 +25,7 @@ use Fusio\Engine\Factory\Resolver\PhpClass;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
+use Fusio\Engine\Routes\ProviderInterface;
 use Fusio\Engine\Routes\SetupInterface;
 
 /**
@@ -34,7 +35,7 @@ use Fusio\Engine\Routes\SetupInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class SqlTable
+class SqlTable implements ProviderInterface
 {
     public function getName()
     {
@@ -51,16 +52,15 @@ class SqlTable
         $schemaEntity = $setup->addSchema($prefix . '-Entity', $this->readSchema(__DIR__ . '/schema/sql-table/entity.json'));
 
         $action = $setup->addAction($prefix . '-Action', SqlTable::class, PhpClass::class, [
+            'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
 
         $setup->addRoute(1, '/', 'Fusio\Impl\Controller\SchemaApiController', [], [
             [
                 'version' => 1,
-                'status' => 1,
                 'methods' => [
                     'GET' => [
-                        'status' => 1,
                         'active' => true,
                         'public' => true,
                         'description' => 'Returns a collection of entities',
@@ -71,7 +71,6 @@ class SqlTable
                         'action' => $action,
                     ],
                     'POST' => [
-                        'status' => 1,
                         'active' => true,
                         'public' => false,
                         'description' => 'Creates a new entity',
@@ -88,10 +87,8 @@ class SqlTable
         $setup->addRoute(1, '/:id', 'Fusio\Impl\Controller\SchemaApiController', [], [
             [
                 'version' => 1,
-                'status' => 1,
                 'methods' => [
                     'GET' => [
-                        'status' => 1,
                         'active' => true,
                         'public' => true,
                         'description' => 'Returns a single entity',
@@ -101,7 +98,6 @@ class SqlTable
                         'action' => $action,
                     ],
                     'PUT' => [
-                        'status' => 1,
                         'active' => true,
                         'public' => false,
                         'description' => 'Updates an existing entity',
@@ -112,7 +108,6 @@ class SqlTable
                         'action' => $action,
                     ],
                     'DELETE' => [
-                        'status' => 1,
                         'active' => true,
                         'public' => false,
                         'description' => 'Deletes an existing entity',
@@ -128,7 +123,8 @@ class SqlTable
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
     {
-        $builder->add($elementFactory->newInput('table', 'Table'));
+        $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
+        $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
     }
 
     private function readSchema(string $file)
