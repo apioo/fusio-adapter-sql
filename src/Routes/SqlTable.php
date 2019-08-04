@@ -51,7 +51,7 @@ class SqlTable implements ProviderInterface
         $schemaCollection = $setup->addSchema($prefix . '-Collection', $this->readSchema(__DIR__ . '/schema/sql-table/collection.json'));
         $schemaEntity = $setup->addSchema($prefix . '-Entity', $this->readSchema(__DIR__ . '/schema/sql-table/entity.json'));
 
-        $action = $setup->addAction($prefix . '-Action', SqlTable::class, PhpClass::class, [
+        $action = $setup->addAction($prefix . '-Action', \Fusio\Adapter\Sql\Action\SqlTable::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
