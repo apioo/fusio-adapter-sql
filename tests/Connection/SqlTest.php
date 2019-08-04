@@ -60,25 +60,6 @@ class SqlTest extends TestCase
         $this->assertInstanceOf(Connection::class, $connection);
     }
 
-    public function testConfigure()
-    {
-        $connection = $this->getConnectionFactory()->factory(Sql::class);
-        $builder    = new Builder();
-        $factory    = $this->getFormElementFactory();
-
-        $connection->configure($builder, $factory);
-
-        $this->assertInstanceOf(Container::class, $builder->getForm());
-
-        $elements = $builder->getForm()->getProperty('element');
-        $this->assertEquals(5, count($elements));
-        $this->assertInstanceOf(Select::class, $elements[0]);
-        $this->assertInstanceOf(Input::class, $elements[1]);
-        $this->assertInstanceOf(Input::class, $elements[2]);
-        $this->assertInstanceOf(Input::class, $elements[3]);
-        $this->assertInstanceOf(Input::class, $elements[4]);
-    }
-
     public function testPing()
     {
         /** @var Sql $connectionFactory */

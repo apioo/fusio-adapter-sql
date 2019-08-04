@@ -694,15 +694,4 @@ JSON;
         $action = $this->getActionFactory()->factory(SqlTable::class);
         $action->handle($this->getRequest('DELETE'), $parameters, $this->getContext());
     }
-
-    public function testGetForm()
-    {
-        $action  = $this->getActionFactory()->factory(SqlTable::class);
-        $builder = new Builder();
-        $factory = $this->getFormElementFactory();
-
-        $action->configure($builder, $factory);
-
-        $this->assertInstanceOf(Container::class, $builder->getForm());
-    }
 }

@@ -662,17 +662,6 @@ JSON;
         $this->assertEquals(true, $schema->hasTable('foo'));
     }
 
-    public function testGetForm()
-    {
-        $action  = $this->getActionFactory()->factory(SqlSchema::class);
-        $builder = new Builder();
-        $factory = $this->getFormElementFactory();
-
-        $action->configure($builder, $factory);
-
-        $this->assertInstanceOf(Container::class, $builder->getForm());
-    }
-
     private function migrateTo(Schema $toSchema)
     {
         $fromSchema = $this->connection->getSchemaManager()->createSchema();

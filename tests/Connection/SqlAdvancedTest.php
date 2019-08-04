@@ -55,21 +55,6 @@ class SqlAdvancedTest extends TestCase
         $this->assertInstanceOf(Connection::class, $connection);
     }
 
-    public function testConfigure()
-    {
-        $connection = $this->getConnectionFactory()->factory(SqlAdvanced::class);
-        $builder    = new Builder();
-        $factory    = $this->getFormElementFactory();
-
-        $connection->configure($builder, $factory);
-
-        $this->assertInstanceOf(Container::class, $builder->getForm());
-
-        $elements = $builder->getForm()->getProperty('element');
-        $this->assertEquals(1, count($elements));
-        $this->assertInstanceOf(Input::class, $elements[0]);
-    }
-
     public function testPing()
     {
         /** @var SqlAdvanced $connectionFactory */
