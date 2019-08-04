@@ -607,13 +607,13 @@ JSON;
 
     /**
      * @expectedException \PSX\Http\Exception\InternalServerErrorException
-     * @expectedExceptionMessage Table foo does not exist on connection
+     * @expectedExceptionMessage Table baz does not exist on connection
      */
     public function testHandleInvalidTable()
     {
         $parameters = $this->getParameters([
             'connection' => 1,
-            'table'      => 'foo',
+            'table'      => 'baz',
         ]);
 
         $action = $this->getActionFactory()->factory(SqlTable::class);
