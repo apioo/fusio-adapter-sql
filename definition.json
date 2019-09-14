@@ -1,5 +1,6 @@
 {
   "actionClass": [
+    "Fusio\\Adapter\\Sql\\Action\\SqlSelect",
     "Fusio\\Adapter\\Sql\\Action\\SqlTable"
   ],
   "connectionClass": [
