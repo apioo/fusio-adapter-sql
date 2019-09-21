@@ -67,7 +67,7 @@ class SqlSelect extends ActionAbstract
                 $limit       = $limit <= 0 ? 16 : $limit;
                 $count       = $count >= 1 && $count <= $limit ? $count : $limit;
 
-                $totalResults = (int) $connection->fetchColumn('SELECT COUNT(*) AS cnt FROM (' . $query . ')', $params);
+                $totalResults = (int) $connection->fetchColumn('SELECT COUNT(*) AS cnt FROM (' . $query . ') res', $params);
 
                 $query = $connection->getDatabasePlatform()->modifyLimitQuery($query, $count, $startIndex);
                 $data  = $connection->fetchAll($query, $params);
