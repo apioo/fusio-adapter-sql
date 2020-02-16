@@ -21,12 +21,15 @@
 
 namespace Fusio\Adapter\Sql\Routes;
 
+use Doctrine\DBAL\Connection;
+use Fusio\Engine\Factory\ContainerAwareInterface;
 use Fusio\Engine\Factory\Resolver\PhpClass;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Routes\ProviderInterface;
 use Fusio\Engine\Routes\SetupInterface;
+use Psr\Container\ContainerInterface;
 
 /**
  * SqlTable
@@ -35,8 +38,23 @@ use Fusio\Engine\Routes\SetupInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class SqlTable implements ProviderInterface
+class SqlTable implements ProviderInterface, ContainerAwareInterface
 {
+    /**
+     * @var ContainerInterface
+     */
+    private $container;
+
+    /**
+     * @var SchemaBuilder
+     */
+    private $schemaBuilder;
+
+    public function __construct()
+    {
+        $this->schemaBuilder = new SchemaBuilder();
+    }
+
     public function getName()
     {
         return 'SQL-Table';
@@ -44,12 +62,21 @@ class SqlTable implements ProviderInterface
 
     public function setup(SetupInterface $setup, string $basePath, ParametersInterface $configuration)
     {
-        $prefix = implode('-', array_map('ucfirst', array_filter(explode('/', $basePath))));
+        $connection = $this->getConnection($configuration->get('connection'));
+        $schemaManager = $connection->getSchemaManager();
+        $tableName = $configuration->get('table');
 
-        $schemaParameters = $setup->addSchema('SQL-Table-Parameters', $this->readSchema(__DIR__ . '/schema/sql-table/parameters.json'));
-        $schemaResponse = $setup->addSchema('SQL-Table-Response', $this->readSchema(__DIR__ . '/schema/sql-table/response.json'));
-        $schemaCollection = $setup->addSchema($prefix . '-Collection', $this->readSchema(__DIR__ . '/schema/sql-table/collection.json'));
-        $schemaEntity = $setup->addSchema($prefix . '-Entity', $this->readSchema(__DIR__ . '/schema/sql-table/entity.json'));
+        if (!$schemaManager->tablesExist([$tableName])) {
+            throw new \RuntimeException('Provided table does not exist');
+        }
+
+        $table = $schemaManager->listTableDetails($tableName);
+        $prefix = $this->getPrefix($basePath);
+
+        $schemaParameters = $setup->addSchema('SQL-Table-Parameters', $this->schemaBuilder->getParameters());
+        $schemaResponse = $setup->addSchema('SQL-Table-Response', $this->schemaBuilder->getResponse());
+        $schemaCollection = $setup->addSchema($prefix . '-Collection', $this->schemaBuilder->getCollection($table));
+        $schemaEntity = $setup->addSchema($prefix . '-Entity', $this->schemaBuilder->getEntity($table));
 
         $action = $setup->addAction($prefix . '-Action', \Fusio\Adapter\Sql\Action\SqlTable::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
@@ -127,8 +154,26 @@ class SqlTable implements ProviderInterface
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
     }
 
-    private function readSchema(string $file)
+    public function setContainer(ContainerInterface $container)
     {
-        return \json_decode(\file_get_contents($file));
+        $this->container = $container;
+    }
+
+    private function getConnection($connectionId): Connection
+    {
+        /** @var \Fusio\Engine\ConnectorInterface $connector */
+        $connector = $this->container->get('connector');
+        $connection = $connector->getConnection($connectionId);
+
+        if ($connection instanceof Connection) {
+            return $connection;
+        } else {
+            throw new \RuntimeException('Invalid selected connection');
+        }
+    }
+
+    private function getPrefix(string $path)
+    {
+        return implode('-', array_map('ucfirst', array_filter(explode('/', $path))));
     }
 }
