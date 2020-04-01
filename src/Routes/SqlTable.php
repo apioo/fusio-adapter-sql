@@ -22,14 +22,13 @@
 namespace Fusio\Adapter\Sql\Routes;
 
 use Doctrine\DBAL\Connection;
-use Fusio\Engine\Factory\ContainerAwareInterface;
+use Fusio\Engine\ConnectorInterface;
 use Fusio\Engine\Factory\Resolver\PhpClass;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Routes\ProviderInterface;
 use Fusio\Engine\Routes\SetupInterface;
-use Psr\Container\ContainerInterface;
 
 /**
  * SqlTable
@@ -38,20 +37,21 @@ use Psr\Container\ContainerInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class SqlTable implements ProviderInterface, ContainerAwareInterface
+class SqlTable implements ProviderInterface
 {
     /**
-     * @var ContainerInterface
+     * @var ConnectorInterface
      */
-    private $container;
+    private $connector;
 
     /**
      * @var SchemaBuilder
      */
     private $schemaBuilder;
 
-    public function __construct()
+    public function __construct(ConnectorInterface $connector)
     {
+        $this->connector = $connector;
         $this->schemaBuilder = new SchemaBuilder();
     }
 
@@ -154,16 +154,9 @@ class SqlTable implements ProviderInterface, ContainerAwareInterface
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
     }
 
-    public function setContainer(ContainerInterface $container)
-    {
-        $this->container = $container;
-    }
-
     private function getConnection($connectionId): Connection
     {
-        /** @var \Fusio\Engine\ConnectorInterface $connector */
-        $connector = $this->container->get('connector');
-        $connection = $connector->getConnection($connectionId);
+        $connection = $this->connector->getConnection($connectionId);
 
         if ($connection instanceof Connection) {
             return $connection;
