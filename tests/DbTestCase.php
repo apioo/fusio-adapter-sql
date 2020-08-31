@@ -39,7 +39,7 @@ class DbTestCase extends TestCase
     use EngineTestCaseTrait;
     use DatabaseTestCaseTrait;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
