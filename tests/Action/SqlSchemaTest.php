@@ -38,7 +38,7 @@ use PSX\Record\Record;
  */
 class SqlSchemaTest extends DbTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
