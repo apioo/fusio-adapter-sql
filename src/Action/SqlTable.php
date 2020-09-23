@@ -296,16 +296,15 @@ class SqlTable extends ActionAbstract
             $value = null;
             if ($body->hasProperty($column->getName())) {
                 $value = $body->getProperty($column->getName());
+            } elseif (!$validateNull) {
+                continue;
             }
 
-            if ($value === null && $column->getNotnull()) {
-                if ($validateNull) {
-                    throw new StatusCode\BadRequestException('Column ' . $column->getName() . ' must not be null');
-                } else {
-                    // on update we can simply skip those values
-                    continue;
-                }
-            } elseif ($value instanceof \DateTime) {
+            if ($value === null && $column->getNotnull() && $validateNull) {
+                throw new StatusCode\BadRequestException('Column ' . $column->getName() . ' must not be null');
+            }
+
+            if ($value instanceof \DateTime) {
                 $platform = $connection->getDatabasePlatform();
                 if ($column->getType() instanceof Types\DateType) {
                     $value = $value->format($platform->getDateFormatString());
