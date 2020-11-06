@@ -24,6 +24,7 @@ namespace Fusio\Adapter\Sql\Tests\Action;
 use Fusio\Adapter\Sql\Action\SqlSelectRow;
 use Fusio\Adapter\Sql\Tests\DbTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Http\Exception\NotFoundException;
 
 /**
  * SqlTableTest
@@ -88,11 +89,10 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    /**
-     * @expectedException \PSX\Http\Exception\NotFoundException
-     */
     public function testHandleInvalid()
     {
+        $this->expectException(NotFoundException::class);
+
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
