@@ -22,6 +22,11 @@
 namespace Fusio\Adapter\Sql\Routes;
 
 use Doctrine\DBAL\Connection;
+use Fusio\Adapter\Sql\Action\SqlDelete;
+use Fusio\Adapter\Sql\Action\SqlSelectAll;
+use Fusio\Adapter\Sql\Action\SqlSelectRow;
+use Fusio\Adapter\Sql\Action\SqlInsert;
+use Fusio\Adapter\Sql\Action\SqlUpdate;
 use Fusio\Engine\ConnectorInterface;
 use Fusio\Engine\Factory\Resolver\PhpClass;
 use Fusio\Engine\Form\BuilderInterface;
@@ -78,7 +83,27 @@ class SqlTable implements ProviderInterface
         $schemaCollection = $setup->addSchema($prefix . '-Collection', $this->schemaBuilder->getCollection($table));
         $schemaEntity = $setup->addSchema($prefix . '-Entity', $this->schemaBuilder->getEntity($table));
 
-        $action = $setup->addAction($prefix . '-Action', \Fusio\Adapter\Sql\Action\SqlTable::class, PhpClass::class, [
+        $fetchAllAction = $setup->addAction($prefix . '-Action', SqlSelectAll::class, PhpClass::class, [
+            'connection' => $configuration->get('connection'),
+            'table' => $configuration->get('table'),
+        ]);
+
+        $fetchRowAction = $setup->addAction($prefix . '-Action', SqlSelectRow::class, PhpClass::class, [
+            'connection' => $configuration->get('connection'),
+            'table' => $configuration->get('table'),
+        ]);
+
+        $deleteAction = $setup->addAction($prefix . '-Action', SqlDelete::class, PhpClass::class, [
+            'connection' => $configuration->get('connection'),
+            'table' => $configuration->get('table'),
+        ]);
+
+        $insertAction = $setup->addAction($prefix . '-Action', SqlInsert::class, PhpClass::class, [
+            'connection' => $configuration->get('connection'),
+            'table' => $configuration->get('table'),
+        ]);
+
+        $updateAction = $setup->addAction($prefix . '-Action', SqlUpdate::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
@@ -95,7 +120,7 @@ class SqlTable implements ProviderInterface
                         'responses' => [
                             200 => $schemaCollection,
                         ],
-                        'action' => $action,
+                        'action' => $fetchAllAction,
                     ],
                     'POST' => [
                         'active' => true,
@@ -105,7 +130,7 @@ class SqlTable implements ProviderInterface
                         'responses' => [
                             201 => $schemaResponse,
                         ],
-                        'action' => $action,
+                        'action' => $insertAction,
                     ]
                 ],
             ]
@@ -122,7 +147,7 @@ class SqlTable implements ProviderInterface
                         'responses' => [
                             200 => $schemaEntity,
                         ],
-                        'action' => $action,
+                        'action' => $fetchRowAction,
                     ],
                     'PUT' => [
                         'active' => true,
@@ -132,7 +157,7 @@ class SqlTable implements ProviderInterface
                         'responses' => [
                             200 => $schemaResponse,
                         ],
-                        'action' => $action,
+                        'action' => $updateAction,
                     ],
                     'DELETE' => [
                         'active' => true,
@@ -141,7 +166,7 @@ class SqlTable implements ProviderInterface
                         'responses' => [
                             200 => $schemaResponse,
                         ],
-                        'action' => $action,
+                        'action' => $deleteAction,
                     ]
                 ],
             ]

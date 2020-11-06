@@ -19,30 +19,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Fusio\Adapter\Sql\Tests\Action;
+namespace Fusio\Adapter\Sql\Tests\Action\Query;
 
-use Fusio\Adapter\Sql\Action\SqlSelect;
+use Fusio\Adapter\Sql\Action\Query\SqlQueryAll;
 use Fusio\Adapter\Sql\Tests\DbTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
 
 /**
- * SqlSelectTest
+ * SqlSelectAllTest
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    http://fusio-project.org
  */
-class SqlSelectTest extends DbTestCase
+class SqlSelectAllTest extends DbTestCase
 {
-    public function testHandleAll()
+    public function testHandle()
     {
         $parameters = $this->getParameters([
             'connection' => 1,
-            'mode'       => 0,
             'sql'        => 'SELECT id, title, price, content, date FROM app_news ORDER BY id ASC',
         ]);
 
-        $action   = $this->getActionFactory()->factory(SqlSelect::class);
+        $action   = $this->getActionFactory()->factory(SqlQueryAll::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
@@ -83,15 +82,14 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleAllCondition()
+    public function testHandleCondition()
     {
         $parameters = $this->getParameters([
             'connection' => 1,
-            'mode'       => 0,
             'sql'        => 'SELECT id, title, price, content, date FROM app_news WHERE title LIKE {title%}',
         ]);
 
-        $action   = $this->getActionFactory()->factory(SqlSelect::class);
+        $action   = $this->getActionFactory()->factory(SqlQueryAll::class);
         $response = $action->handle($this->getRequest('GET', [], ['title' => 'fo']), $parameters, $this->getContext());
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
@@ -118,15 +116,14 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleAllPagination()
+    public function testHandlePagination()
     {
         $parameters = $this->getParameters([
             'connection' => 1,
-            'mode'       => 0,
             'sql'        => 'SELECT id, title, price, content, date FROM app_news ORDER BY id ASC',
         ]);
 
-        $action   = $this->getActionFactory()->factory(SqlSelect::class);
+        $action   = $this->getActionFactory()->factory(SqlQueryAll::class);
         $response = $action->handle($this->getRequest('GET', [], ['startIndex' => 1, 'count' => 1]), $parameters, $this->getContext());
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
@@ -153,16 +150,15 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleAllLimit()
+    public function testHandleLimit()
     {
         $parameters = $this->getParameters([
             'connection' => 1,
-            'mode'       => 0,
             'sql'        => 'SELECT id, title, price, content, date FROM app_news ORDER BY id ASC',
             'limit'      => 2,
         ]);
 
-        $action   = $this->getActionFactory()->factory(SqlSelect::class);
+        $action   = $this->getActionFactory()->factory(SqlQueryAll::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
@@ -187,34 +183,6 @@ JSON;
             "date": null
         }
     ]
-}
-JSON;
-
-        $this->assertInstanceOf(HttpResponseInterface::class, $response);
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals([], $response->getHeaders());
-        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
-    }
-
-    public function testHandleRow()
-    {
-        $parameters = $this->getParameters([
-            'connection' => 1,
-            'mode'       => 1,
-            'sql'        => 'SELECT id, title, price, content, date FROM app_news WHERE id = {id}',
-        ]);
-
-        $action   = $this->getActionFactory()->factory(SqlSelect::class);
-        $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
-
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
-        $expect = <<<JSON
-{
-    "id": "1",
-    "title": "foo",
-    "price": "39.99",
-    "content": "bar",
-    "date": "2015-02-27 19:59:15"
 }
 JSON;
 
