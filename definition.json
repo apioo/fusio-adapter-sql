@@ -1,7 +1,12 @@
 {
   "actionClass": [
-    "Fusio\\Adapter\\Sql\\Action\\SqlSelect",
-    "Fusio\\Adapter\\Sql\\Action\\SqlTable"
+    "Fusio\\Adapter\\Sql\\Action\\SqlDelete",
+    "Fusio\\Adapter\\Sql\\Action\\SqlInsert",
+    "Fusio\\Adapter\\Sql\\Action\\SqlSelectAll",
+    "Fusio\\Adapter\\Sql\\Action\\SqlSelectRow",
+    "Fusio\\Adapter\\Sql\\Action\\SqlUpdate",
+    "Fusio\\Adapter\\Sql\\Action\\SqlQueryAll",
+    "Fusio\\Adapter\\Sql\\Action\\SqlQueryRow"
   ],
   "connectionClass": [
     "Fusio\\Adapter\\Sql\\Connection\\Sql",
