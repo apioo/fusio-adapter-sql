@@ -73,7 +73,7 @@ abstract class SqlActionAbstract extends ActionAbstract
 
     protected function getData(RequestInterface $request, Connection $connection, Table $table, $validateNull = false)
     {
-        $body = $request->getBody();
+        $body = $request->getPayload();
         $data = [];
 
         $columns = $table->getColumns();
