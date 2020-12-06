@@ -83,27 +83,27 @@ class SqlTable implements ProviderInterface
         $schemaCollection = $setup->addSchema($prefix . '-Collection', $this->schemaBuilder->getCollection($table));
         $schemaEntity = $setup->addSchema($prefix . '-Entity', $this->schemaBuilder->getEntity($table));
 
-        $fetchAllAction = $setup->addAction($prefix . '-Action', SqlSelectAll::class, PhpClass::class, [
+        $fetchAllAction = $setup->addAction($prefix . '-Select-All', SqlSelectAll::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
 
-        $fetchRowAction = $setup->addAction($prefix . '-Action', SqlSelectRow::class, PhpClass::class, [
+        $fetchRowAction = $setup->addAction($prefix . '-Select-Row', SqlSelectRow::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
 
-        $deleteAction = $setup->addAction($prefix . '-Action', SqlDelete::class, PhpClass::class, [
+        $deleteAction = $setup->addAction($prefix . '-Delete', SqlDelete::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
 
-        $insertAction = $setup->addAction($prefix . '-Action', SqlInsert::class, PhpClass::class, [
+        $insertAction = $setup->addAction($prefix . '-Insert', SqlInsert::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
 
-        $updateAction = $setup->addAction($prefix . '-Action', SqlUpdate::class, PhpClass::class, [
+        $updateAction = $setup->addAction($prefix . '-Update', SqlUpdate::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
