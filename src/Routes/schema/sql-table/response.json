@@ -1,15 +1,19 @@
 {
-  "title": "response",
-  "type": "object",
-  "properties": {
-    "success": {
-      "type": "boolean"
-    },
-    "message": {
-      "type": "string"
-    },
-    "id": {
-      "type": "integer"
+  "definitions": {
+    "SqlTableResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        }
+      }
     }
-  }
+  },
+  "$ref": "SqlTableResponse"
 }

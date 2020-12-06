@@ -24,7 +24,7 @@ namespace Fusio\Adapter\Sql\Routes;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types;
-use PSX\Schema\PropertyType;
+use PSX\Schema\Type\TypeAbstract;
 
 /**
  * SchemaBuilder
@@ -56,34 +56,48 @@ class SchemaBuilder
         }
 
         return [
-            'title' => $title,
-            'type' => 'object',
-            'properties' => $properties,
+            'definitions' => [
+                $title => [
+                    'type' => 'object',
+                    'properties' => $properties,
+                ]
+            ],
+            '$ref' => $title
         ];
     }
 
     public function getCollection(Table $table): array
     {
-        $title = $this->normalizeTableName($table->getName());
+        $entity = $this->normalizeTableName($table->getName());
+        $title = $entity . 'Collection';
 
         return [
-            'title' => $title . 'Collection',
-            'type' => 'object',
-            'properties' => [
-                'totalResults' => [
-                    'type' => 'integer'
-                ],
-                'itemsPerPage' => [
-                    'type' => 'integer'
-                ],
-                'startIndex' => [
-                    'type' => 'integer'
-                ],
-                'entry' => [
-                    'type' => 'array',
-                    'items' => $this->getEntity($table),
-                ],
+            '$import' => [
+                'entity' => 'schema:///' . $entity
             ],
+            'definitions' => [
+                $title => [
+                    'type' => 'object',
+                    'properties' => [
+                        'totalResults' => [
+                            'type' => 'integer'
+                        ],
+                        'itemsPerPage' => [
+                            'type' => 'integer'
+                        ],
+                        'startIndex' => [
+                            'type' => 'integer'
+                        ],
+                        'entry' => [
+                            'type' => 'array',
+                            'items' => [
+                                '$ref' => $entity
+                            ],
+                        ],
+                    ],
+                ]
+            ],
+            '$ref' => $title
         ];
     }
 
@@ -95,11 +109,11 @@ class SchemaBuilder
         $schema['type'] = $this->getSchemaType($type);
 
         if ($type instanceof Types\DateTimeType) {
-            $schema['format'] = PropertyType::FORMAT_DATETIME;
+            $schema['format'] = TypeAbstract::FORMAT_DATETIME;
         } elseif ($type instanceof Types\DateType) {
-            $schema['format'] = PropertyType::FORMAT_DATE;
+            $schema['format'] = TypeAbstract::FORMAT_DATE;
         } elseif ($type instanceof Types\TimeType) {
-            $schema['format'] = PropertyType::FORMAT_TIME;
+            $schema['format'] = TypeAbstract::FORMAT_TIME;
         }
 
         $length = $column->getLength();
