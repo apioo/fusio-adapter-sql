@@ -91,7 +91,7 @@ class SchemaBuilder
                         'entry' => [
                             'type' => 'array',
                             'items' => [
-                                '$ref' => $entity
+                                '$ref' => 'entity:' . $entity
                             ],
                         ],
                     ],
