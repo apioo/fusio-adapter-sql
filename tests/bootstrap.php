@@ -35,6 +35,13 @@ function getConnection()
     $table->addColumn('id', 'integer');
     $table->addColumn('title', 'string');
 
+    $table = $toSchema->createTable('app_insert');
+    $table->addColumn('id', 'integer', ['autoincrement' => true]);
+    $table->addColumn('title', 'string');
+    $table->addColumn('content', 'string', ['default' => 'Test content']);
+    $table->addColumn('counter', 'integer', ['default' => 999]);
+    $table->addColumn('created_at', 'datetime', ['default' => 'CURRENT_TIMESTAMP']);
+
     $queries = $fromSchema->getMigrateToSql($toSchema, $connection->getDatabasePlatform());
     foreach ($queries as $query) {
         $connection->query($query);

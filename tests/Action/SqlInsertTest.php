@@ -95,4 +95,27 @@ class SqlInsertTest extends DbTestCase
         $action = $this->getActionFactory()->factory(SqlInsert::class);
         $action->handle($this->getRequest('POST'), $parameters, $this->getContext());
     }
+
+    public function testHandleDefaultsOnInsert()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_insert',
+        ]);
+
+        $body = new Record();
+        $body['title'] = 'lorem';
+
+        $action = $this->getActionFactory()->factory(SqlInsert::class);
+        $action->handle($this->getRequest('POST', [], [], [], $body), $parameters, $this->getContext());
+
+        // check whether the entry was inserted
+        $row    = $this->connection->fetchAssoc('SELECT * FROM app_insert WHERE id = :id', ['id' => 1]);
+        
+        $this->assertEquals(1, $row['id']);
+        $this->assertEquals('Test content', $row['content']);
+        $this->assertEquals(999, $row['counter']);
+        $this->assertNotNull($row['created_at']);
+    }
+
 }
