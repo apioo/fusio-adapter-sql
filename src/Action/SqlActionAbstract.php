@@ -88,6 +88,8 @@ abstract class SqlActionAbstract extends ActionAbstract
                 $value = $body->getProperty($column->getName());
             } elseif (!$validateNull) {
                 continue;
+            } elseif ($column->getDefault()) {
+                continue;
             }
 
             if ($value === null && $column->getNotnull() && $validateNull) {
