@@ -51,7 +51,7 @@ class SqlTest extends TestCase
             'type'     => 'pdo_mysql',
             'host'     => 'localhost',
             'username' => 'root',
-            'password' => '',
+            'password' => 'test1234',
             'database' => 'app',
         ]);
 
@@ -69,7 +69,7 @@ class SqlTest extends TestCase
             'type'     => 'pdo_mysql',
             'host'     => 'localhost',
             'username' => 'root',
-            'password' => '',
+            'password' => 'test1234',
             'database' => 'app',
         ]);
 
