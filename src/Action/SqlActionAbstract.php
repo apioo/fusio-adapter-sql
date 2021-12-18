@@ -35,6 +35,7 @@ use Fusio\Engine\Request\HttpRequest;
 use Fusio\Engine\Request\RpcRequest;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Exception as StatusCode;
+use PSX\Record\Record;
 
 /**
  * Action which allows you to create an API endpoint based on any database
@@ -73,7 +74,7 @@ abstract class SqlActionAbstract extends ActionAbstract
 
     protected function getData(RequestInterface $request, Connection $connection, Table $table, $validateNull = false)
     {
-        $body = $request->getPayload();
+        $body = Record::from($request->getPayload());
         $data = [];
 
         $columns = $table->getColumns();
