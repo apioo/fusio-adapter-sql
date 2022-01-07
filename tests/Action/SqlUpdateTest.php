@@ -52,7 +52,7 @@ class SqlUpdateTest extends DbTestCase
 
         $result = [
             'success' => true,
-            'message' => 'Entry successful updated',
+            'message' => 'Entry successfully updated',
         ];
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);

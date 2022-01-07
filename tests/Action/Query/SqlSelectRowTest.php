@@ -47,9 +47,9 @@ class SqlSelectRowTest extends DbTestCase
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "id": "1",
+    "id": 1,
     "title": "foo",
-    "price": "39.99",
+    "price": 39.99,
     "content": "bar",
     "date": "2015-02-27 19:59:15"
 }

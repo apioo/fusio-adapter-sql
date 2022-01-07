@@ -58,7 +58,7 @@ class SqlInsertTest extends DbTestCase
 
         $result = [
             'success' => true,
-            'message' => 'Entry successful created',
+            'message' => 'Entry successfully created',
             'id'      => 4,
         ];
 

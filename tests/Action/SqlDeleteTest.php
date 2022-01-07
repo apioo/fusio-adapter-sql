@@ -46,7 +46,7 @@ class SqlDeleteTest extends DbTestCase
 
         $result = [
             'success' => true,
-            'message' => 'Entry successful deleted',
+            'message' => 'Entry successfully deleted',
         ];
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
