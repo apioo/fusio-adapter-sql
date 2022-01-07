@@ -21,6 +21,7 @@
 
 namespace Fusio\Adapter\Sql\Tests\Action;
 
+use Fusio\Adapter\Sql\Action\SqlBuilder;
 use Fusio\Adapter\Sql\Tests\DbTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
 
@@ -35,43 +36,49 @@ class SqlBuilderTest extends DbTestCase
 {
     public function testHandleGet()
     {
-        $action   = $this->getActionFactory()->factory(BuilderTest::class);
-        $response = $action->handle($this->getRequest(), $this->getParameters([]), $this->getContext());
+        $jql = <<<'JSON'
+{
+    "count": {
+        "$value": "SELECT COUNT(*) AS cnt FROM app_news",
+        "$definition": {
+            "$key": "cnt",
+            "$field": "integer"
+        }
+    },
+    "result": {
+        "$collection": "SELECT * FROM app_news",
+        "$definition": {
+            "id": "id",
+            "title": "title"
+        }
+    }
+}
+JSON;
+
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'jql'        => $jql
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlBuilder::class);
+        $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalEntries": 3,
-    "startIndex": 0,
-    "entries": [
+    "count": 3,
+    "result": [
         {
-            "id": 3,
-            "price": 29.99,
-            "articleNumber": "bar",
-            "description": "foo",
-            "postedAt": "13:37:00",
-            "insertDate": "2015-02-27T19:59:15Z",
-            "links": {
-                "self": "\/news\/3"
-            }
+            "id": "1",
+            "title": "foo"
         },
         {
-            "id": 2,
-            "articleNumber": "baz",
-            "links": {
-                "self": "\/news\/2"
-            }
+            "id": "2",
+            "title": "baz"
         },
         {
-            "id": 1,
-            "price": 39.99,
-            "articleNumber": "foo",
-            "description": "bar",
-            "postedAt": "13:37:00",
-            "insertDate": "2015-02-27T19:59:15Z",
-            "links": {
-                "self": "\/news\/1"
-            }
+            "id": "3",
+            "title": "bar"
         }
     ]
 }
