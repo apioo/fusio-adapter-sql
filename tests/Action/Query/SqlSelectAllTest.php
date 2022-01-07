@@ -59,16 +59,16 @@ class SqlSelectAllTest extends DbTestCase
             "date": "2015-02-27 19:59:15"
         },
         {
-            "id": "2",
+            "id": 2,
             "title": "baz",
             "price": null,
             "content": null,
             "date": null
         },
         {
-            "id": "3",
+            "id": 3,
             "title": "bar",
-            "price": "29.99",
+            "price": 29.99,
             "content": "foo",
             "date": "2015-02-27 19:59:15"
         }
@@ -134,7 +134,7 @@ JSON;
     "startIndex": 1,
     "entry": [
         {
-            "id": "2",
+            "id": 2,
             "title": "baz",
             "price": null,
             "content": null,
@@ -176,7 +176,7 @@ JSON;
             "date": "2015-02-27 19:59:15"
         },
         {
-            "id": "2",
+            "id": 2,
             "title": "baz",
             "price": null,
             "content": null,
