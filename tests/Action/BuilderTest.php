@@ -25,6 +25,7 @@ use Fusio\Adapter\Sql\Action\SqlBuilderAbstract;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
+use PSX\Http\Environment\HttpResponseInterface;
 
 /**
  * BuilderTest
@@ -35,7 +36,7 @@ use Fusio\Engine\RequestInterface;
  */
 class BuilderTest extends SqlBuilderAbstract
 {
-    public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
+    public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
     {
         /** @var \Doctrine\DBAL\Connection $connection */
         $connection = $this->connector->getConnection('foo');
