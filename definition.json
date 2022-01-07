@@ -1,5 +1,6 @@
 {
   "actionClass": [
+    "Fusio\\Adapter\\Sql\\Action\\SqlBuilder",
     "Fusio\\Adapter\\Sql\\Action\\SqlDelete",
     "Fusio\\Adapter\\Sql\\Action\\SqlInsert",
     "Fusio\\Adapter\\Sql\\Action\\SqlSelectAll",
