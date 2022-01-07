@@ -69,15 +69,15 @@ JSON;
     "count": 3,
     "result": [
         {
-            "id": "1",
+            "id": 1,
             "title": "foo"
         },
         {
-            "id": "2",
+            "id": 2,
             "title": "baz"
         },
         {
-            "id": "3",
+            "id": 3,
             "title": "bar"
         }
     ]
