@@ -44,15 +44,8 @@ use Fusio\Engine\Routes\SetupInterface;
  */
 class SqlTable implements ProviderInterface
 {
-    /**
-     * @var ConnectorInterface
-     */
-    private $connector;
-
-    /**
-     * @var SchemaBuilder
-     */
-    private $schemaBuilder;
+    private ConnectorInterface $connector;
+    private SchemaBuilder $schemaBuilder;
 
     public function __construct(ConnectorInterface $connector)
     {
@@ -60,12 +53,12 @@ class SqlTable implements ProviderInterface
         $this->schemaBuilder = new SchemaBuilder();
     }
 
-    public function getName()
+    public function getName(): string
     {
         return 'SQL-Table';
     }
 
-    public function setup(SetupInterface $setup, string $basePath, ParametersInterface $configuration)
+    public function setup(SetupInterface $setup, string $basePath, ParametersInterface $configuration): void
     {
         $connection = $this->getConnection($configuration->get('connection'));
         $schemaManager = $connection->getSchemaManager();
@@ -173,7 +166,7 @@ class SqlTable implements ProviderInterface
         ]);
     }
 
-    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
+    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
         $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
@@ -190,7 +183,7 @@ class SqlTable implements ProviderInterface
         }
     }
 
-    private function getPrefix(string $path)
+    private function getPrefix(string $path): string
     {
         return implode('-', array_map('ucfirst', array_filter(explode('/', $path))));
     }
