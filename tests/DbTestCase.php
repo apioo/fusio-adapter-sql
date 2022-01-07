@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2020 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -32,7 +32,7 @@ use PSX\Sql\Test\DatabaseTestCaseTrait;
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
+ * @link    https://www.fusio-project.org/
  */
 class DbTestCase extends TestCase
 {
@@ -45,11 +45,7 @@ class DbTestCase extends TestCase
 
         $this->setUpFixture();
 
-        $connection = new Connection();
-        $connection->setId(1);
-        $connection->setName('foo');
-        $connection->setClass(CallbackConnection::class);
-        $connection->setConfig([
+        $connection = new Connection(1, 'foo', CallbackConnection::class, [
             'callback' => function(){
                 return $this->connection;
             },
@@ -58,7 +54,7 @@ class DbTestCase extends TestCase
         $this->getConnectionRepository()->add($connection);
     }
 
-    protected function getConnection()
+    protected function getConnection(): \Doctrine\DBAL\Connection
     {
         return getConnection();
     }

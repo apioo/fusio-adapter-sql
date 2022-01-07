@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2020 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -34,32 +34,28 @@ use Fusio\Engine\ParametersInterface;
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
+ * @link    https://www.fusio-project.org/
  */
 class SqlAdvanced implements ConnectionInterface, PingableInterface
 {
-    public function getName()
+    public function getName(): string
     {
         return 'SQL (advanced)';
     }
 
-    /**
-     * @param \Fusio\Engine\ParametersInterface $config
-     * @return \Doctrine\DBAL\Connection
-     */
-    public function getConnection(ParametersInterface $config)
+    public function getConnection(ParametersInterface $config): Connection
     {
         return DriverManager::getConnection(array(
             'url' => $config->get('url')
         ));
     }
 
-    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
+    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
-        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Uses an specific URL which contains all database connection information. Click <a ng-click="help.showDialog(\'help/connection/dbal_advanced.md\')">here</a> for more information.'));
+        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Uses a specific URL which contains all database connection information. Click <a ng-click="help.showDialog(\'help/connection/dbal_advanced.md\')">here</a> for more information.'));
     }
 
-    public function ping($connection)
+    public function ping(mixed $connection): bool
     {
         if ($connection instanceof Connection) {
             return $connection->ping();

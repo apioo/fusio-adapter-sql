@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2020 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,19 +21,10 @@
 
 namespace Fusio\Adapter\Sql\Action;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Schema\Index;
-use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types;
-use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
-use Fusio\Engine\Exception\ConfigurationException;
-use Fusio\Engine\Form\BuilderInterface;
-use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
-use Fusio\Engine\Request\HttpRequest;
-use Fusio\Engine\Request\RpcRequest;
 use Fusio\Engine\RequestInterface;
+use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\Exception as StatusCode;
 
 /**
@@ -42,34 +33,36 @@ use PSX\Http\Exception as StatusCode;
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
+ * @link    https://www.fusio-project.org/
  */
 class SqlDelete extends SqlActionAbstract
 {
-    public function getName()
+    public function getName(): string
     {
         return 'SQL-Delete';
     }
 
-    public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
+    public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
     {
         $connection = $this->getConnection($configuration);
         $tableName  = $this->getTableName($configuration);
 
-        $id    = (int) $request->get('id');
-        $table = $this->getTable($connection, $tableName);
-
+        $id = (int) $request->get('id');
         if (empty($id)) {
             throw new StatusCode\BadRequestException('Id not available');
         }
 
-        $key = $this->getPrimaryKey($table);
+        $table = $this->getTable($connection, $tableName);
+        $key   = $this->getPrimaryKey($table);
 
-        $connection->delete($table->getName(), [$key => $id]);
+        $affected = $connection->delete($table->getName(), [$key => $id]);
+        if ($affected === 0) {
+            throw new StatusCode\NotFoundException('Entry not available');
+        }
 
         return $this->response->build(200, [], [
             'success' => true,
-            'message' => 'Entry successful deleted'
+            'message' => 'Entry successfully deleted'
         ]);
     }
 }

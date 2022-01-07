@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2020 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -32,169 +32,88 @@ use PSX\Sql\Provider;
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
+ * @link    https://www.fusio-project.org/
  */
 abstract class SqlBuilderAbstract extends ActionAbstract
 {
-    /**
-     * @var \PSX\Sql\Builder
-     */
-    protected $builder;
+    protected Builder $builder;
 
     public function __construct()
     {
         $this->builder = new Builder();
     }
 
-    /**
-     * @param array $definition
-     * @return mixed
-     */
-    protected function build($definition)
+    protected function build(array $definition): mixed
     {
         return $this->builder->build($definition);
     }
 
-    /**
-     * @param \Doctrine\DBAL\Connection $connection
-     * @param string $sql
-     * @param array $arguments
-     * @param array $definition
-     * @param string|null $key
-     * @param \Closure|null $filter
-     * @return \PSX\Sql\Provider\ProviderCollectionInterface
-     */
-    protected function doCollection(Connection $connection, $sql, array $arguments, array $definition, $key = null, \Closure $filter = null)
+    protected function doCollection(Connection $connection, string $sql, array $arguments, array $definition, ?string $key = null, ?\Closure $filter = null): Provider\ProviderCollectionInterface
     {
         return new Provider\DBAL\Collection($connection, $sql, $arguments, $definition, $key, $filter);
     }
 
-    /**
-     * @param \Doctrine\DBAL\Connection $connection
-     * @param string $sql
-     * @param array $arguments
-     * @param array $definition
-     * @return \PSX\Sql\Provider\ProviderEntityInterface
-     */
-    protected function doEntity(Connection $connection, $sql, array $arguments, array $definition)
+    protected function doEntity(Connection $connection, string $sql, array $arguments, array $definition): Provider\ProviderEntityInterface
     {
         return new Provider\DBAL\Entity($connection, $sql, $arguments, $definition);
     }
 
-    /**
-     * @param \Doctrine\DBAL\Connection $connection
-     * @param string $sql
-     * @param array $arguments
-     * @param mixed $definition
-     * @return \PSX\Sql\Provider\ProviderColumnInterface
-     */
-    protected function doColumn(Connection $connection, $sql, array $arguments, $definition)
+    protected function doColumn(Connection $connection, string $sql, array $arguments, mixed $definition): Provider\ProviderColumnInterface
     {
         return new Provider\DBAL\Column($connection, $sql, $arguments, $definition);
     }
 
-    /**
-     * @param \Doctrine\DBAL\Connection $connection
-     * @param string $sql
-     * @param array $arguments
-     * @param mixed $definition
-     * @return \PSX\Sql\Provider\ProviderValueInterface
-     */
-    protected function doValue(Connection $connection, $sql, array $arguments = [], $definition = null)
+    protected function doValue(Connection $connection, string $sql, array $arguments = [], mixed $definition = null): Provider\ProviderValueInterface
     {
         return new Provider\DBAL\Value($connection, $sql, $arguments, $definition);
     }
 
-    /**
-     * @param string $value
-     * @return \PSX\Sql\Field\Boolean
-     */
-    protected function fieldBoolean($value)
+    protected function fieldBoolean(string $value): Field\Boolean
     {
         return new Field\Boolean($value);
     }
 
-    /**
-     * @param string $key
-     * @param \Closure $callback
-     * @return \PSX\Sql\Field\Callback
-     */
-    protected function fieldCallback($key, \Closure $callback)
+    protected function fieldCallback(string $key, \Closure $callback): Field\Callback
     {
         return new Field\Callback($key, $callback);
     }
 
-    /**
-     * @param string $key
-     * @param string $delimiter
-     * @return \PSX\Sql\Field\Csv
-     */
-    protected function fieldCsv($key, $delimiter = ',')
+    protected function fieldCsv(string $key, string $delimiter = ','): Field\Csv
     {
         return new Field\Csv($key, $delimiter);
     }
 
-    /**
-     * @param string $value
-     * @return \PSX\Sql\Field\DateTime
-     */
-    protected function fieldDateTime($value)
+    protected function fieldDateTime(string $value): Field\DateTime
     {
         return new Field\DateTime($value);
     }
 
-    /**
-     * @param string $value
-     * @return \PSX\Sql\Field\Integer
-     */
-    protected function fieldInteger($value)
+    protected function fieldInteger(string $value): Field\Integer
     {
         return new Field\Integer($value);
     }
 
-    /**
-     * @param string $value
-     * @return \PSX\Sql\Field\Json
-     */
-    protected function fieldJson($value)
+    protected function fieldJson(string $value): Field\Json
     {
         return new Field\Json($value);
     }
 
-    /**
-     * @param string $value
-     * @return \PSX\Sql\Field\Number
-     */
-    protected function fieldNumber($value)
+    protected function fieldNumber(string $value): Field\Number
     {
         return new Field\Number($value);
     }
 
-    /**
-     * @param string $value
-     * @return \PSX\Sql\Field\Replace
-     */
-    protected function fieldReplace($value)
+    protected function fieldReplace(string $value): Field\Replace
     {
         return new Field\Replace($value);
     }
 
-    /**
-     * @param string $value
-     * @param Connection $connection
-     * @param integer $type
-     * @return \PSX\Sql\Field\Type
-     */
-    protected function fieldType($value, Connection $connection, $type)
+    protected function fieldType(string $value, Connection $connection, int $type): Field\Type
     {
         return new Field\Type($value, $connection, $type);
     }
 
-    /**
-     * @param string $value
-     * @return \PSX\Sql\Field\Value
-     */
-    protected function fieldValue($value)
+    protected function fieldValue(string $value): Field\Value
     {
         return new Field\Value($value);
     }

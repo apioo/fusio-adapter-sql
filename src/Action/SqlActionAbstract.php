@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2020 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -26,13 +26,10 @@ use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types;
 use Fusio\Engine\ActionAbstract;
-use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
-use Fusio\Engine\Request\HttpRequest;
-use Fusio\Engine\Request\RpcRequest;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Exception as StatusCode;
 use PSX\Record\Record;
@@ -43,17 +40,17 @@ use PSX\Record\Record;
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
+ * @link    https://www.fusio-project.org/
  */
 abstract class SqlActionAbstract extends ActionAbstract
 {
-    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
+    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
         $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
     }
 
-    protected function getTable(Connection $connection, $tableName)
+    protected function getTable(Connection $connection, string $tableName): Table
     {
         $key   = __CLASS__ . $tableName;
         $table = $this->cache->get($key);
@@ -72,7 +69,7 @@ abstract class SqlActionAbstract extends ActionAbstract
         return $table;
     }
 
-    protected function getData(RequestInterface $request, Connection $connection, Table $table, $validateNull = false)
+    protected function getData(RequestInterface $request, Connection $connection, Table $table, ?bool $validateNull = false): array
     {
         $body = Record::from($request->getPayload());
         $data = [];
@@ -116,12 +113,12 @@ abstract class SqlActionAbstract extends ActionAbstract
         return $data;
     }
 
-    protected function getAvailableColumns(Table $table)
+    protected function getAvailableColumns(Table $table): array
     {
         return array_keys($table->getColumns());
     }
 
-    protected function getColumns(Table $table, ?array $columns)
+    protected function getColumns(Table $table, ?array $columns): array
     {
         $allColumns = $this->getAvailableColumns($table);
         if (!empty($columns)) {
@@ -144,14 +141,8 @@ abstract class SqlActionAbstract extends ActionAbstract
 
     /**
      * Converts a raw database row to the correct PHP types
-     *
-     * @param array $row
-     * @param \Doctrine\DBAL\Connection $connection
-     * @param \Doctrine\DBAL\Schema\Table $table
-     * @return array
-     * @throws \Doctrine\DBAL\Schema\SchemaException
      */
-    protected function convertRow(array $row, Connection $connection, Table $table)
+    protected function convertRow(array $row, Connection $connection, Table $table): array
     {
         $result = [];
         foreach ($row as $key => $value) {

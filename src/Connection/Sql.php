@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2020 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -34,20 +34,16 @@ use Fusio\Engine\ParametersInterface;
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
+ * @link    https://www.fusio-project.org/
  */
 class Sql implements ConnectionInterface, PingableInterface
 {
-    public function getName()
+    public function getName(): string
     {
         return 'SQL';
     }
 
-    /**
-     * @param \Fusio\Engine\ParametersInterface $config
-     * @return \Doctrine\DBAL\Connection
-     */
-    public function getConnection(ParametersInterface $config)
+    public function getConnection(ParametersInterface $config): Connection
     {
         $params = array(
             'dbname'   => $config->get('database'),
@@ -67,7 +63,7 @@ class Sql implements ConnectionInterface, PingableInterface
         return DriverManager::getConnection($params);
     }
 
-    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
+    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
         $types = array(
             'pdo_mysql'   => 'MySQL',
@@ -84,7 +80,7 @@ class Sql implements ConnectionInterface, PingableInterface
         $builder->add($elementFactory->newInput('database', 'Database', 'text', 'The name of the database which is used upon connection'));
     }
 
-    public function ping($connection)
+    public function ping(mixed $connection): bool
     {
         if ($connection instanceof Connection) {
             return $connection->ping();

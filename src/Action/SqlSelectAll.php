@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2020 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,21 +21,13 @@
 
 namespace Fusio\Adapter\Sql\Action;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
-use Doctrine\DBAL\Schema\Index;
-use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types;
-use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
-use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
-use Fusio\Engine\Request\HttpRequest;
-use Fusio\Engine\Request\RpcRequest;
 use Fusio\Engine\RequestInterface;
-use PSX\Http\Exception as StatusCode;
+use PSX\Http\Environment\HttpResponseInterface;
 
 /**
  * Action which allows you to create an API endpoint based on any database
@@ -43,16 +35,16 @@ use PSX\Http\Exception as StatusCode;
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
- * @link    http://fusio-project.org
+ * @link    https://www.fusio-project.org/
  */
 class SqlSelectAll extends SqlActionAbstract
 {
-    public function getName()
+    public function getName(): string
     {
         return 'SQL-Select-All';
     }
 
-    public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context)
+    public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
     {
         $connection = $this->getConnection($configuration);
         $tableName  = $this->getTableName($configuration);
@@ -89,7 +81,7 @@ class SqlSelectAll extends SqlActionAbstract
         ]);
     }
 
-    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory)
+    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
         parent::configure($builder, $elementFactory);
 
@@ -98,7 +90,7 @@ class SqlSelectAll extends SqlActionAbstract
         $builder->add($elementFactory->newInput('limit', 'Limit', 'number', 'The default limit of the result (default is 16)'));
     }
     
-    private function addFilter(RequestInterface $request, QueryBuilder $qb, $allColumns)
+    private function addFilter(RequestInterface $request, QueryBuilder $qb, array $allColumns): void
     {
         $filterBy    = $request->get('filterBy');
         $filterOp    = $request->get('filterOp');
@@ -128,7 +120,7 @@ class SqlSelectAll extends SqlActionAbstract
         }
     }
 
-    private function addOrderBy(RequestInterface $request, QueryBuilder $qb, $primaryKey, $allColumns, $orderBy)
+    private function addOrderBy(RequestInterface $request, QueryBuilder $qb, ?string $primaryKey, array $allColumns, ?string $orderBy): void
     {
         $sortBy    = $request->get('sortBy');
         $sortOrder = $request->get('sortOrder');
@@ -145,7 +137,7 @@ class SqlSelectAll extends SqlActionAbstract
         }
     }
 
-    private function addLimit(RequestInterface $request, QueryBuilder $qb, $limit)
+    private function addLimit(RequestInterface $request, QueryBuilder $qb, ?int $limit): void
     {
         $startIndex = (int) $request->get('startIndex');
         $count      = (int) $request->get('count');
