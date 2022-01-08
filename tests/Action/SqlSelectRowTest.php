@@ -47,20 +47,7 @@ class SqlTableTest extends DbTestCase
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
 
-        if (PHP_VERSION_ID < 80100) {
-            $expect = <<<JSON
-{
-    "id": "1",
-    "title": "foo",
-    "price": "39.99",
-    "content": "bar",
-    "image": "AAAAAAAAAAAAAAAAAAAAAA==",
-    "posted": "13:37:00",
-    "date": "2015-02-27T19:59:15+00:00"
-}
-JSON;
-        } else {
-            $expect = <<<JSON
+        $expect = <<<JSON
 {
     "id": 1,
     "title": "foo",
@@ -71,7 +58,6 @@ JSON;
     "date": "2015-02-27T19:59:15+00:00"
 }
 JSON;
-        }
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());

@@ -52,7 +52,7 @@ abstract class SqlActionAbstract extends ActionAbstract
 
     protected function getTable(Connection $connection, string $tableName): Table
     {
-        $key   = __CLASS__ . $tableName;
+        $key   = md5(__CLASS__ . $tableName);
         $table = $this->cache->get($key);
 
         if ($table === null) {

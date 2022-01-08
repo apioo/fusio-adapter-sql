@@ -45,7 +45,19 @@ class SqlSelectRowTest extends DbTestCase
         $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
-        $expect = <<<JSON
+
+        if (PHP_VERSION_ID < 80100) {
+            $expect = <<<JSON
+{
+    "id": "1",
+    "title": "foo",
+    "price": "39.99",
+    "content": "bar",
+    "date": "2015-02-27 19:59:15"
+}
+JSON;
+        } else {
+            $expect = <<<JSON
 {
     "id": 1,
     "title": "foo",
@@ -54,6 +66,7 @@ class SqlSelectRowTest extends DbTestCase
     "date": "2015-02-27 19:59:15"
 }
 JSON;
+        }
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());

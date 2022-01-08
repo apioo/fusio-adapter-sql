@@ -45,7 +45,40 @@ class SqlSelectAllTest extends DbTestCase
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
-        $expect = <<<JSON
+
+        if (PHP_VERSION_ID < 80100) {
+            $expect = <<<JSON
+{
+    "totalResults": 3,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "1",
+            "title": "foo",
+            "price": "39.99",
+            "content": "bar",
+            "date": "2015-02-27 19:59:15"
+        },
+        {
+            "id": "2",
+            "title": "baz",
+            "price": null,
+            "content": null,
+            "date": null
+        },
+        {
+            "id": "3",
+            "title": "bar",
+            "price": "29.99",
+            "content": "foo",
+            "date": "2015-02-27 19:59:15"
+        }
+    ]
+}
+JSON;
+        } else {
+            $expect = <<<JSON
 {
     "totalResults": 3,
     "itemsPerPage": 16,
@@ -75,6 +108,7 @@ class SqlSelectAllTest extends DbTestCase
     ]
 }
 JSON;
+        }
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
@@ -93,7 +127,26 @@ JSON;
         $response = $action->handle($this->getRequest('GET', [], ['title' => 'fo']), $parameters, $this->getContext());
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
-        $expect = <<<JSON
+
+        if (PHP_VERSION_ID < 80100) {
+            $expect = <<<JSON
+{
+    "totalResults": 1,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "1",
+            "title": "foo",
+            "price": "39.99",
+            "content": "bar",
+            "date": "2015-02-27 19:59:15"
+        }
+    ]
+}
+JSON;
+        } else {
+            $expect = <<<JSON
 {
     "totalResults": 1,
     "itemsPerPage": 16,
@@ -109,6 +162,7 @@ JSON;
     ]
 }
 JSON;
+        }
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
@@ -127,7 +181,26 @@ JSON;
         $response = $action->handle($this->getRequest('GET', [], ['startIndex' => 1, 'count' => 1]), $parameters, $this->getContext());
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
-        $expect = <<<JSON
+
+        if (PHP_VERSION_ID < 80100) {
+            $expect = <<<JSON
+{
+    "totalResults": 3,
+    "itemsPerPage": 1,
+    "startIndex": 1,
+    "entry": [
+        {
+            "id": "2",
+            "title": "baz",
+            "price": null,
+            "content": null,
+            "date": null
+        }
+    ]
+}
+JSON;
+        } else {
+            $expect = <<<JSON
 {
     "totalResults": 3,
     "itemsPerPage": 1,
@@ -143,6 +216,7 @@ JSON;
     ]
 }
 JSON;
+        }
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
@@ -162,7 +236,33 @@ JSON;
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
         $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
-        $expect = <<<JSON
+
+        if (PHP_VERSION_ID < 80100) {
+            $expect = <<<JSON
+{
+    "totalResults": 3,
+    "itemsPerPage": 2,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "1",
+            "title": "foo",
+            "price": "39.99",
+            "content": "bar",
+            "date": "2015-02-27 19:59:15"
+        },
+        {
+            "id": "2",
+            "title": "baz",
+            "price": null,
+            "content": null,
+            "date": null
+        }
+    ]
+}
+JSON;
+        } else {
+            $expect = <<<JSON
 {
     "totalResults": 3,
     "itemsPerPage": 2,
@@ -185,6 +285,7 @@ JSON;
     ]
 }
 JSON;
+        }
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
