@@ -48,7 +48,10 @@ class SqlBuilderTest extends DbTestCase
     "result": {
         "$collection": "SELECT * FROM app_news",
         "$definition": {
-            "id": "id",
+            "id": {
+                "$key": "id",
+                "$field": "integer"
+            },
             "title": "title"
         }
     }
