@@ -41,7 +41,7 @@ abstract class SqlQueryAbstract extends ActionAbstract
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
         $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
-        $builder->add($elementFactory->newTextArea('sql', 'SQL', 'sql', 'The SQL to query the database. Click <a ng-click="help.showDialog(\'help/action/sql-select.md\')">here</a> for more information.'));
+        $builder->add($elementFactory->newTextArea('sql', 'SQL', 'sql', 'The SQL to query the database'));
     }
 
     protected function getConnection(ParametersInterface $configuration): Connection

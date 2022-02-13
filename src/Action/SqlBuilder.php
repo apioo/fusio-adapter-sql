@@ -57,6 +57,6 @@ class SqlBuilder extends SqlActionAbstract
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
         $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
-        $builder->add($elementFactory->newTextArea('jql', 'JQL', 'json', 'The JQL to query the database. Click <a ng-click="help.showDialog(\'help/action/sql-builder.md\')">here</a> for more information.'));
+        $builder->add($elementFactory->newTextArea('jql', 'JQL', 'json', 'The JQL to query the database'));
     }
 }

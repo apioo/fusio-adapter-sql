@@ -40,7 +40,7 @@ class SqlAdvanced implements ConnectionInterface, PingableInterface
 {
     public function getName(): string
     {
-        return 'SQL (advanced)';
+        return 'SQL-Advanced';
     }
 
     public function getConnection(ParametersInterface $config): Connection
@@ -52,7 +52,7 @@ class SqlAdvanced implements ConnectionInterface, PingableInterface
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
-        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Uses a specific URL which contains all database connection information. Click <a ng-click="help.showDialog(\'help/connection/dbal_advanced.md\')">here</a> for more information.'));
+        $builder->add($elementFactory->newInput('url', 'URL', 'text', 'Uses a specific URL which contains all database connection information'));
     }
 
     public function ping(mixed $connection): bool
