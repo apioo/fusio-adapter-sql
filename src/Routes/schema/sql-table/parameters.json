@@ -1,6 +1,6 @@
 {
   "definitions": {
-    "SqlTableParameters": {
+    "SQL_Table_Parameters": {
       "type": "object",
       "properties": {
         "startIndex": {
@@ -37,5 +37,5 @@
       }
     }
   },
-  "$ref": "SqlTableParameters"
+  "$ref": "SQL_Table_Parameters"
 }

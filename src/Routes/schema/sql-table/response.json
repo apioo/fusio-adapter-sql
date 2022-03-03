@@ -1,6 +1,6 @@
 {
   "definitions": {
-    "SqlTableResponse": {
+    "SQL_Table_Response": {
       "type": "object",
       "properties": {
         "success": {
@@ -15,5 +15,5 @@
       }
     }
   },
-  "$ref": "SqlTableResponse"
+  "$ref": "SQL_Table_Response"
 }
