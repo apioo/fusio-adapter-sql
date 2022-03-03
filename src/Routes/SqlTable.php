@@ -71,32 +71,35 @@ class SqlTable implements ProviderInterface
         $table = $schemaManager->listTableDetails($tableName);
         $prefix = $this->getPrefix($basePath);
 
-        $schemaParameters = $setup->addSchema('SQL-Table-Parameters', $this->schemaBuilder->getParameters());
-        $schemaResponse = $setup->addSchema('SQL-Table-Response', $this->schemaBuilder->getResponse());
-        $schemaCollection = $setup->addSchema($prefix . '-Collection', $this->schemaBuilder->getCollection($table));
-        $schemaEntity = $setup->addSchema($prefix . '-Entity', $this->schemaBuilder->getEntity($table));
+        $collectionName = $prefix . '_Collection';
+        $entityName = $prefix . '_Entity';
 
-        $fetchAllAction = $setup->addAction($prefix . '-Select-All', SqlSelectAll::class, PhpClass::class, [
+        $schemaParameters = $setup->addSchema('SQL_Table_Parameters', $this->schemaBuilder->getParameters());
+        $schemaResponse = $setup->addSchema('SQL_Table_Response', $this->schemaBuilder->getResponse());
+        $schemaCollection = $setup->addSchema($collectionName, $this->schemaBuilder->getCollection($collectionName, $entityName));
+        $schemaEntity = $setup->addSchema($entityName, $this->schemaBuilder->getEntity($table, $entityName));
+
+        $fetchAllAction = $setup->addAction($prefix . '_Select_All', SqlSelectAll::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
 
-        $fetchRowAction = $setup->addAction($prefix . '-Select-Row', SqlSelectRow::class, PhpClass::class, [
+        $fetchRowAction = $setup->addAction($prefix . '_Select_Row', SqlSelectRow::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
 
-        $deleteAction = $setup->addAction($prefix . '-Delete', SqlDelete::class, PhpClass::class, [
+        $deleteAction = $setup->addAction($prefix . '_Delete', SqlDelete::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
 
-        $insertAction = $setup->addAction($prefix . '-Insert', SqlInsert::class, PhpClass::class, [
+        $insertAction = $setup->addAction($prefix . '_Insert', SqlInsert::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
 
-        $updateAction = $setup->addAction($prefix . '-Update', SqlUpdate::class, PhpClass::class, [
+        $updateAction = $setup->addAction($prefix . '_Update', SqlUpdate::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),
             'table' => $configuration->get('table'),
         ]);
@@ -185,6 +188,6 @@ class SqlTable implements ProviderInterface
 
     private function getPrefix(string $path): string
     {
-        return implode('-', array_map('ucfirst', array_filter(explode('/', $path))));
+        return implode('_', array_map('ucfirst', array_filter(explode('/', $path))));
     }
 }

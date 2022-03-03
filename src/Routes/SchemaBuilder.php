@@ -45,10 +45,8 @@ class SchemaBuilder
         return $this->readSchema(__DIR__ . '/schema/sql-table/response.json');
     }
 
-    public function getEntity(Table $table): array
+    public function getEntity(Table $table, string $entityName): array
     {
-        $title = $this->normalizeTableName($table->getName());
-
         $properties = [];
         $columns = $table->getColumns();
         foreach ($columns as $name => $column) {
@@ -57,26 +55,23 @@ class SchemaBuilder
 
         return [
             'definitions' => [
-                $title => [
+                $entityName => [
                     'type' => 'object',
                     'properties' => $properties,
                 ]
             ],
-            '$ref' => $title
+            '$ref' => $entityName
         ];
     }
 
-    public function getCollection(Table $table): array
+    public function getCollection(string $collectionName, string $entityName): array
     {
-        $entity = $this->normalizeTableName($table->getName());
-        $title = $entity . 'Collection';
-
         return [
             '$import' => [
-                'entity' => 'schema:///' . $entity
+                'entity' => 'schema:///' . $entityName
             ],
             'definitions' => [
-                $title => [
+                $collectionName => [
                     'type' => 'object',
                     'properties' => [
                         'totalResults' => [
@@ -91,17 +86,17 @@ class SchemaBuilder
                         'entry' => [
                             'type' => 'array',
                             'items' => [
-                                '$ref' => 'entity:' . $entity
+                                '$ref' => 'entity:' . $entityName
                             ],
                         ],
                     ],
                 ]
             ],
-            '$ref' => $title
+            '$ref' => $collectionName
         ];
     }
 
-    private function getSchemaByColumn(Column $column)
+    private function getSchemaByColumn(Column $column): array
     {
         $type = $column->getType();
 
@@ -137,7 +132,7 @@ class SchemaBuilder
         return $schema;
     }
 
-    private function getSchemaType(Types\Type $type)
+    private function getSchemaType(Types\Type $type): string
     {
         if ($type instanceof Types\IntegerType) {
             return 'integer';
@@ -154,13 +149,8 @@ class SchemaBuilder
         return 'string';
     }
 
-    private function normalizeTableName(string $name): string
-    {
-        return str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));
-    }
-
     private function readSchema(string $file)
     {
-        return \json_decode(\file_get_contents($file));
+        return \json_decode(\file_get_contents($file), true);
     }
 }
