@@ -57,10 +57,15 @@ class SqlInsert extends SqlActionAbstract
             throw new StatusCode\InternalServerErrorException('Could not insert row', $e);
         }
 
+        $lastInsertId = $connection->lastInsertId();
+        if (!empty($lastInsertId) && is_string($lastInsertId) && is_numeric($lastInsertId)) {
+            $lastInsertId = (int) $lastInsertId;
+        }
+
         return $this->response->build(201, [], [
             'success'  => true,
             'message'  => 'Entry successfully created',
-            'id'       => $connection->lastInsertId(),
+            'id'       => $lastInsertId,
             'affected' => $affected,
         ]);
     }
