@@ -21,6 +21,7 @@
 
 namespace Fusio\Adapter\Sql\Action;
 
+use Doctrine\DBAL\Exception;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
@@ -56,14 +57,22 @@ class SqlUpdate extends SqlActionAbstract
         $key   = $this->getPrimaryKey($table);
         $data  = $this->getData($request, $connection, $table);
 
-        $affected = $connection->update($table->getName(), $data, [$key => $id]);
-        if ($affected === 0) {
+        $row = $this->fetchRow($connection, [$key], $table->getName(), $key, $id);
+        if (empty($row)) {
             throw new StatusCode\NotFoundException('Entry not available');
         }
 
+        try {
+            $affected = $connection->update($table->getName(), $data, [$key => $id]);
+        } catch (Exception $e) {
+            throw new StatusCode\InternalServerErrorException('Could not update row', $e);
+        }
+
         return $this->response->build(200, [], [
-            'success' => true,
-            'message' => 'Entry successfully updated'
+            'success'  => true,
+            'message'  => 'Entry successfully updated',
+            'id'       => $id,
+            'affected' => $affected,
         ]);
     }
 }

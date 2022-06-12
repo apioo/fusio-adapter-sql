@@ -21,10 +21,12 @@
 
 namespace Fusio\Adapter\Sql\Action;
 
+use Doctrine\DBAL\Exception;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Http\Exception as StatusCode;
 
 /**
  * Action which allows you to create an API endpoint based on any database
@@ -49,12 +51,17 @@ class SqlInsert extends SqlActionAbstract
         $table = $this->getTable($connection, $tableName);
         $data  = $this->getData($request, $connection, $table, true);
 
-        $connection->insert($table->getName(), $data);
+        try {
+            $affected = $connection->insert($table->getName(), $data);
+        } catch (Exception $e) {
+            throw new StatusCode\InternalServerErrorException('Could not insert row', $e);
+        }
 
         return $this->response->build(201, [], [
-            'success' => true,
-            'message' => 'Entry successfully created',
-            'id'      => $connection->lastInsertId()
+            'success'  => true,
+            'message'  => 'Entry successfully created',
+            'id'       => $connection->lastInsertId(),
+            'affected' => $affected,
         ]);
     }
 }

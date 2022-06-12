@@ -21,6 +21,7 @@
 
 namespace Fusio\Adapter\Sql\Action;
 
+use Doctrine\DBAL\Exception;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
@@ -55,14 +56,22 @@ class SqlDelete extends SqlActionAbstract
         $table = $this->getTable($connection, $tableName);
         $key   = $this->getPrimaryKey($table);
 
-        $affected = $connection->delete($table->getName(), [$key => $id]);
-        if ($affected === 0) {
+        $row = $this->fetchRow($connection, [$key], $table->getName(), $key, $id);
+        if (empty($row)) {
             throw new StatusCode\NotFoundException('Entry not available');
         }
 
+        try {
+            $affected = $connection->delete($table->getName(), [$key => $id]);
+        } catch (Exception $e) {
+            throw new StatusCode\InternalServerErrorException('Could not delete row', $e);
+        }
+
         return $this->response->build(200, [], [
-            'success' => true,
-            'message' => 'Entry successfully deleted'
+            'success'  => true,
+            'message'  => 'Entry successfully deleted',
+            'id'       => $id,
+            'affected' => $affected,
         ]);
     }
 }

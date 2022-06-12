@@ -56,14 +56,7 @@ class SqlSelectRow extends SqlActionAbstract
         $allColumns = $this->getColumns($table, $columns);
         $primaryKey = $this->getPrimaryKey($table);
 
-        $qb = $connection->createQueryBuilder();
-        $qb->select($allColumns);
-        $qb->from($table->getName());
-        $qb->where($primaryKey . ' = :id');
-        $qb->setParameter('id', $id);
-
-        $row = $connection->fetchAssoc($qb->getSQL(), $qb->getParameters());
-
+        $row = $this->fetchRow($connection, $allColumns, $table->getName(), $primaryKey, $id);
         if (empty($row)) {
             throw new StatusCode\NotFoundException('Entry not available');
         }
