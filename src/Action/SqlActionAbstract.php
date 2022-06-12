@@ -187,4 +187,15 @@ abstract class SqlActionAbstract extends ActionAbstract
 
         return $tableName;
     }
+
+    protected function fetchRow(Connection $connection, array $columns, string $tableName, string $primaryKey, int $id)
+    {
+        $qb = $connection->createQueryBuilder();
+        $qb->select($columns);
+        $qb->from($tableName);
+        $qb->where($primaryKey . ' = :id');
+        $qb->setParameter('id', $id);
+
+        return $connection->fetchAssociative($qb->getSQL(), $qb->getParameters());
+    }
 }
