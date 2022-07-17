@@ -77,7 +77,7 @@ class SqlTable implements ProviderInterface
         $schemaParameters = $setup->addSchema('SQL_Table_Parameters', $this->schemaBuilder->getParameters());
         $schemaResponse = $setup->addSchema('SQL_Table_Response', $this->schemaBuilder->getResponse());
         $schemaCollection = $setup->addSchema($collectionName, $this->schemaBuilder->getCollection($collectionName, $entityName));
-        $schemaEntity = $setup->addSchema($entityName, $this->schemaBuilder->getEntity($table, $entityName));
+        $schemaEntity = $setup->addSchema($entityName, $this->schemaBuilder->getEntityByTable($table, $entityName));
 
         $fetchAllAction = $setup->addAction($prefix . '_Select_All', SqlSelectAll::class, PhpClass::class, [
             'connection' => $configuration->get('connection'),

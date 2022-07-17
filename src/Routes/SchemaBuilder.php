@@ -24,6 +24,7 @@ namespace Fusio\Adapter\Sql\Routes;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types;
+use PSX\Schema\Document\Type;
 use PSX\Schema\Type\TypeAbstract;
 
 /**
@@ -45,7 +46,7 @@ class SchemaBuilder
         return $this->readSchema(__DIR__ . '/schema/sql-table/response.json');
     }
 
-    public function getEntity(Table $table, string $entityName): array
+    public function getEntityByTable(Table $table, string $entityName): array
     {
         $properties = [];
         $columns = $table->getColumns();
@@ -59,6 +60,47 @@ class SchemaBuilder
                     'type' => 'object',
                     'properties' => $properties,
                 ]
+            ],
+            '$ref' => $entityName
+        ];
+    }
+
+    public function getEntityByType(Type $type, string $entityName, array $typeSchema, array $typeMapping): array
+    {
+        $schema = $typeSchema['definitions'][$type->getName()] ?? null;
+        if (empty($schema)) {
+            throw new \RuntimeException('Could not resolve schema');
+        }
+
+        $import = [];
+        foreach ($typeMapping as $typeName => $realName) {
+            $import[$typeName] = 'schema:///' . $realName;
+        }
+
+        if (isset($schema['properties']) && is_array($schema['properties'])) {
+            $properties = [];
+            foreach ($schema['properties'] as $key => $type) {
+                if (isset($type['$ref']) && is_string($type['$ref'])) {
+                    $properties[$key]['$ref'] = $this->resolveRef($type, $typeMapping);
+                } elseif (isset($type['additionalProperties']['$ref']) && is_string($type['additionalProperties']['$ref'])) {
+                    $properties[$key]['additionalProperties']['$ref'] = $this->resolveRef($type['additionalProperties'], $typeMapping);
+                } elseif (isset($type['items']['$ref']) && is_string($type['items']['$ref'])) {
+                    $properties[$key]['items']['$ref'] = $this->resolveRef($type['items'], $typeMapping);
+                } elseif (isset($type['oneOf']) && is_array($type['oneOf'])) {
+                    $properties[$key]['oneOf'] = $this->resolveRefs($type['oneOf'], $typeMapping);
+                } elseif (isset($type['allOf']) && is_array($type['allOf'])) {
+                    $properties[$key]['allOf'] = $this->resolveRefs($type['allOf'], $typeMapping);
+                } else {
+                    $properties[$key] = $type;
+                }
+            }
+            $schema['properties'] = $properties;
+        }
+
+        return [
+            '$import' => $import,
+            'definitions' => [
+                $entityName => $schema
             ],
             '$ref' => $entityName
         ];
@@ -147,6 +189,28 @@ class SchemaBuilder
         }
 
         return 'string';
+    }
+
+    private function resolveRefs(array $types, array $typeMapping): array
+    {
+        $return = [];
+        foreach ($types as $type) {
+            if (isset($type['$ref'])) {
+                $return[] = $this->resolveRef($type, $typeMapping);
+            } else {
+                $return[] = $type;
+            }
+        }
+        return $return;
+    }
+
+    private function resolveRef(array $type, array $typeMapping): string
+    {
+        if (!isset($typeMapping[$type['$ref']])) {
+            throw new \RuntimeException('Could not resolve ref ' . $type['$ref']);
+        }
+
+        return $type['$ref'] . ':' . $typeMapping[$type['$ref']];
     }
 
     private function readSchema(string $file)
