@@ -69,7 +69,7 @@ abstract class SqlActionAbstract extends ActionAbstract
         return $table;
     }
 
-    protected function getData(RequestInterface $request, Connection $connection, Table $table, ?bool $validateNull = false): array
+    protected function getData(RequestInterface $request, Connection $connection, Table $table, ?bool $validateNull = false, ?array $mapping = null): array
     {
         $body = Record::from($request->getPayload());
         $data = [];
@@ -81,9 +81,15 @@ abstract class SqlActionAbstract extends ActionAbstract
                 continue;
             }
 
+            if ($mapping !== null && isset($mapping[$column->getName()])) {
+                $name = $mapping[$column->getName()];
+            } else {
+                $name = $column->getName();
+            }
+
             $value = null;
-            if ($body->hasProperty($column->getName())) {
-                $value = $body->getProperty($column->getName());
+            if ($body->hasProperty($name)) {
+                $value = $body->getProperty($name);
             } elseif (!$validateNull) {
                 continue;
             } elseif ($column->getDefault()) {
@@ -91,7 +97,7 @@ abstract class SqlActionAbstract extends ActionAbstract
             }
 
             if ($value === null && $column->getNotnull() && $validateNull) {
-                throw new StatusCode\BadRequestException('Column ' . $column->getName() . ' must not be null');
+                throw new StatusCode\BadRequestException('Property ' . $name . ' must not be null');
             }
 
             if ($value instanceof \DateTime) {
@@ -142,7 +148,7 @@ abstract class SqlActionAbstract extends ActionAbstract
     /**
      * Converts a raw database row to the correct PHP types
      */
-    protected function convertRow(array $row, Connection $connection, Table $table): array
+    protected function convertRow(array $row, Connection $connection, Table $table, ?array $mapping = null): array
     {
         $result = [];
         foreach ($row as $key => $value) {
@@ -162,7 +168,12 @@ abstract class SqlActionAbstract extends ActionAbstract
                 $val = base64_encode(stream_get_contents($val));
             }
 
-            $result[$key] = $val;
+            $propertyName = $key;
+            if ($mapping !== null && isset($mapping[$key])) {
+                $propertyName = $mapping[$key];
+            }
+
+            $result[$propertyName] = $val;
         }
 
         return $result;
@@ -186,5 +197,21 @@ abstract class SqlActionAbstract extends ActionAbstract
         }
 
         return $tableName;
+    }
+
+    protected function getMapping(ParametersInterface $configuration): ?array
+    {
+        $mapping = $configuration->get('mapping');
+        if (empty($mapping)) {
+            return null;
+        }
+
+        if (is_array($mapping)) {
+            return $mapping;
+        } elseif ($mapping instanceof \stdClass) {
+            return (array) $mapping;
+        }
+
+        return null;
     }
 }

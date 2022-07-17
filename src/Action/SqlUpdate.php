@@ -22,6 +22,8 @@
 namespace Fusio\Adapter\Sql\Action;
 
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\Form\BuilderInterface;
+use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
@@ -46,6 +48,7 @@ class SqlUpdate extends SqlActionAbstract
     {
         $connection = $this->getConnection($configuration);
         $tableName  = $this->getTableName($configuration);
+        $mapping    = $this->getMapping($configuration);
 
         $id = (int) $request->get('id');
         if (empty($id)) {
@@ -54,7 +57,7 @@ class SqlUpdate extends SqlActionAbstract
 
         $table = $this->getTable($connection, $tableName);
         $key   = $this->getPrimaryKey($table);
-        $data  = $this->getData($request, $connection, $table);
+        $data  = $this->getData($request, $connection, $table, false, $mapping);
 
         $affected = $connection->update($table->getName(), $data, [$key => $id]);
         if ($affected === 0) {
@@ -65,5 +68,12 @@ class SqlUpdate extends SqlActionAbstract
             'success' => true,
             'message' => 'Entry successfully updated'
         ]);
+    }
+
+    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
+    {
+        parent::configure($builder, $elementFactory);
+
+        $builder->add($elementFactory->newMap('mapping', 'Mapping', 'text', 'Optional a property to column mapping'));
     }
 }

@@ -22,6 +22,8 @@
 namespace Fusio\Adapter\Sql\Action;
 
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\Form\BuilderInterface;
+use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
@@ -45,9 +47,10 @@ class SqlInsert extends SqlActionAbstract
     {
         $connection = $this->getConnection($configuration);
         $tableName  = $this->getTableName($configuration);
+        $mapping    = $this->getMapping($configuration);
 
         $table = $this->getTable($connection, $tableName);
-        $data  = $this->getData($request, $connection, $table, true);
+        $data  = $this->getData($request, $connection, $table, true, $mapping);
 
         $connection->insert($table->getName(), $data);
 
@@ -56,5 +59,12 @@ class SqlInsert extends SqlActionAbstract
             'message' => 'Entry successfully created',
             'id'      => $connection->lastInsertId()
         ]);
+    }
+
+    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
+    {
+        parent::configure($builder, $elementFactory);
+
+        $builder->add($elementFactory->newMap('mapping', 'Mapping', 'text', 'Optional a property to column mapping'));
     }
 }

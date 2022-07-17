@@ -48,6 +48,7 @@ class SqlSelectAll extends SqlActionAbstract
     {
         $connection = $this->getConnection($configuration);
         $tableName  = $this->getTableName($configuration);
+        $mapping    = $this->getMapping($configuration);
 
         $table   = $this->getTable($connection, $tableName);
         $columns = $configuration->get('columns');
@@ -65,12 +66,12 @@ class SqlSelectAll extends SqlActionAbstract
         $this->addOrderBy($request, $qb, $primaryKey, $allColumns, $orderBy);
         $this->addLimit($request, $qb, $limit);
 
-        $totalCount = (int) $connection->fetchColumn('SELECT COUNT(*) FROM ' . $table->getName());
-        $result     = $connection->fetchAll($qb->getSQL(), $qb->getParameters());
+        $totalCount = (int) $connection->fetchOne('SELECT COUNT(*) FROM ' . $table->getName());
+        $result     = $connection->fetchAllAssociative($qb->getSQL(), $qb->getParameters());
 
         $data = [];
         foreach ($result as $row) {
-            $data[] = $this->convertRow($row, $connection, $table);
+            $data[] = $this->convertRow($row, $connection, $table, $mapping);
         }
 
         return $this->response->build(200, [], [
@@ -85,9 +86,10 @@ class SqlSelectAll extends SqlActionAbstract
     {
         parent::configure($builder, $elementFactory);
 
-        $builder->add($elementFactory->newTag('columns', 'Columns', 'Columns which are selected on the table (default is *)'));
+        $builder->add($elementFactory->newCollection('columns', 'Columns', 'text', 'Columns which are selected on the table (default is *)'));
         $builder->add($elementFactory->newInput('orderBy', 'Order by', 'text', 'The default order by column (default is primary key)'));
         $builder->add($elementFactory->newInput('limit', 'Limit', 'number', 'The default limit of the result (default is 16)'));
+        $builder->add($elementFactory->newMap('mapping', 'Mapping', 'text', 'Optional a property to column mapping'));
     }
     
     private function addFilter(RequestInterface $request, QueryBuilder $qb, array $allColumns): void

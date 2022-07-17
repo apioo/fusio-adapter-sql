@@ -48,6 +48,7 @@ class SqlSelectRow extends SqlActionAbstract
     {
         $connection = $this->getConnection($configuration);
         $tableName  = $this->getTableName($configuration);
+        $mapping    = $this->getMapping($configuration);
 
         $id      = (int) $request->get('id');
         $table   = $this->getTable($connection, $tableName);
@@ -68,7 +69,7 @@ class SqlSelectRow extends SqlActionAbstract
             throw new StatusCode\NotFoundException('Entry not available');
         }
 
-        $data = $this->convertRow($row, $connection, $table);
+        $data = $this->convertRow($row, $connection, $table, $mapping);
 
         return $this->response->build(200, [], $data);
     }
@@ -77,6 +78,7 @@ class SqlSelectRow extends SqlActionAbstract
     {
         parent::configure($builder, $elementFactory);
 
-        $builder->add($elementFactory->newTag('columns', 'Columns', 'Columns which are selected on the table (default is *)'));
+        $builder->add($elementFactory->newCollection('columns', 'Columns', 'text', 'Columns which are selected on the table (default is *)'));
+        $builder->add($elementFactory->newMap('mapping', 'Mapping', 'text', 'Optional a property to column mapping'));
     }
 }
