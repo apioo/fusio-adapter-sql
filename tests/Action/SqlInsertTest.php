@@ -85,7 +85,7 @@ class SqlInsertTest extends DbTestCase
     public function testHandleNoData()
     {
         $this->expectException(BadRequestException::class);
-        $this->expectExceptionMessage('Column title must not be null');
+        $this->expectExceptionMessage('Property title must not be null');
 
         $parameters = $this->getParameters([
             'connection' => 1,
