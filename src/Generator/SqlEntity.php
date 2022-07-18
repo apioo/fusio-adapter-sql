@@ -19,33 +19,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Fusio\Adapter\Sql\Routes;
+namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\Table;
-use Fusio\Adapter\Sql\Action\SqlBuilder;
 use Fusio\Adapter\Sql\Action\SqlDelete;
+use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Action\SqlSelectAll;
 use Fusio\Adapter\Sql\Action\SqlSelectRow;
-use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Action\SqlUpdate;
 use Fusio\Engine\ConnectorInterface;
 use Fusio\Engine\Factory\Resolver\PhpClass;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
+use Fusio\Engine\Generator\ExecutableInterface;
+use Fusio\Engine\Generator\ProviderInterface;
+use Fusio\Engine\Generator\SetupInterface;
 use Fusio\Engine\ParametersInterface;
-use Fusio\Engine\Routes\ExecutableInterface;
-use Fusio\Engine\Routes\ProviderInterface;
-use Fusio\Engine\Routes\SetupInterface;
 use PSX\Schema\Document\Document;
 use PSX\Schema\Document\Generator;
 use PSX\Schema\Document\Property;
 use PSX\Schema\Document\Type;
-use PSX\Schema\Parser;
-use PSX\Schema\SchemaResolver;
-use PSX\Schema\TypeUtil;
 
 /**
  * SqlEntity

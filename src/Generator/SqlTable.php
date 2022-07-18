@@ -19,21 +19,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Fusio\Adapter\Sql\Routes;
+namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Connection;
 use Fusio\Adapter\Sql\Action\SqlDelete;
+use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Action\SqlSelectAll;
 use Fusio\Adapter\Sql\Action\SqlSelectRow;
-use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Action\SqlUpdate;
 use Fusio\Engine\ConnectorInterface;
 use Fusio\Engine\Factory\Resolver\PhpClass;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
+use Fusio\Engine\Generator\ProviderInterface;
+use Fusio\Engine\Generator\SetupInterface;
 use Fusio\Engine\ParametersInterface;
-use Fusio\Engine\Routes\ProviderInterface;
-use Fusio\Engine\Routes\SetupInterface;
 
 /**
  * SqlTable

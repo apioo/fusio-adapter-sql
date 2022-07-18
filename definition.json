@@ -13,8 +13,8 @@
     "Fusio\\Adapter\\Sql\\Connection\\Sql",
     "Fusio\\Adapter\\Sql\\Connection\\SqlAdvanced"
   ],
-  "routesClass": [
-    "Fusio\\Adapter\\Sql\\Routes\\SqlEntity",
-    "Fusio\\Adapter\\Sql\\Routes\\SqlTable"
+  "generatorClass": [
+    "Fusio\\Adapter\\Sql\\Generator\\SqlEntity",
+    "Fusio\\Adapter\\Sql\\Generator\\SqlTable"
   ]
 }

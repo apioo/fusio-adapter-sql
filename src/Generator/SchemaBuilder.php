@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Fusio\Adapter\Sql\Routes;
+namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
