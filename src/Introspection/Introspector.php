@@ -49,7 +49,11 @@ class Introspector implements IntrospectorInterface
     public function getDetails(string $entityName): Details
     {
         $table = $this->connection->getSchemaManager()->listTableDetails($entityName);
-        $details = new Details($table->getName(), []);
+        $details = new Details($table->getName(), [
+            'Name',
+            'Type',
+            'Comment',
+        ]);
 
         foreach ($table->getColumns() as $column) {
             $details->addRow([
