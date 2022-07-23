@@ -29,6 +29,7 @@ use Fusio\Engine\Request\HttpRequest;
 use Fusio\Engine\Request\RpcRequest;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Http\Exception as StatusCode;
 use PSX\Sql\Builder;
 use PSX\Sql\Provider;
 
@@ -52,6 +53,10 @@ class SqlBuilder extends SqlActionAbstract
 
         $definition = (new Provider\JsonProvider($connection))->create(json_decode($configuration->get('jql')), $this->getContext($request));
         $data = (new Builder($connection))->build($definition);
+
+        if (empty($data)) {
+            throw new StatusCode\NotFoundException('Entry not available');
+        }
 
         return $this->response->build(200, [], $data);
     }
