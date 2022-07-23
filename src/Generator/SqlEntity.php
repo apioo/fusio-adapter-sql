@@ -24,11 +24,9 @@ namespace Fusio\Adapter\Sql\Generator;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\DBAL\Schema\Table;
+use Fusio\Adapter\Sql\Action\SqlBuilder;
 use Fusio\Adapter\Sql\Action\SqlDelete;
 use Fusio\Adapter\Sql\Action\SqlInsert;
-use Fusio\Adapter\Sql\Action\SqlSelectAll;
-use Fusio\Adapter\Sql\Action\SqlSelectRow;
 use Fusio\Adapter\Sql\Action\SqlUpdate;
 use Fusio\Engine\ConnectorInterface;
 use Fusio\Engine\Factory\Resolver\PhpClass;
@@ -105,12 +103,12 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
             $schemaCollection = $setup->addSchema($collectionName, $this->schemaBuilder->getCollection($collectionName, $entityName));
             $schemaEntity = $setup->addSchema($entityName, $this->schemaBuilder->getEntityByType($type, $entityName, $typeSchema, $typeMapping));
 
-            $fetchAllAction = $setup->addAction($prefix . '_Select_All', SqlSelectAll::class, PhpClass::class, [
+            $fetchAllAction = $setup->addAction($prefix . '_Select_All', SqlBuilder::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
                 'jql' => $this->jqlBuilder->getCollection($type, $tableNames, $document),
             ]);
 
-            $fetchRowAction = $setup->addAction($prefix . '_Select_Row', SqlSelectRow::class, PhpClass::class, [
+            $fetchRowAction = $setup->addAction($prefix . '_Select_Row', SqlBuilder::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
                 'jql' => $this->jqlBuilder->getEntity($type, $tableNames, $document),
             ]);
@@ -208,7 +206,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
 
         $types = $document->getTypes();
         foreach ($types as $type) {
-            $this->createTableFromType($schema, $type, $schemaManager, $document);
+            $this->createTableFromType($schema, $type, $schemaManager);
         }
 
         $from = $schemaManager->createSchema();
@@ -248,7 +246,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $tableName;
     }
 
-    private function createTableFromType(Schema $schema, Type $type, AbstractSchemaManager $schemaManager, Document $document): void
+    private function createTableFromType(Schema $schema, Type $type, AbstractSchemaManager $schemaManager): void
     {
         $tableName = $this->getTableName($schemaManager, $type->getName());
         $table = $schema->createTable($tableName);
