@@ -30,13 +30,11 @@ use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
-use Fusio\Engine\RequestInterface;
 use PSX\Http\Exception as StatusCode;
-use PSX\Record\Record;
+use PSX\Record\RecordInterface;
 
 /**
- * Action which allows you to create an API endpoint based on any database
- * table
+ * Action which allows you to create an API endpoint based on any database table
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
@@ -48,6 +46,7 @@ abstract class SqlActionAbstract extends ActionAbstract
     {
         $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
+        $builder->add($elementFactory->newMap('mapping', 'Mapping', 'text', 'Optional a column to property mapping'));
     }
 
     protected function getTable(Connection $connection, string $tableName): Table
@@ -69,9 +68,8 @@ abstract class SqlActionAbstract extends ActionAbstract
         return $table;
     }
 
-    protected function getData(RequestInterface $request, Connection $connection, Table $table, ?bool $validateNull = false, ?array $mapping = null): array
+    protected function getData(RecordInterface $body, Connection $connection, Table $table, ?bool $validateNull = false, ?array $mapping = null): array
     {
-        $body = Record::from($request->getPayload());
         $data = [];
 
         $columns = $table->getColumns();

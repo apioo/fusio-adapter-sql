@@ -21,7 +21,10 @@
 
 namespace Fusio\Adapter\Sql\Action;
 
+use Doctrine\DBAL\Connection;
+use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
@@ -40,7 +43,7 @@ use PSX\Sql\Provider;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class SqlBuilder extends SqlActionAbstract
+class SqlBuilder extends ActionAbstract
 {
     public function getName(): string
     {
@@ -76,5 +79,15 @@ class SqlBuilder extends SqlActionAbstract
         } else {
             return [];
         }
+    }
+
+    private function getConnection(ParametersInterface $configuration): Connection
+    {
+        $connection = $this->connector->getConnection($configuration->get('connection'));
+        if (!$connection instanceof Connection) {
+            throw new ConfigurationException('Given connection must be a DBAL connection');
+        }
+
+        return $connection;
     }
 }

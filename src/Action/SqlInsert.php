@@ -22,11 +22,10 @@
 namespace Fusio\Adapter\Sql\Action;
 
 use Fusio\Engine\ContextInterface;
-use Fusio\Engine\Form\BuilderInterface;
-use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Record\Record;
 
 /**
  * Action which allows you to create an API endpoint based on any database
@@ -36,7 +35,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class SqlInsert extends SqlActionAbstract
+class SqlInsert extends SqlManipulationAbstract
 {
     public function getName(): string
     {
@@ -50,21 +49,30 @@ class SqlInsert extends SqlActionAbstract
         $mapping    = $this->getMapping($configuration);
 
         $table = $this->getTable($connection, $tableName);
-        $data  = $this->getData($request, $connection, $table, true, $mapping);
+        $body  = Record::from($request->getPayload());
+        $data  = $this->getData($body, $connection, $table, true, $mapping);
 
-        $connection->insert($table->getName(), $data);
+        $connection->beginTransaction();
+
+        try {
+            $affected = $connection->insert($table->getName(), $data);
+
+            $lastInsertId = (int) $connection->lastInsertId();
+
+            $this->insertRelations($connection, $lastInsertId, $body, $mapping);
+
+            $connection->commit();
+        } catch (\Exception $e) {
+            $connection->rollBack();
+
+            throw $e;
+        }
 
         return $this->response->build(201, [], [
-            'success' => true,
-            'message' => 'Entry successfully created',
-            'id'      => $connection->lastInsertId()
+            'success'  => true,
+            'message'  => 'Entry successfully created',
+            'id'       => $lastInsertId,
+            'affected' => $affected,
         ]);
-    }
-
-    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
-    {
-        parent::configure($builder, $elementFactory);
-
-        $builder->add($elementFactory->newMap('mapping', 'Mapping', 'text', 'Optional a property to column mapping'));
     }
 }

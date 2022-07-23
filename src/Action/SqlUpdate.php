@@ -21,13 +21,14 @@
 
 namespace Fusio\Adapter\Sql\Action;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema\Table;
 use Fusio\Engine\ContextInterface;
-use Fusio\Engine\Form\BuilderInterface;
-use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\Exception as StatusCode;
+use PSX\Record\Record;
 
 /**
  * Action which allows you to create an API endpoint based on any database
@@ -37,7 +38,7 @@ use PSX\Http\Exception as StatusCode;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class SqlUpdate extends SqlActionAbstract
+class SqlUpdate extends SqlManipulationAbstract
 {
     public function getName(): string
     {
@@ -57,23 +58,30 @@ class SqlUpdate extends SqlActionAbstract
 
         $table = $this->getTable($connection, $tableName);
         $key   = $this->getPrimaryKey($table);
-        $data  = $this->getData($request, $connection, $table, false, $mapping);
+        $body  = Record::from($request->getPayload());
+        $data  = $this->getData($body, $connection, $table, false, $mapping);
 
-        $affected = $connection->update($table->getName(), $data, [$key => $id]);
-        if ($affected === 0) {
-            throw new StatusCode\NotFoundException('Entry not available');
+        $existingId = $this->findExistingId($connection, $key, $table, $id);
+
+        $connection->beginTransaction();
+
+        try {
+            $affected = $connection->update($table->getName(), $data, [$key => $existingId]);
+
+            $this->insertRelations($connection, $existingId, $body, $mapping);
+
+            $connection->commit();
+        } catch (\Exception $e) {
+            $connection->rollBack();
+
+            throw $e;
         }
 
         return $this->response->build(200, [], [
-            'success' => true,
-            'message' => 'Entry successfully updated'
+            'success'  => true,
+            'message'  => 'Entry successfully updated',
+            'id'       => $existingId,
+            'affected' => $affected,
         ]);
-    }
-
-    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
-    {
-        parent::configure($builder, $elementFactory);
-
-        $builder->add($elementFactory->newMap('mapping', 'Mapping', 'text', 'Optional a property to column mapping'));
     }
 }

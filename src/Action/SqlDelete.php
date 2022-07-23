@@ -35,7 +35,7 @@ use PSX\Http\Exception as StatusCode;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class SqlDelete extends SqlActionAbstract
+class SqlDelete extends SqlManipulationAbstract
 {
     public function getName(): string
     {
@@ -46,6 +46,7 @@ class SqlDelete extends SqlActionAbstract
     {
         $connection = $this->getConnection($configuration);
         $tableName  = $this->getTableName($configuration);
+        $mapping    = $this->getMapping($configuration);
 
         $id = (int) $request->get('id');
         if (empty($id)) {
@@ -55,14 +56,28 @@ class SqlDelete extends SqlActionAbstract
         $table = $this->getTable($connection, $tableName);
         $key   = $this->getPrimaryKey($table);
 
-        $affected = $connection->delete($table->getName(), [$key => $id]);
-        if ($affected === 0) {
-            throw new StatusCode\NotFoundException('Entry not available');
+        $existingId = $this->findExistingId($connection, $key, $table, $id);
+
+        $connection->beginTransaction();
+
+        try {
+            $this->deleteRelations($connection, $existingId, $mapping);
+
+            $affected = $connection->delete($table->getName(), [$key => $existingId]);
+
+            $connection->commit();
+        } catch (\Exception $e) {
+            $connection->rollBack();
+
+            throw $e;
         }
 
+
         return $this->response->build(200, [], [
-            'success' => true,
-            'message' => 'Entry successfully deleted'
+            'success'  => true,
+            'message'  => 'Entry successfully deleted',
+            'id'       => $existingId,
+            'affected' => $affected,
         ]);
     }
 }
