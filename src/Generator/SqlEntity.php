@@ -284,12 +284,12 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
                 );
             } elseif (in_array($property->getType(), ['map', 'array'])) {
                 $config = $this->getRelationConfig($type, $property, $tableNames);
-                [$propertyName, $type, $foreignTableName, $typeColumn, $foreignColumn] = $config;
+                [$propertyName, $typeName, $foreignTableName, $typeColumn, $foreignColumn] = $config;
 
                 $foreignTable = $schema->createTable($foreignTableName);
                 $foreignTable->addColumn('id', 'integer', ['autoincrement' => true]);
                 $foreignTable->addColumn($typeColumn, 'integer');
-                if ($type === 'map') {
+                if ($typeName === 'map') {
                     $foreignTable->addColumn('name', 'string');
                 }
                 $foreignTable->addColumn($foreignColumn, 'integer');
