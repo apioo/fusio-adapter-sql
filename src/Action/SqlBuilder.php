@@ -25,6 +25,8 @@ use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
+use Fusio\Engine\Request\HttpRequest;
+use Fusio\Engine\Request\RpcRequest;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Sql\Builder;
@@ -48,7 +50,7 @@ class SqlBuilder extends SqlActionAbstract
     {
         $connection = $this->getConnection($configuration);
 
-        $definition = (new Provider\JsonProvider($connection))->create(json_decode($configuration->get('jql')));
+        $definition = (new Provider\JsonProvider($connection))->create(json_decode($configuration->get('jql')), $this->getContext($request));
         $data = (new Builder($connection))->build($definition);
 
         return $this->response->build(200, [], $data);
@@ -58,5 +60,16 @@ class SqlBuilder extends SqlActionAbstract
     {
         $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
         $builder->add($elementFactory->newTextArea('jql', 'JQL', 'json', 'The JQL to query the database'));
+    }
+
+    private function getContext(RequestInterface $request): array
+    {
+        if ($request instanceof HttpRequest) {
+            return array_merge($request->getUriFragments(), $request->getParameters());
+        } elseif ($request instanceof RpcRequest) {
+            return $request->getArguments()->getProperties();
+        } else {
+            return [];
+        }
     }
 }
