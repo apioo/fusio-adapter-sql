@@ -79,22 +79,13 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $typeSchema = \json_decode((new Generator())->generate($document), true);
 
         $types = $document->getTypes();
-        $typeMapping = [];
-        $tableNames = [];
-        foreach ($types as $type) {
-            $tableName = $this->getTableName($schemaManager, $type->getName());
-
-            $prefix = ucfirst(substr($tableName, 4));
-            $entityName = $prefix . '_Entity';
-
-            $typeMapping[$type->getName()] = $entityName;
-            $tableNames[$type->getName()] = $tableName;
-        }
+        $tableNames = $this->getTableNames($document, $schemaManager);
+        $typeMapping = $this->getTypeMapping($document, $tableNames);
 
         foreach ($types as $type) {
             $tableName = $tableNames[$type->getName()];
             $routeName = $this->getRouteName($type);
-            $mapping = $this->getMapping($type);
+            $mapping = $this->getMapping($type, $tableNames);
 
             $prefix = ucfirst(substr($tableName, 4));
             $collectionName = $prefix . '_Collection';
@@ -116,6 +107,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
             $deleteAction = $setup->addAction($prefix . '_Delete', SqlDelete::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
                 'table' => $tableName,
+                'mapping' => $mapping,
             ]);
 
             $insertAction = $setup->addAction($prefix . '_Insert', SqlInsert::class, PhpClass::class, [
@@ -203,10 +195,11 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
 
         $schemaManager = $connection->getSchemaManager();
         $schema = $schemaManager->createSchema();
+        $tableNames = $this->getTableNames($document, $schemaManager);
 
         $types = $document->getTypes();
         foreach ($types as $type) {
-            $this->createTableFromType($schema, $type, $schemaManager);
+            $this->createTableFromType($schema, $type, $tableNames);
         }
 
         $from = $schemaManager->createSchema();
@@ -246,9 +239,37 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $tableName;
     }
 
-    private function createTableFromType(Schema $schema, Type $type, AbstractSchemaManager $schemaManager): void
+    private function getTableNames(Document $document, AbstractSchemaManager $schemaManager): array
     {
-        $tableName = $this->getTableName($schemaManager, $type->getName());
+        $types = $document->getTypes();
+        $tableNames = [];
+        foreach ($types as $type) {
+            $tableName = $this->getTableName($schemaManager, $type->getName());
+            $tableNames[$type->getName()] = $tableName;
+        }
+
+        return $tableNames;
+    }
+
+    private function getTypeMapping(Document $document, array $tableNames): array
+    {
+        $types = $document->getTypes();
+        $typeMapping = [];
+        foreach ($types as $type) {
+            $tableName = $tableNames[$type->getName()];
+
+            $prefix = ucfirst(substr($tableName, 4));
+            $entityName = $prefix . '_Entity';
+
+            $typeMapping[$type->getName()] = $entityName;
+        }
+
+        return $typeMapping;
+    }
+
+    private function createTableFromType(Schema $schema, Type $type, array $tableNames): void
+    {
+        $tableName = $tableNames[$type->getName()];
         $table = $schema->createTable($tableName);
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
         $table->setPrimaryKey(['id']);
@@ -262,14 +283,13 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
                     $this->getColumnOptions($property)
                 );
             } elseif (in_array($property->getType(), ['map', 'array'])) {
-                $foreignTableName = $tableName . '_' . self::underscore($property->getFirstRef());
-                $typeColumn = self::underscore($type->getName()) . '_id';
-                $foreignColumn = self::underscore($property->getFirstRef()) . '_id';
+                $config = $this->getRelationConfig($type, $property, $tableNames);
+                [$propertyName, $type, $foreignTableName, $typeColumn, $foreignColumn] = $config;
 
                 $foreignTable = $schema->createTable($foreignTableName);
                 $foreignTable->addColumn('id', 'integer', ['autoincrement' => true]);
                 $foreignTable->addColumn($typeColumn, 'integer');
-                if ($property->getType() === 'map') {
+                if ($type === 'map') {
                     $foreignTable->addColumn('name', 'string');
                 }
                 $foreignTable->addColumn($foreignColumn, 'integer');
@@ -297,11 +317,27 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $options;
     }
 
-    private function getMapping(Type $type): array
+    private function getMapping(Type $type, array $tableNames): array
     {
         $mapping = [];
         foreach ($type->getProperties() as $property) {
-            $mapping[$this->getColumnName($property)] = $property->getName();
+            if (self::isScalar($property->getType())) {
+                $mapping[$this->getColumnName($property)] = $property->getName();
+            } elseif ($property->getType() === 'array') {
+                if (self::isScalar($property->getFirstRef())) {
+                    $mapping[$this->getColumnName($property)] = $property->getName();
+                } else {
+                    $config = $this->getRelationConfig($type, $property, $tableNames);
+                    $mapping[$this->getColumnName($property)] = implode(':', $config);
+                }
+            } elseif ($property->getType() === 'map') {
+                if (self::isScalar($property->getFirstRef())) {
+                    $mapping[$this->getColumnName($property)] = $property->getName();
+                } else {
+                    $config = $this->getRelationConfig($type, $property, $tableNames);
+                    $mapping[$this->getColumnName($property)] = implode(':', $config);
+                }
+            }
         }
 
         return $mapping;
@@ -310,6 +346,22 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
     private function getRouteName(Type $type): string
     {
         return self::underscore($type->getName());
+    }
+
+    private function getRelationConfig(Type $type, Property $property, array $tableNames): array
+    {
+        $tableName = $tableNames[$type->getName()];
+        $foreignTableName = $tableName . '_' . self::underscore($property->getFirstRef());
+        $typeColumn = self::underscore($type->getName()) . '_id';
+        $foreignColumn = self::underscore($property->getFirstRef()) . '_id';
+
+        return [
+            $property->getName(),
+            $property->getType(),
+            $foreignTableName,
+            $typeColumn,
+            $foreignColumn,
+        ];
     }
 
     public static function getColumnName(Property $property): string
