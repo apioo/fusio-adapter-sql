@@ -118,7 +118,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
 
             $updateAction = $setup->addAction($prefix . '_Update', SqlUpdate::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
-                'table' => $configuration->get('table'),
+                'table' => $tableName,
                 'mapping' => $mapping,
             ]);
 
