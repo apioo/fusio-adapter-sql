@@ -1,0 +1,99 @@
+{
+  "totalEntries": {
+    "$value": "SELECT COUNT(*) AS cnt FROM app_human_0",
+    "$definition": {
+      "$key": "cnt",
+      "$field": "integer"
+    }
+  },
+  "entries": {
+    "$collection": "SELECT id, first_name, last_name, location_id, tags FROM app_human_0 ORDER BY id ASC LIMIT :startIndex, 16",
+    "$params": {
+      "startIndex": "startIndex"
+    },
+    "$definition": {
+      "id": {
+        "$field": "integer"
+      },
+      "firstName": {
+        "$key": "first_name",
+        "$field": "string"
+      },
+      "lastName": {
+        "$key": "last_name",
+        "$field": "string"
+      },
+      "location": {
+        "$entity": "SELECT entity.id, entity.name, entity.lat, entity.long FROM app_location_0 entity WHERE entity.id = :id",
+        "$params": {
+          "id": {
+            "$ref": "location_id"
+          }
+        },
+        "$definition": {
+          "id": {
+            "$field": "integer"
+          },
+          "name": {
+            "$key": "name",
+            "$field": "string"
+          },
+          "lat": {
+            "$key": "lat",
+            "$field": "string"
+          },
+          "long": {
+            "$key": "long",
+            "$field": "string"
+          }
+        }
+      },
+      "tags": {
+        "$field": "json"
+      },
+      "categories": {
+        "$collection": "SELECT entity.id, entity.name FROM app_human_0_category rel INNER JOIN app_category_0 entity ON entity.id = rel.category_id WHERE rel.human_id = :id ORDER BY entity.id DESC LIMIT 16",
+        "$params": {
+          "id": {
+            "$ref": "id"
+          }
+        },
+        "$definition": {
+          "id": {
+            "$field": "integer"
+          },
+          "name": {
+            "$key": "name",
+            "$field": "string"
+          }
+        }
+      },
+      "map": {
+        "$collection": "SELECT rel.name AS hash_key, entity.id, entity.name, entity.lat, entity.long FROM app_human_0_location rel INNER JOIN app_location_0 entity ON entity.id = rel.location_id WHERE rel.human_id = :id ORDER BY entity.id DESC LIMIT 16",
+        "$params": {
+          "id": {
+            "$ref": "id"
+          }
+        },
+        "$definition": {
+          "id": {
+            "$field": "integer"
+          },
+          "name": {
+            "$key": "name",
+            "$field": "string"
+          },
+          "lat": {
+            "$key": "lat",
+            "$field": "string"
+          },
+          "long": {
+            "$key": "long",
+            "$field": "string"
+          }
+        },
+        "$key": "hash_key"
+      }
+    }
+  }
+}

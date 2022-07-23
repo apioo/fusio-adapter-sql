@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\Table;
 use Fusio\Adapter\Sql\Action\SqlDelete;
 use Fusio\Adapter\Sql\Action\SqlInsert;
@@ -53,11 +54,13 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
 {
     private ConnectorInterface $connector;
     private SchemaBuilder $schemaBuilder;
+    private JqlBuilder $jqlBuilder;
 
     public function __construct(ConnectorInterface $connector)
     {
         $this->connector = $connector;
         $this->schemaBuilder = new SchemaBuilder();
+        $this->jqlBuilder = new JqlBuilder();
     }
 
     public function getName(): string
@@ -79,6 +82,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
 
         $types = $document->getTypes();
         $typeMapping = [];
+        $tableNames = [];
         foreach ($types as $type) {
             $tableName = $this->getTableName($schemaManager, $type->getName());
 
@@ -86,10 +90,11 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
             $entityName = $prefix . '_Entity';
 
             $typeMapping[$type->getName()] = $entityName;
+            $tableNames[$type->getName()] = $tableName;
         }
 
         foreach ($types as $type) {
-            $tableName = $this->getTableName($schemaManager, $type->getName());
+            $tableName = $tableNames[$type->getName()];
             $routeName = $this->getRouteName($type);
             $mapping = $this->getMapping($type);
 
@@ -102,14 +107,12 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
 
             $fetchAllAction = $setup->addAction($prefix . '_Select_All', SqlSelectAll::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
-                'table' => $tableName,
-                'mapping' => $mapping,
+                'jql' => $this->jqlBuilder->getCollection($type, $tableNames, $document),
             ]);
 
             $fetchRowAction = $setup->addAction($prefix . '_Select_Row', SqlSelectRow::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
-                'table' => $tableName,
-                'mapping' => $mapping,
+                'jql' => $this->jqlBuilder->getEntity($type, $tableNames, $document),
             ]);
 
             $deleteAction = $setup->addAction($prefix . '_Delete', SqlDelete::class, PhpClass::class, [
@@ -192,8 +195,6 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
                     ],
                 ]
             ]);
-
-
         }
     }
 
@@ -207,10 +208,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
 
         $types = $document->getTypes();
         foreach ($types as $type) {
-            $tableName = $this->getTableName($schemaManager, $type->getName());
-
-            $table = $schema->createTable($tableName);
-            $this->createTableFromType($table, $type);
+            $this->createTableFromType($schema, $type, $schemaManager, $document);
         }
 
         $from = $schemaManager->createSchema();
@@ -250,84 +248,36 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $tableName;
     }
 
-    private function createTableFromType(Table $table, Type $type): void
+    private function createTableFromType(Schema $schema, Type $type, AbstractSchemaManager $schemaManager, Document $document): void
     {
+        $tableName = $this->getTableName($schemaManager, $type->getName());
+        $table = $schema->createTable($tableName);
         $table->addColumn('id', 'integer', ['autoincrement' => true]);
+        $table->setPrimaryKey(['id']);
 
         foreach ($type->getProperties() as $property) {
-            $type = $this->getColumnType($property);
-            if ($type !== null) {
+            $columnType = $this->getColumnType($property);
+            if ($columnType !== null) {
                 $table->addColumn(
                     $this->getColumnName($property),
-                    $type,
+                    $columnType,
                     $this->getColumnOptions($property)
                 );
-            }
-        }
+            } elseif (in_array($property->getType(), ['map', 'array'])) {
+                $foreignTableName = $tableName . '_' . self::underscore($property->getFirstRef());
+                $typeColumn = self::underscore($type->getName()) . '_id';
+                $foreignColumn = self::underscore($property->getFirstRef()) . '_id';
 
-        $table->setPrimaryKey(['id']);
-    }
-
-    private function getColumnName(Property $property): string
-    {
-        if ($property->getType() === 'object') {
-            // reference to a different entity
-            $ref = $property->getFirstRef();
-            if (!empty($ref)) {
-                return self::underscore($ref) . '_id';
-            }
-        } elseif ($property->getType() === 'map') {
-        } elseif ($property->getType() === 'array') {
-            // if we have a scalar array we use a json property
-            $ref = $property->getFirstRef();
-            if (!in_array($ref, ['boolean', 'integer', 'number', 'string'])) {
-                // @TODO in this case we have an array of reference
-            }
-        } elseif ($property->getType() === 'union') {
-        } elseif ($property->getType() === 'intersection') {
-        }
-
-        return self::underscore($property->getName());
-    }
-
-    private function getColumnType(Property $property): ?string
-    {
-        if ($property->getType() === 'boolean') {
-            return 'boolean';
-        } elseif ($property->getType() === 'integer') {
-            return 'integer';
-        } elseif ($property->getType() === 'number') {
-            return 'float';
-        } elseif ($property->getType() === 'string') {
-            if ($property->getFormat() === 'date') {
-                return 'date';
-            } elseif ($property->getFormat() === 'date-time') {
-                return 'datetime';
-            } elseif ($property->getFormat() === 'time') {
-                return 'time';
-            } else {
-                if ($property->getMaxLength() > 500) {
-                    return 'text';
-                } else {
-                    return 'string';
+                $foreignTable = $schema->createTable($foreignTableName);
+                $foreignTable->addColumn('id', 'integer', ['autoincrement' => true]);
+                $foreignTable->addColumn($typeColumn, 'integer');
+                if ($property->getType() === 'map') {
+                    $foreignTable->addColumn('name', 'string');
                 }
+                $foreignTable->addColumn($foreignColumn, 'integer');
+                $foreignTable->setPrimaryKey(['id']);
             }
-        } elseif ($property->getType() === 'object') {
-            // reference to a different entity
-            return 'int';
-        } elseif ($property->getType() === 'map') {
-        } elseif ($property->getType() === 'array') {
-            // if we have a scalar array we use a json property
-            $ref = $property->getFirstRef();
-            if (in_array($ref, ['boolean', 'integer', 'number', 'string'])) {
-                return 'json';
-            }
-        } elseif ($property->getType() === 'union') {
-        } elseif ($property->getType() === 'intersection') {
         }
-
-
-        return null;
     }
 
     private function getColumnOptions(Property $property): array
@@ -364,7 +314,63 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return self::underscore($type->getName());
     }
 
-    private static function underscore(string $id): string
+    public static function getColumnName(Property $property): string
+    {
+        if ($property->getType() === 'object') {
+            // reference to a different entity
+            $ref = $property->getFirstRef();
+            if (!empty($ref)) {
+                return self::underscore($ref) . '_id';
+            }
+        }
+
+        return self::underscore($property->getName());
+    }
+
+    public static function getColumnType(Property $property): ?string
+    {
+        if ($property->getType() === 'boolean') {
+            return 'boolean';
+        } elseif ($property->getType() === 'integer') {
+            return 'integer';
+        } elseif ($property->getType() === 'number') {
+            return 'float';
+        } elseif ($property->getType() === 'string') {
+            if ($property->getFormat() === 'date') {
+                return 'date';
+            } elseif ($property->getFormat() === 'date-time') {
+                return 'datetime';
+            } elseif ($property->getFormat() === 'time') {
+                return 'time';
+            } else {
+                return $property->getMaxLength() > 500 ? 'text' : 'string';
+            }
+        } elseif ($property->getType() === 'object') {
+            // reference to a different entity
+            return 'integer';
+        } elseif (in_array($property->getType(), ['map', 'array'])) {
+            if (self::isScalar($property->getFirstRef())) {
+                // if we have a scalar array we use a json property
+                return 'json';
+            } else {
+                // if we have a reference to an object
+                return null;
+            }
+        } elseif ($property->getType() === 'union') {
+            return null;
+        } elseif ($property->getType() === 'intersection') {
+            return null;
+        }
+
+        return null;
+    }
+
+    public static function isScalar(string $ref): bool
+    {
+        return in_array($ref, ['boolean', 'integer', 'number', 'string']);
+    }
+
+    public static function underscore(string $id): string
     {
         return strtolower(preg_replace(array('/([A-Z]+)([A-Z][a-z])/', '/([a-z\d])([A-Z])/'), array('\\1_\\2', '\\1_\\2'), strtr($id, '_', '.')));
     }
