@@ -60,7 +60,7 @@ class JqlBuilder
             ]
         ];
 
-        return \json_encode($jql);
+        return \json_encode($jql, JSON_PRETTY_PRINT);
     }
 
     public function getEntity(Type $type, array $tableNames, Document $document): string
@@ -77,7 +77,7 @@ class JqlBuilder
             '$definition' => $definition
         ];
 
-        return \json_encode($jql);
+        return \json_encode($jql, JSON_PRETTY_PRINT);
     }
 
     private function getDefinition(Type $type, array $tableNames, Document $document, array &$columns, int $depth = 0): array
