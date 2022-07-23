@@ -72,8 +72,14 @@ class SchemaBuilder
             throw new \RuntimeException('Could not resolve schema');
         }
 
+        $entityTypeMapping = $typeMapping;
+        if (isset($entityTypeMapping[$type->getName()])) {
+            // remove the mapping from the type itself
+            unset($entityTypeMapping[$type->getName()]);
+        }
+
         $import = [];
-        foreach ($typeMapping as $typeName => $realName) {
+        foreach ($entityTypeMapping as $typeName => $realName) {
             $import[$typeName] = 'schema:///' . $realName;
         }
 
@@ -81,15 +87,15 @@ class SchemaBuilder
             $properties = [];
             foreach ($schema['properties'] as $key => $type) {
                 if (isset($type['$ref']) && is_string($type['$ref'])) {
-                    $properties[$key]['$ref'] = $this->resolveRef($type, $typeMapping);
+                    $properties[$key]['$ref'] = $this->resolveRef($type, $entityTypeMapping);
                 } elseif (isset($type['additionalProperties']['$ref']) && is_string($type['additionalProperties']['$ref'])) {
-                    $properties[$key]['additionalProperties']['$ref'] = $this->resolveRef($type['additionalProperties'], $typeMapping);
+                    $properties[$key]['additionalProperties']['$ref'] = $this->resolveRef($type['additionalProperties'], $entityTypeMapping);
                 } elseif (isset($type['items']['$ref']) && is_string($type['items']['$ref'])) {
-                    $properties[$key]['items']['$ref'] = $this->resolveRef($type['items'], $typeMapping);
+                    $properties[$key]['items']['$ref'] = $this->resolveRef($type['items'], $entityTypeMapping);
                 } elseif (isset($type['oneOf']) && is_array($type['oneOf'])) {
-                    $properties[$key]['oneOf'] = $this->resolveRefs($type['oneOf'], $typeMapping);
+                    $properties[$key]['oneOf'] = $this->resolveRefs($type['oneOf'], $entityTypeMapping);
                 } elseif (isset($type['allOf']) && is_array($type['allOf'])) {
-                    $properties[$key]['allOf'] = $this->resolveRefs($type['allOf'], $typeMapping);
+                    $properties[$key]['allOf'] = $this->resolveRefs($type['allOf'], $entityTypeMapping);
                 } else {
                     $properties[$key] = $type;
                 }
@@ -196,7 +202,8 @@ class SchemaBuilder
         $return = [];
         foreach ($types as $type) {
             if (isset($type['$ref'])) {
-                $return[] = $this->resolveRef($type, $typeMapping);
+                $type['$ref'] = $this->resolveRef($type, $typeMapping);
+                $return[] = $type;
             } else {
                 $return[] = $type;
             }
@@ -206,11 +213,11 @@ class SchemaBuilder
 
     private function resolveRef(array $type, array $typeMapping): string
     {
-        if (!isset($typeMapping[$type['$ref']])) {
-            throw new \RuntimeException('Could not resolve ref ' . $type['$ref']);
+        if (isset($typeMapping[$type['$ref']])) {
+            return $type['$ref'] . ':' . $typeMapping[$type['$ref']];
+        } else {
+            return $type['$ref'];
         }
-
-        return $type['$ref'] . ':' . $typeMapping[$type['$ref']];
     }
 
     private function readSchema(string $file)
