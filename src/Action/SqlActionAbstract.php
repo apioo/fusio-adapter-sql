@@ -31,6 +31,7 @@ use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use PSX\Http\Exception as StatusCode;
+use PSX\Record\Record;
 use PSX\Record\RecordInterface;
 
 /**
@@ -79,8 +80,12 @@ abstract class SqlActionAbstract extends ActionAbstract
                 continue;
             }
 
+            $type = null;
             if ($mapping !== null && isset($mapping[$column->getName()])) {
                 $name = $mapping[$column->getName()];
+                if (str_contains($name, ':')) {
+                    [$name, $type] = explode(':', $name);
+                }
             } else {
                 $name = $column->getName();
             }
@@ -108,6 +113,17 @@ abstract class SqlActionAbstract extends ActionAbstract
                     $value = $value->format($platform->getDateTimeTzFormatString());
                 } elseif ($column->getType() instanceof Types\TimeType) {
                     $value = $value->format($platform->getTimeFormatString());
+                }
+            } elseif (is_array($value) || is_object($value)) {
+                if ($column->getType() instanceof Types\IntegerType && $type === 'object') {
+                    $object = Record::from($value);
+                    if ($object->hasProperty('id')) {
+                        $value = $object->getProperty('id');
+                    } else {
+                        throw new StatusCode\BadRequestException('Property ' . $name . ' must contain an object with id property');
+                    }
+                } elseif ($column->getType() instanceof Types\JsonType) {
+                    $value = \json_encode($value);
                 }
             }
 
