@@ -44,17 +44,25 @@ class JqlBuilder
         $definition = $this->getDefinition($type, $tableNames, $document, $columns);
 
         $jql = [
-            'totalEntries' => [
+            'totalResults' => [
                 '$value' => 'SELECT COUNT(*) AS cnt FROM ' . $tableName,
                 '$definition' => [
                     '$key' => 'cnt',
                     '$field' => 'integer',
                 ],
             ],
-            'entries' => [
+            'startIndex' => [
+                '$context' => 'startIndex',
+                '$default' => 0
+            ],
+            'itemsPerPage' => 16,
+            'entry' => [
                 '$collection' => 'SELECT ' . implode(', ', $columns) . ' FROM ' . $tableName . ' ORDER BY id ASC LIMIT :startIndex, 16',
                 '$params' => [
-                    'startIndex' => 'startIndex'
+                    'startIndex' => [
+                        '$context' => 'startIndex',
+                        '$default' => 0
+                    ]
                 ],
                 '$definition' => $definition
             ]
@@ -72,7 +80,9 @@ class JqlBuilder
         $jql = [
             '$entity' => 'SELECT ' . implode(', ', $columns) . ' FROM ' . $tableName . ' WHERE id = :id',
             '$params' => [
-                'id' => 'id'
+                'id' => [
+                    '$context' => 'id'
+                ]
             ],
             '$definition' => $definition
         ];
@@ -239,5 +249,4 @@ class JqlBuilder
 
         return $definition;
     }
-
 }
