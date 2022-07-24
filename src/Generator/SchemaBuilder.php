@@ -85,6 +85,9 @@ class SchemaBuilder
 
         if (isset($schema['properties']) && is_array($schema['properties'])) {
             $properties = [];
+            $properties['id'] = [
+                'type' => 'integer'
+            ];
             foreach ($schema['properties'] as $key => $type) {
                 if (isset($type['$ref']) && is_string($type['$ref'])) {
                     $properties[$key]['$ref'] = $this->resolveRef($type, $entityTypeMapping);
