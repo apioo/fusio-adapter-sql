@@ -1,7 +1,9 @@
 {
   "$entity": "SELECT id, first_name, last_name, location_id, tags FROM app_human_0 WHERE id = :id",
   "$params": {
-    "id": "id"
+    "id": {
+      "$context": "id"
+    }
   },
   "$definition": {
     "id": {

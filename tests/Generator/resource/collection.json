@@ -1,15 +1,23 @@
 {
-  "totalEntries": {
+  "totalResults": {
     "$value": "SELECT COUNT(*) AS cnt FROM app_human_0",
     "$definition": {
       "$key": "cnt",
       "$field": "integer"
     }
   },
-  "entries": {
+  "startIndex": {
+    "$context": "startIndex",
+    "$default": 0
+  },
+  "itemsPerPage": 16,
+  "entry": {
     "$collection": "SELECT id, first_name, last_name, location_id, tags FROM app_human_0 ORDER BY id ASC LIMIT :startIndex, 16",
     "$params": {
-      "startIndex": "startIndex"
+      "startIndex": {
+        "$context": "startIndex",
+        "$default": 0
+      }
     },
     "$definition": {
       "id": {
