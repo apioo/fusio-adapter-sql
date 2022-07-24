@@ -323,6 +323,8 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         foreach ($type->getProperties() as $property) {
             if (self::isScalar($property->getType())) {
                 $mapping[$this->getColumnName($property)] = $property->getName();
+            } elseif ($property->getType() === 'object') {
+                $mapping[$this->getColumnName($property)] = implode(':', [$property->getName(), $property->getType()]);
             } elseif ($property->getType() === 'array') {
                 if (self::isScalar($property->getFirstRef())) {
                     $mapping[$this->getColumnName($property)] = $property->getName();
