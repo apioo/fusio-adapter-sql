@@ -57,13 +57,12 @@ class JqlBuilder
             ],
             'itemsPerPage' => 16,
             'entry' => [
-                '$collection' => 'SELECT ' . implode(', ', $columns) . ' FROM ' . $tableName . ' ORDER BY id ASC LIMIT :startIndex, 16',
-                '$params' => [
-                    'startIndex' => [
-                        '$context' => 'startIndex',
-                        '$default' => 0
-                    ]
+                '$collection' => 'SELECT ' . implode(', ', $columns) . ' FROM ' . $tableName . ' ORDER BY id ASC',
+                '$offset' => [
+                    '$context' => 'startIndex',
+                    '$default' => 0
                 ],
+                '$limit' => 16,
                 '$definition' => $definition
             ]
         ];
