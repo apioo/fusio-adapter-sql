@@ -308,7 +308,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
 
                 if (isset($tableNames[$property->getFirstRef()])) {
                     $relations[] = [$relationTableName, $tableName, [$typeColumn], ['id']];
-                    $relations[] = [ $relationTableName, $tableNames[$property->getFirstRef()], [$foreignColumn], ['id']];
+                    $relations[] = [$relationTableName, $tableNames[$property->getFirstRef()], [$foreignColumn], ['id']];
                 }
             }
         }
