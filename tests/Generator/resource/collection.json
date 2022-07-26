@@ -12,13 +12,12 @@
   },
   "itemsPerPage": 16,
   "entry": {
-    "$collection": "SELECT id, first_name, last_name, location_id, tags FROM app_human_0 ORDER BY id ASC LIMIT :startIndex, 16",
-    "$params": {
-      "startIndex": {
-        "$context": "startIndex",
-        "$default": 0
-      }
+    "$collection": "SELECT id, first_name, last_name, location_id, tags FROM app_human_0 ORDER BY id ASC",
+    "$offset": {
+      "$context": "startIndex",
+      "$default": 0
     },
+    "$limit": 16,
     "$definition": {
       "id": {
         "$field": "integer"
