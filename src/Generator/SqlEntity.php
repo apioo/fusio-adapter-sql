@@ -198,8 +198,16 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $tableNames = $this->getTableNames($document, $schemaManager);
 
         $types = $document->getTypes();
+        $relations = [];
         foreach ($types as $type) {
-            $this->createTableFromType($schema, $type, $tableNames);
+            $this->createTableFromType($schema, $type, $tableNames, $relations);
+        }
+
+        foreach ($relations as $relation) {
+            [$tableName, $foreignTable, $localColumns, $foreignColumns] = $relation;
+
+            $table = $schema->getTable($tableName);
+            $table->addForeignKeyConstraint($schema->getTable($foreignTable), $localColumns, $foreignColumns);
         }
 
         $from = $schemaManager->createSchema();
@@ -267,7 +275,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $typeMapping;
     }
 
-    private function createTableFromType(Schema $schema, Type $type, array $tableNames): void
+    private function createTableFromType(Schema $schema, Type $type, array $tableNames, array &$relations): void
     {
         $tableName = $tableNames[$type->getName()];
         $table = $schema->createTable($tableName);
@@ -283,8 +291,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
                 $table->addColumn($columnName, $columnType, $columnOptions);
 
                 if ($property->getType() === 'object' && isset($tableNames[$property->getFirstRef()])) {
-                    $foreignTableName = $tableNames[$property->getFirstRef()];
-                    $table->addForeignKeyConstraint($schema->getTable($foreignTableName), [$columnName], ['id']);
+                    $relations[] = [$tableName, $tableNames[$property->getFirstRef()], [$columnName], ['id']];
                 }
             } elseif (in_array($property->getType(), ['map', 'array'])) {
                 $config = $this->getRelationConfig($type, $property, $tableNames);
@@ -300,9 +307,8 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
                 $relationTable->setPrimaryKey(['id']);
 
                 if (isset($tableNames[$property->getFirstRef()])) {
-                    $foreignTableName = $tableNames[$property->getFirstRef()];
-                    $relationTable->addForeignKeyConstraint($schema->getTable($tableName), [$typeColumn], ['id']);
-                    $relationTable->addForeignKeyConstraint($schema->getTable($foreignTableName), [$foreignColumn], ['id']);
+                    $relations[] = [$relationTableName, $tableName, [$typeColumn], ['id']];
+                    $relations[] = [ $relationTableName, $tableNames[$property->getFirstRef()], [$foreignColumn], ['id']];
                 }
             }
         }
