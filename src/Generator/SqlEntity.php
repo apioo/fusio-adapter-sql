@@ -277,23 +277,33 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         foreach ($type->getProperties() as $property) {
             $columnType = $this->getColumnType($property);
             if ($columnType !== null) {
-                $table->addColumn(
-                    $this->getColumnName($property),
-                    $columnType,
-                    $this->getColumnOptions($property)
-                );
+                $columnName = $this->getColumnName($property);
+                $columnOptions = $this->getColumnOptions($property);
+
+                $table->addColumn($columnName, $columnType, $columnOptions);
+
+                if ($property->getType() === 'object' && isset($tableNames[$property->getFirstRef()])) {
+                    $foreignTableName = $tableNames[$property->getFirstRef()];
+                    $table->addForeignKeyConstraint($schema->getTable($foreignTableName), [$columnName], ['id']);
+                }
             } elseif (in_array($property->getType(), ['map', 'array'])) {
                 $config = $this->getRelationConfig($type, $property, $tableNames);
-                [$propertyName, $typeName, $foreignTableName, $typeColumn, $foreignColumn] = $config;
+                [$propertyName, $typeName, $relationTableName, $typeColumn, $foreignColumn] = $config;
 
-                $foreignTable = $schema->createTable($foreignTableName);
-                $foreignTable->addColumn('id', 'integer', ['autoincrement' => true]);
-                $foreignTable->addColumn($typeColumn, 'integer');
+                $relationTable = $schema->createTable($relationTableName);
+                $relationTable->addColumn('id', 'integer', ['autoincrement' => true]);
+                $relationTable->addColumn($typeColumn, 'integer');
                 if ($typeName === 'map') {
-                    $foreignTable->addColumn('name', 'string');
+                    $relationTable->addColumn('name', 'string');
                 }
-                $foreignTable->addColumn($foreignColumn, 'integer');
-                $foreignTable->setPrimaryKey(['id']);
+                $relationTable->addColumn($foreignColumn, 'integer');
+                $relationTable->setPrimaryKey(['id']);
+
+                if (isset($tableNames[$property->getFirstRef()])) {
+                    $foreignTableName = $tableNames[$property->getFirstRef()];
+                    $relationTable->addForeignKeyConstraint($schema->getTable($tableName), [$typeColumn], ['id']);
+                    $relationTable->addForeignKeyConstraint($schema->getTable($foreignTableName), [$foreignColumn], ['id']);
+                }
             }
         }
     }
