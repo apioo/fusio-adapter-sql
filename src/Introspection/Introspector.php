@@ -22,8 +22,9 @@
 namespace Fusio\Adapter\Sql\Introspection;
 
 use Doctrine\DBAL\Connection;
-use Fusio\Engine\Connection\Introspection\Details;
+use Fusio\Engine\Connection\Introspection\Entity;
 use Fusio\Engine\Connection\Introspection\IntrospectorInterface;
+use Fusio\Engine\Connection\Introspection\Row;
 
 /**
  * Introspector
@@ -46,23 +47,23 @@ class Introspector implements IntrospectorInterface
         return $this->connection->getSchemaManager()->listTableNames();
     }
 
-    public function getDetails(string $entityName): Details
+    public function getEntity(string $entityName): Entity
     {
         $table = $this->connection->getSchemaManager()->listTableDetails($entityName);
-        $details = new Details($table->getName(), [
+        $entity = new Entity($table->getName(), [
             'Name',
             'Type',
             'Comment',
         ]);
 
         foreach ($table->getColumns() as $column) {
-            $details->addRow([
+            $entity->addRow(new Row([
                 $column->getName(),
                 $column->getType()->getName(),
                 $column->getComment(),
-            ]);
+            ]));
         }
 
-        return $details;
+        return $entity;
     }
 }
