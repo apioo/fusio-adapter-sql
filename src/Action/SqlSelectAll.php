@@ -89,7 +89,6 @@ class SqlSelectAll extends SqlActionAbstract
         $builder->add($elementFactory->newCollection('columns', 'Columns', 'text', 'Columns which are selected on the table (default is *)'));
         $builder->add($elementFactory->newInput('orderBy', 'Order by', 'text', 'The default order by column (default is primary key)'));
         $builder->add($elementFactory->newInput('limit', 'Limit', 'number', 'The default limit of the result (default is 16)'));
-        $builder->add($elementFactory->newMap('mapping', 'Mapping', 'text', 'Optional a property to column mapping'));
     }
     
     private function addFilter(RequestInterface $request, QueryBuilder $qb, array $allColumns): void

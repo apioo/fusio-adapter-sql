@@ -79,6 +79,5 @@ class SqlSelectRow extends SqlActionAbstract
         parent::configure($builder, $elementFactory);
 
         $builder->add($elementFactory->newCollection('columns', 'Columns', 'text', 'Columns which are selected on the table (default is *)'));
-        $builder->add($elementFactory->newMap('mapping', 'Mapping', 'text', 'Optional a property to column mapping'));
     }
 }
