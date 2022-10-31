@@ -22,6 +22,7 @@
 namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Fusio\Adapter\Sql\Action\SqlDelete;
 use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Action\SqlSelectAll;
@@ -60,51 +61,68 @@ class SqlTable implements ProviderInterface
 
     public function setup(SetupInterface $setup, string $basePath, ParametersInterface $configuration): void
     {
-        $connection = $this->getConnection($configuration->get('connection'));
-        $schemaManager = $connection->getSchemaManager();
+        $connectionName = $configuration->get('connection');
         $tableName = $configuration->get('table');
+        $schemaManager = $this->getConnection($connectionName)->getSchemaManager();
 
+        $this->generateForTable($schemaManager, $connectionName, $tableName, $setup);
+    }
+
+    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
+    {
+        $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
+        $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
+    }
+
+    protected function generateForTable(AbstractSchemaManager $schemaManager, string $connectionName, string $tableName, SetupInterface $setup, ?string $name = null)
+    {
         if (!$schemaManager->tablesExist([$tableName])) {
             throw new \RuntimeException('Provided table does not exist');
         }
 
         $table = $schemaManager->listTableDetails($tableName);
-        $prefix = $this->getPrefix($basePath);
 
-        $collectionName = $prefix . '_Collection';
-        $entityName = $prefix . '_Entity';
+        $path = '';
+        $prefix = '';
+        if (!empty($name)) {
+            $path = '/' . $name;
+            $prefix = ucfirst($name) . '_';
+        }
 
-        $schemaParameters = $setup->addSchema('SQL_Table_Parameters', $this->schemaBuilder->getParameters());
-        $schemaResponse = $setup->addSchema('SQL_Table_Response', $this->schemaBuilder->getResponse());
+        $collectionName = $prefix . 'Collection';
+        $entityName = $prefix . 'Entity';
+
+        $schemaParameters = $setup->addSchema($prefix . 'Parameters', $this->schemaBuilder->getParameters());
+        $schemaResponse = $setup->addSchema($prefix . 'Response', $this->schemaBuilder->getResponse());
         $schemaCollection = $setup->addSchema($collectionName, $this->schemaBuilder->getCollection($collectionName, $entityName));
         $schemaEntity = $setup->addSchema($entityName, $this->schemaBuilder->getEntityByTable($table, $entityName));
 
-        $fetchAllAction = $setup->addAction($prefix . '_Select_All', SqlSelectAll::class, PhpClass::class, [
-            'connection' => $configuration->get('connection'),
-            'table' => $configuration->get('table'),
+        $fetchAllAction = $setup->addAction($prefix . 'Select_All', SqlSelectAll::class, PhpClass::class, [
+            'connection' => $connectionName,
+            'table' => $tableName,
         ]);
 
-        $fetchRowAction = $setup->addAction($prefix . '_Select_Row', SqlSelectRow::class, PhpClass::class, [
-            'connection' => $configuration->get('connection'),
-            'table' => $configuration->get('table'),
+        $fetchRowAction = $setup->addAction($prefix . 'Select_Row', SqlSelectRow::class, PhpClass::class, [
+            'connection' => $connectionName,
+            'table' => $tableName,
         ]);
 
-        $deleteAction = $setup->addAction($prefix . '_Delete', SqlDelete::class, PhpClass::class, [
-            'connection' => $configuration->get('connection'),
-            'table' => $configuration->get('table'),
+        $deleteAction = $setup->addAction($prefix . 'Delete', SqlDelete::class, PhpClass::class, [
+            'connection' => $connectionName,
+            'table' => $tableName,
         ]);
 
-        $insertAction = $setup->addAction($prefix . '_Insert', SqlInsert::class, PhpClass::class, [
-            'connection' => $configuration->get('connection'),
-            'table' => $configuration->get('table'),
+        $insertAction = $setup->addAction($prefix . 'Insert', SqlInsert::class, PhpClass::class, [
+            'connection' => $connectionName,
+            'table' => $tableName,
         ]);
 
-        $updateAction = $setup->addAction($prefix . '_Update', SqlUpdate::class, PhpClass::class, [
-            'connection' => $configuration->get('connection'),
-            'table' => $configuration->get('table'),
+        $updateAction = $setup->addAction($prefix . 'Update', SqlUpdate::class, PhpClass::class, [
+            'connection' => $connectionName,
+            'table' => $tableName,
         ]);
 
-        $setup->addRoute(1, '/', 'Fusio\Impl\Controller\SchemaApiController', [], [
+        $setup->addRoute(1, $path . '/', 'Fusio\Impl\Controller\SchemaApiController', [], [
             [
                 'version' => 1,
                 'methods' => [
@@ -132,7 +150,7 @@ class SqlTable implements ProviderInterface
             ]
         ]);
 
-        $setup->addRoute(1, '/:id', 'Fusio\Impl\Controller\SchemaApiController', [], [
+        $setup->addRoute(1, $path . '/:id', 'Fusio\Impl\Controller\SchemaApiController', [], [
             [
                 'version' => 1,
                 'methods' => [
@@ -169,13 +187,7 @@ class SqlTable implements ProviderInterface
         ]);
     }
 
-    public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
-    {
-        $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
-        $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
-    }
-
-    private function getConnection($connectionId): Connection
+    protected function getConnection($connectionId): Connection
     {
         $connection = $this->connector->getConnection($connectionId);
 
@@ -184,10 +196,5 @@ class SqlTable implements ProviderInterface
         } else {
             throw new \RuntimeException('Invalid selected connection');
         }
-    }
-
-    private function getPrefix(string $path): string
-    {
-        return implode('_', array_map('ucfirst', array_filter(explode('/', $path))));
     }
 }
