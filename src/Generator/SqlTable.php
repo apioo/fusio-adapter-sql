@@ -89,35 +89,35 @@ class SqlTable implements ProviderInterface
             $prefix = ucfirst($name) . '_';
         }
 
-        $collectionName = $prefix . 'Collection';
-        $entityName = $prefix . 'Entity';
+        $collectionName = $prefix . 'SQL_Collection';
+        $entityName = $prefix . 'SQL_Entity';
 
-        $schemaParameters = $setup->addSchema($prefix . 'Parameters', $this->schemaBuilder->getParameters());
-        $schemaResponse = $setup->addSchema($prefix . 'Response', $this->schemaBuilder->getResponse());
+        $schemaParameters = $setup->addSchema($prefix . 'SQL_Table_Parameters', $this->schemaBuilder->getParameters());
+        $schemaResponse = $setup->addSchema($prefix . 'SQL_Table_Response', $this->schemaBuilder->getResponse());
         $schemaCollection = $setup->addSchema($collectionName, $this->schemaBuilder->getCollection($collectionName, $entityName));
         $schemaEntity = $setup->addSchema($entityName, $this->schemaBuilder->getEntityByTable($table, $entityName));
 
-        $fetchAllAction = $setup->addAction($prefix . 'Select_All', SqlSelectAll::class, PhpClass::class, [
+        $fetchAllAction = $setup->addAction($prefix . 'SQL_Select_All', SqlSelectAll::class, PhpClass::class, [
             'connection' => $connectionName,
             'table' => $tableName,
         ]);
 
-        $fetchRowAction = $setup->addAction($prefix . 'Select_Row', SqlSelectRow::class, PhpClass::class, [
+        $fetchRowAction = $setup->addAction($prefix . 'SQL_Select_Row', SqlSelectRow::class, PhpClass::class, [
             'connection' => $connectionName,
             'table' => $tableName,
         ]);
 
-        $deleteAction = $setup->addAction($prefix . 'Delete', SqlDelete::class, PhpClass::class, [
+        $deleteAction = $setup->addAction($prefix . 'SQL_Delete', SqlDelete::class, PhpClass::class, [
             'connection' => $connectionName,
             'table' => $tableName,
         ]);
 
-        $insertAction = $setup->addAction($prefix . 'Insert', SqlInsert::class, PhpClass::class, [
+        $insertAction = $setup->addAction($prefix . 'SQL_Insert', SqlInsert::class, PhpClass::class, [
             'connection' => $connectionName,
             'table' => $tableName,
         ]);
 
-        $updateAction = $setup->addAction($prefix . 'Update', SqlUpdate::class, PhpClass::class, [
+        $updateAction = $setup->addAction($prefix . 'SQL_Update', SqlUpdate::class, PhpClass::class, [
             'connection' => $connectionName,
             'table' => $tableName,
         ]);

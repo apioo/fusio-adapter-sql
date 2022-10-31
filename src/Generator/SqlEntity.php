@@ -88,35 +88,35 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
             $mapping = $this->getMapping($type, $tableNames);
 
             $prefix = ucfirst(substr($tableName, 4));
-            $collectionName = $prefix . '_Collection';
-            $entityName = $prefix . '_Entity';
+            $collectionName = $prefix . '_SQL_Collection';
+            $entityName = $prefix . '_SQL_Entity';
 
             $schemaCollection = $setup->addSchema($collectionName, $this->schemaBuilder->getCollection($collectionName, $entityName));
             $schemaEntity = $setup->addSchema($entityName, $this->schemaBuilder->getEntityByType($type, $entityName, $typeSchema, $typeMapping));
 
-            $fetchAllAction = $setup->addAction($prefix . '_Select_All', SqlBuilder::class, PhpClass::class, [
+            $fetchAllAction = $setup->addAction($prefix . '_SQL_Select_All', SqlBuilder::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
                 'jql' => $this->jqlBuilder->getCollection($type, $tableNames, $document),
             ]);
 
-            $fetchRowAction = $setup->addAction($prefix . '_Select_Row', SqlBuilder::class, PhpClass::class, [
+            $fetchRowAction = $setup->addAction($prefix . '_SQL_Select_Row', SqlBuilder::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
                 'jql' => $this->jqlBuilder->getEntity($type, $tableNames, $document),
             ]);
 
-            $deleteAction = $setup->addAction($prefix . '_Delete', SqlDelete::class, PhpClass::class, [
+            $deleteAction = $setup->addAction($prefix . '_SQL_Delete', SqlDelete::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
                 'table' => $tableName,
                 'mapping' => $mapping,
             ]);
 
-            $insertAction = $setup->addAction($prefix . '_Insert', SqlInsert::class, PhpClass::class, [
+            $insertAction = $setup->addAction($prefix . '_SQL_Insert', SqlInsert::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
                 'table' => $tableName,
                 'mapping' => $mapping,
             ]);
 
-            $updateAction = $setup->addAction($prefix . '_Update', SqlUpdate::class, PhpClass::class, [
+            $updateAction = $setup->addAction($prefix . '_SQL_Update', SqlUpdate::class, PhpClass::class, [
                 'connection' => $configuration->get('connection'),
                 'table' => $tableName,
                 'mapping' => $mapping,
