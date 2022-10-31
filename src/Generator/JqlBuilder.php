@@ -57,7 +57,7 @@ class JqlBuilder
             ],
             'itemsPerPage' => 16,
             'entry' => [
-                '$collection' => 'SELECT ' . implode(', ', $columns) . ' FROM ' . $tableName . ' ORDER BY id ASC',
+                '$collection' => 'SELECT ' . implode(', ', $columns) . ' FROM ' . $tableName . ' ORDER BY id DESC',
                 '$offset' => [
                     '$context' => 'startIndex',
                     '$default' => 0
