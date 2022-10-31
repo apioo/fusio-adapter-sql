@@ -63,7 +63,7 @@ class SqlSelectRow extends SqlActionAbstract
         $qb->where($primaryKey . ' = :id');
         $qb->setParameter('id', $id);
 
-        $row = $connection->fetchAssoc($qb->getSQL(), $qb->getParameters());
+        $row = $connection->fetchAssociative($qb->getSQL(), $qb->getParameters());
 
         if (empty($row)) {
             throw new StatusCode\NotFoundException('Entry not available');
