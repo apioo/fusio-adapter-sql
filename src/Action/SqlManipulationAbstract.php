@@ -62,7 +62,7 @@ abstract class SqlManipulationAbstract extends SqlActionAbstract
                 $connection->delete($relationTable, [$entityIdColumn => $entityId]);
 
                 foreach ($data as $row) {
-                    $foreignId = $row instanceof RecordInterface ? $row->getProperty('id') : null;
+                    $foreignId = $this->getValue($row, 'id');
                     if (empty($foreignId) || !is_int($foreignId)) {
                         continue;
                     }
@@ -81,7 +81,7 @@ abstract class SqlManipulationAbstract extends SqlActionAbstract
                 $connection->delete($relationTable, [$entityIdColumn => $entityId]);
 
                 foreach ($data as $key => $row) {
-                    $foreignId = $row instanceof RecordInterface ? $row->getProperty('id') : null;
+                    $foreignId = $this->getValue($row, 'id');
                     if (empty($foreignId) || !is_int($foreignId)) {
                         continue;
                     }
@@ -148,5 +148,18 @@ abstract class SqlManipulationAbstract extends SqlActionAbstract
         }
 
         return $configs;
+    }
+
+    private function getValue(mixed $data, string $propertyName): mixed
+    {
+        if ($data instanceof RecordInterface) {
+            return $data->getProperty($propertyName);
+        } elseif ($data instanceof \stdClass) {
+            return $data->{$propertyName} ?? null;
+        } elseif (is_array($data)) {
+            return $data[$propertyName] ?? null;
+        }
+
+        return null;
     }
 }
