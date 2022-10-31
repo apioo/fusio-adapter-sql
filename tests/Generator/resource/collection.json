@@ -12,7 +12,7 @@
   },
   "itemsPerPage": 16,
   "entry": {
-    "$collection": "SELECT id, first_name, last_name, location_id, tags FROM app_human_0 ORDER BY id ASC",
+    "$collection": "SELECT id, first_name, last_name, location_id, tags FROM app_human_0 ORDER BY id DESC",
     "$offset": {
       "$context": "startIndex",
       "$default": 0
