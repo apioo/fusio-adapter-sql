@@ -267,7 +267,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
             $tableName = $tableNames[$type->getName()];
 
             $prefix = ucfirst(substr($tableName, 4));
-            $entityName = $prefix . '_Entity';
+            $entityName = $prefix . '_SQL_Entity';
 
             $typeMapping[$type->getName()] = $entityName;
         }
