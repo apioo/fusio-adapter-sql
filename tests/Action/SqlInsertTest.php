@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2023 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,7 +22,7 @@
 namespace Fusio\Adapter\Sql\Tests\Action;
 
 use Fusio\Adapter\Sql\Action\SqlInsert;
-use Fusio\Adapter\Sql\Tests\DbTestCase;
+use Fusio\Adapter\Sql\Tests\SqlTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\Exception\BadRequestException;
 use PSX\Http\Exception\MethodNotAllowedException;
@@ -35,7 +35,7 @@ use PSX\Record\Record;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class SqlInsertTest extends DbTestCase
+class SqlInsertTest extends SqlTestCase
 {
     public function testHandlePost()
     {

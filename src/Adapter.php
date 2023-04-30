@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2023 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -32,8 +32,8 @@ use Fusio\Engine\AdapterInterface;
  */
 class Adapter implements AdapterInterface
 {
-    public function getDefinition(): string
+    public function getContainerFile(): string
     {
-        return __DIR__ . '/../definition.json';
+        return __DIR__ . '/../resources/container.php';
     }
 }

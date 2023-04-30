@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2023 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -22,7 +22,7 @@
 namespace Fusio\Adapter\Sql\Tests\Action;
 
 use Fusio\Adapter\Sql\Action\SqlSelectAll;
-use Fusio\Adapter\Sql\Tests\DbTestCase;
+use Fusio\Adapter\Sql\Tests\SqlTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
 
 /**
@@ -32,7 +32,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class SqlSelectAllTest extends DbTestCase
+class SqlSelectAllTest extends SqlTestCase
 {
     public function testHandle()
     {

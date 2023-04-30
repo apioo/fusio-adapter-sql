@@ -3,7 +3,7 @@
  * Fusio
  * A web-application to create dynamically RESTful APIs
  *
- * Copyright (C) 2015-2022 Christoph Kappestein <christoph.kappestein@gmail.com>
+ * Copyright (C) 2015-2023 Christoph Kappestein <christoph.kappestein@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,8 +21,8 @@
 
 namespace Fusio\Adapter\Sql\Tests\Action;
 
-use Fusio\Adapter\Sql\Action\SqlUpdate;
-use Fusio\Adapter\Sql\Tests\DbTestCase;
+use Fusio\Adapter\Sql\Action\FusioInvoke;
+use Fusio\Adapter\Sql\Tests\SqlTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Record\Record;
 
@@ -33,7 +33,7 @@ use PSX\Record\Record;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class SqlUpdateTest extends DbTestCase
+class SqlUpdateTest extends SqlTestCase
 {
     public function testHandle()
     {
@@ -47,7 +47,7 @@ class SqlUpdateTest extends DbTestCase
         $body['content'] = 'ipsum';
         $body['date'] = '2015-02-27 19:59:15';
 
-        $action   = $this->getActionFactory()->factory(SqlUpdate::class);
+        $action   = $this->getActionFactory()->factory(FusioInvoke::class);
         $response = $action->handle($this->getRequest('PUT', ['id' => 1], [], [], $body), $parameters, $this->getContext());
 
         $result = [
