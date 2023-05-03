@@ -29,6 +29,7 @@ use Fusio\Adapter\Sql\Action\SqlSelectAll;
 use Fusio\Adapter\Sql\Action\SqlSelectRow;
 use Fusio\Adapter\Sql\Action\SqlUpdate;
 use Fusio\Engine\ConnectorInterface;
+use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Factory\Resolver\PhpClass;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
@@ -61,8 +62,8 @@ class SqlTable implements ProviderInterface
 
     public function setup(SetupInterface $setup, string $basePath, ParametersInterface $configuration): void
     {
-        $connectionName = $configuration->get('connection');
-        $tableName = $configuration->get('table');
+        $connectionName = $configuration->get('connection') ?? throw new ConfigurationException('No connection provided');
+        $tableName = $configuration->get('table') ?? throw new ConfigurationException('No table provided');
         $schemaManager = $this->getConnection($connectionName)->createSchemaManager();
 
         $this->generateForTable($schemaManager, $connectionName, $tableName, $setup);
@@ -74,7 +75,7 @@ class SqlTable implements ProviderInterface
         $builder->add($elementFactory->newInput('table', 'Table', 'text', 'Name of the database table'));
     }
 
-    protected function generateForTable(AbstractSchemaManager $schemaManager, string $connectionName, string $tableName, SetupInterface $setup, ?string $name = null)
+    protected function generateForTable(AbstractSchemaManager $schemaManager, string $connectionName, string $tableName, SetupInterface $setup, ?string $name = null): void
     {
         if (!$schemaManager->tablesExist([$tableName])) {
             throw new \RuntimeException('Provided table does not exist');

@@ -367,9 +367,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
     private function getRelationConfig(Type $type, Property $property, array $tableNames): array
     {
         $tableName = $tableNames[$type->getName()];
-        $foreignTableName = $tableName . '_' . self::underscore($property->getFirstRef());
+        $foreignTableName = $tableName . '_' . self::underscore($property->getFirstRef() ?? '');
         $typeColumn = self::underscore($type->getName()) . '_id';
-        $foreignColumn = self::underscore($property->getFirstRef()) . '_id';
+        $foreignColumn = self::underscore($property->getFirstRef() ?? '') . '_id';
 
         return [
             $property->getName(),
