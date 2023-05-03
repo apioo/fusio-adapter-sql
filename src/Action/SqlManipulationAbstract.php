@@ -42,13 +42,13 @@ use PSX\Record\RecordInterface;
  */
 abstract class SqlManipulationAbstract extends SqlActionAbstract
 {
-    protected function insertRelations(Connection $connection, int $entityId, RecordInterface $body, ?array $mapping = null)
+    protected function insertRelations(Connection $connection, int $entityId, RecordInterface $body, ?array $mapping = null): void
     {
         $configs = $this->getRelationMappingConfig($mapping);
         foreach ($configs as $config) {
             [$propertyName, $type, $relationTable, $entityIdColumn, $foreignIdColumn] = $config;
 
-            $data = $body->getProperty($propertyName);
+            $data = $body->get($propertyName);
             if (empty($data)) {
                 continue;
             }
@@ -96,7 +96,7 @@ abstract class SqlManipulationAbstract extends SqlActionAbstract
         }
     }
 
-    protected function deleteRelations(Connection $connection, int $entityId, ?array $mapping = null)
+    protected function deleteRelations(Connection $connection, int $entityId, ?array $mapping = null): void
     {
         $configs = $this->getRelationMappingConfig($mapping);
         foreach ($configs as $config) {
@@ -153,7 +153,7 @@ abstract class SqlManipulationAbstract extends SqlActionAbstract
     private function getValue(mixed $data, string $propertyName): mixed
     {
         if ($data instanceof RecordInterface) {
-            return $data->getProperty($propertyName);
+            return $data->get($propertyName);
         } elseif ($data instanceof \stdClass) {
             return $data->{$propertyName} ?? null;
         } elseif (is_array($data)) {

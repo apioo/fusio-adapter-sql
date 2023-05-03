@@ -90,15 +90,15 @@ abstract class SqlActionAbstract extends ActionAbstract
             }
 
             $value = null;
-            if ($body->hasProperty($name)) {
-                $value = $body->getProperty($name);
+            if ($body->containsKey($name)) {
+                $value = $body->get($name);
             } elseif (!$validateNull) {
                 continue;
             } elseif ($column->getDefault()) {
                 continue;
             }
 
-            if ($value === null && $column->getNotnull() && $validateNull) {
+            if ($value === null && $column->getNotnull()) {
                 throw new StatusCode\BadRequestException('Property ' . $name . ' must not be null');
             }
 
@@ -113,11 +113,11 @@ abstract class SqlActionAbstract extends ActionAbstract
                 } elseif ($column->getType() instanceof Types\TimeType) {
                     $value = $value->format($platform->getTimeFormatString());
                 }
-            } elseif (is_array($value) || is_object($value)) {
+            } elseif (is_array($value) || $value instanceof \stdClass) {
                 if ($column->getType() instanceof Types\IntegerType && $type === 'object') {
                     $object = Record::from($value);
-                    if ($object->hasProperty('id')) {
-                        $value = $object->getProperty('id');
+                    if ($object->containsKey('id')) {
+                        $value = $object->get('id');
                     } else {
                         throw new StatusCode\BadRequestException('Property ' . $name . ' must contain an object with id property');
                     }
@@ -147,12 +147,11 @@ abstract class SqlActionAbstract extends ActionAbstract
         return $allColumns;
     }
 
-    protected function getPrimaryKey(Table $table)
+    protected function getPrimaryKey(Table $table): string
     {
         $primaryKey = $table->getPrimaryKey();
         if ($primaryKey instanceof Index) {
-            $columns = $primaryKey->getColumns();
-            return reset($columns);
+            return $primaryKey->getColumns()[0] ?? throw new StatusCode\InternalServerErrorException('Primary column not available');
         } else {
             throw new StatusCode\InternalServerErrorException('Primary column not available');
         }

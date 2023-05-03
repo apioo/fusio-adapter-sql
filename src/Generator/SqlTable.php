@@ -188,13 +188,13 @@ class SqlTable implements ProviderInterface
         ]);
     }
 
-    protected function getConnection(string|int $connectionId): Connection
+    protected function getConnection(mixed $connectionId): Connection
     {
         $connection = $this->connector->getConnection($connectionId);
         if ($connection instanceof Connection) {
             return $connection;
         } else {
-            throw new \RuntimeException('Invalid selected connection');
+            throw new ConfigurationException('Invalid selected connection');
         }
     }
 }

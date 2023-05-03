@@ -133,7 +133,7 @@ class SqlSelectAll extends SqlActionAbstract
             $qb->orderBy($sortBy, $sortOrder);
         } elseif (!empty($orderBy) && in_array($orderBy, $allColumns)) {
             $qb->orderBy($orderBy, 'DESC');
-        } else {
+        } elseif (!empty($primaryKey)) {
             $qb->orderBy($primaryKey, 'DESC');
         }
     }

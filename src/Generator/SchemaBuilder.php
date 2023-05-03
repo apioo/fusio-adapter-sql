@@ -65,17 +65,22 @@ class SchemaBuilder
         ];
     }
 
-    public function getEntityByType(Type $type, string $entityName, array $typeSchema, array $typeMapping): array
+    public function getEntityByType(Type $property, string $entityName, array $typeSchema, array $typeMapping): array
     {
-        $schema = $typeSchema['definitions'][$type->getName()] ?? null;
+        $schema = $typeSchema['definitions'][$property->getName() ?? ''] ?? null;
         if (empty($schema)) {
             throw new \RuntimeException('Could not resolve schema');
         }
 
+        $typeName = $property->getName();
+        if ($typeName === null) {
+            throw new \RuntimeException('Could not resolve type name');
+        }
+
         $entityTypeMapping = $typeMapping;
-        if (isset($entityTypeMapping[$type->getName()])) {
+        if (isset($entityTypeMapping[$typeName])) {
             // remove the mapping from the type itself
-            unset($entityTypeMapping[$type->getName()]);
+            unset($entityTypeMapping[$typeName]);
         }
 
         $import = [];
@@ -88,19 +93,19 @@ class SchemaBuilder
             $properties['id'] = [
                 'type' => 'integer'
             ];
-            foreach ($schema['properties'] as $key => $type) {
-                if (isset($type['$ref']) && is_string($type['$ref'])) {
-                    $properties[$key]['$ref'] = $this->resolveRef($type, $entityTypeMapping);
-                } elseif (isset($type['additionalProperties']['$ref']) && is_string($type['additionalProperties']['$ref'])) {
-                    $properties[$key]['additionalProperties']['$ref'] = $this->resolveRef($type['additionalProperties'], $entityTypeMapping);
-                } elseif (isset($type['items']['$ref']) && is_string($type['items']['$ref'])) {
-                    $properties[$key]['items']['$ref'] = $this->resolveRef($type['items'], $entityTypeMapping);
-                } elseif (isset($type['oneOf']) && is_array($type['oneOf'])) {
-                    $properties[$key]['oneOf'] = $this->resolveRefs($type['oneOf'], $entityTypeMapping);
-                } elseif (isset($type['allOf']) && is_array($type['allOf'])) {
-                    $properties[$key]['allOf'] = $this->resolveRefs($type['allOf'], $entityTypeMapping);
+            foreach ($schema['properties'] as $key => $property) {
+                if (isset($property['$ref']) && is_string($property['$ref'])) {
+                    $properties[$key]['$ref'] = $this->resolveRef($property, $entityTypeMapping);
+                } elseif (isset($property['additionalProperties']['$ref']) && is_string($property['additionalProperties']['$ref'])) {
+                    $properties[$key]['additionalProperties']['$ref'] = $this->resolveRef($property['additionalProperties'], $entityTypeMapping);
+                } elseif (isset($property['items']['$ref']) && is_string($property['items']['$ref'])) {
+                    $properties[$key]['items']['$ref'] = $this->resolveRef($property['items'], $entityTypeMapping);
+                } elseif (isset($property['oneOf']) && is_array($property['oneOf'])) {
+                    $properties[$key]['oneOf'] = $this->resolveRefs($property['oneOf'], $entityTypeMapping);
+                } elseif (isset($property['allOf']) && is_array($property['allOf'])) {
+                    $properties[$key]['allOf'] = $this->resolveRefs($property['allOf'], $entityTypeMapping);
                 } else {
-                    $properties[$key] = $type;
+                    $properties[$key] = $property;
                 }
             }
             $schema['properties'] = $properties;
@@ -214,7 +219,7 @@ class SchemaBuilder
         return $return;
     }
 
-    private function resolveRef(array $type, array $typeMapping): string
+    private function resolveRef(array|\ArrayAccess $type, array $typeMapping): string
     {
         if (isset($typeMapping[$type['$ref']])) {
             return $type['$ref'] . ':' . $typeMapping[$type['$ref']];

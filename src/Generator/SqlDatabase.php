@@ -43,8 +43,8 @@ class SqlDatabase extends SqlTable
     public function setup(SetupInterface $setup, string $basePath, ParametersInterface $configuration): void
     {
         $connectionName = $configuration->get('connection');
-        $prefix = $configuration->get('prefix');
-        $schemaManager = $this->getConnection($connectionName)->getSchemaManager();
+        $prefix = $configuration->get('prefix') ?? '';
+        $schemaManager = $this->getConnection($connectionName)->createSchemaManager();
 
         $tableNames = $schemaManager->listTableNames();
         foreach ($tableNames as $tableName) {

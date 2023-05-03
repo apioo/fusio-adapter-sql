@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Sql\Connection;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Exception;
 use Fusio\Engine\Connection\PingableInterface;
 use Fusio\Engine\ConnectionInterface;
 use Fusio\Engine\Form\BuilderInterface;
@@ -58,7 +59,12 @@ class SqlAdvanced implements ConnectionInterface, PingableInterface
     public function ping(mixed $connection): bool
     {
         if ($connection instanceof Connection) {
-            return $connection->ping();
+            try {
+                $connection->createSchemaManager()->listTableNames();
+                return true;
+            } catch (Exception $e) {
+                return false;
+            }
         } else {
             return false;
         }

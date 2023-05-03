@@ -33,8 +33,8 @@ use Fusio\Engine\Request\RpcRequest;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\Exception as StatusCode;
-use PSX\Sql\Builder;
-use PSX\Sql\Provider;
+use PSX\Nested\Builder;
+use PSX\Nested\JsonProvider;
 
 /**
  * SqlBuilder
@@ -54,7 +54,7 @@ class SqlBuilder extends ActionAbstract
     {
         $connection = $this->getConnection($configuration);
 
-        $definition = (new Provider\JsonProvider($connection))->create(json_decode($configuration->get('jql')), $this->getContext($request));
+        $definition = (new JsonProvider($connection))->create(json_decode($configuration->get('jql')), $this->getContext($request));
         $data = (new Builder($connection))->build($definition);
 
         if (empty($data)) {
@@ -72,10 +72,11 @@ class SqlBuilder extends ActionAbstract
 
     private function getContext(RequestInterface $request): array
     {
-        if ($request instanceof HttpRequest) {
-            return array_merge($request->getUriFragments(), $request->getParameters());
-        } elseif ($request instanceof RpcRequest) {
-            return $request->getArguments()->getProperties();
+        $requestContext = $request->getContext();
+        if ($requestContext instanceof HttpRequest) {
+            return array_merge($requestContext->getUriFragments(), $requestContext->getParameters());
+        } elseif ($requestContext instanceof RpcRequest) {
+            return [];
         } else {
             return [];
         }
