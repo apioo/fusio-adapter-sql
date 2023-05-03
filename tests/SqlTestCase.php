@@ -21,7 +21,9 @@
 
 namespace Fusio\Adapter\Sql\Tests;
 
-use Fusio\Adapter\Soap\Connection\Soap;
+use Doctrine\DBAL\Connection as DoctrineConnection;
+use Fusio\Adapter\Sql\Action\Query\SqlQueryAll;
+use Fusio\Adapter\Sql\Action\Query\SqlQueryRow;
 use Fusio\Adapter\Sql\Action\SqlBuilder;
 use Fusio\Adapter\Sql\Action\SqlDelete;
 use Fusio\Adapter\Sql\Action\SqlInsert;
@@ -36,6 +38,7 @@ use Fusio\Adapter\Sql\Generator\SqlTable;
 use Fusio\Engine\Action\Runtime;
 use Fusio\Engine\ConnectorInterface;
 use Fusio\Engine\Model\Connection;
+use Fusio\Engine\Parameters;
 use Fusio\Engine\Test\CallbackConnection;
 use Fusio\Engine\Test\EngineTestCaseTrait;
 use PHPUnit\Framework\TestCase;
@@ -58,6 +61,8 @@ class SqlTestCase extends TestCase
     {
         $container->set(Sql::class, new Sql());
         $container->set(SqlAdvanced::class, new SqlAdvanced());
+        $container->set(SqlQueryAll::class, new SqlQueryAll($runtime));
+        $container->set(SqlQueryRow::class, new SqlQueryRow($runtime));
         $container->set(SqlBuilder::class, new SqlBuilder($runtime));
         $container->set(SqlDelete::class, new SqlDelete($runtime));
         $container->set(SqlInsert::class, new SqlInsert($runtime));
@@ -84,13 +89,60 @@ class SqlTestCase extends TestCase
         $this->getConnectionRepository()->add($connection);
     }
 
-    protected function getConnection(): \Doctrine\DBAL\Connection
+    protected function getConnection(): DoctrineConnection
     {
-        return getConnection();
+        if (!isset($this->connection)) {
+            $this->connection = $this->newConnection();
+        }
+
+        return $this->connection;
     }
 
-    protected function getDataSet()
+    protected function getDataSet(): array
     {
         return include __DIR__ . '/fixture.php';
+    }
+
+    protected function newConnection(): DoctrineConnection
+    {
+        $connector = new SqlAdvanced();
+
+        try {
+            $connection = $connector->getConnection(new Parameters([
+                'url' => 'pdo-sqlite:///:memory:',
+            ]));
+
+            $schema = $connection->createSchemaManager()->introspectSchema();
+
+            $table = $schema->createTable('app_news');
+            $table->addColumn('id', 'integer', ['autoincrement' => true]);
+            $table->addColumn('title', 'string');
+            $table->addColumn('price', 'float', ['notnull' => false]);
+            $table->addColumn('content', 'text', ['notnull' => false]);
+            $table->addColumn('image', 'binary', ['notnull' => false]);
+            $table->addColumn('posted', 'time', ['notnull' => false]);
+            $table->addColumn('date', 'datetime', ['notnull' => false]);
+            $table->setPrimaryKey(['id']);
+
+            $table = $schema->createTable('app_invalid');
+            $table->addColumn('id', 'integer');
+            $table->addColumn('title', 'string');
+
+            $table = $schema->createTable('app_insert');
+            $table->addColumn('id', 'integer', ['autoincrement' => true]);
+            $table->addColumn('title', 'string');
+            $table->addColumn('content', 'string', ['default' => 'Test content']);
+            $table->addColumn('counter', 'integer', ['default' => 999]);
+            $table->addColumn('created_at', 'datetime', ['default' => 'CURRENT_TIMESTAMP']);
+
+            $queries = $schema->toSql($connection->getDatabasePlatform());
+            foreach ($queries as $query) {
+                $connection->executeQuery($query);
+            }
+
+            return $connection;
+        } catch (\Exception $e) {
+            $this->markTestSkipped('SQL connection not available');
+        }
     }
 }

@@ -21,7 +21,7 @@
 
 namespace Fusio\Adapter\Sql\Tests\Action;
 
-use Fusio\Adapter\Sql\Action\FusioInvoke;
+use Fusio\Adapter\Sql\Action\SqlUpdate;
 use Fusio\Adapter\Sql\Tests\SqlTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Record\Record;
@@ -47,7 +47,7 @@ class SqlUpdateTest extends SqlTestCase
         $body['content'] = 'ipsum';
         $body['date'] = '2015-02-27 19:59:15';
 
-        $action   = $this->getActionFactory()->factory(FusioInvoke::class);
+        $action   = $this->getActionFactory()->factory(SqlUpdate::class);
         $response = $action->handle($this->getRequest('PUT', ['id' => 1], [], [], $body), $parameters, $this->getContext());
 
         $result = [
@@ -63,7 +63,7 @@ class SqlUpdateTest extends SqlTestCase
         $this->assertEquals($result, $response->getBody());
 
         // check whether the entry was inserted
-        $row    = $this->connection->fetchAssoc('SELECT id, title, content, date FROM app_news WHERE id = 1');
+        $row    = $this->connection->fetchAssociative('SELECT id, title, content, date FROM app_news WHERE id = 1');
         $expect = [
             'id'      => 1,
             'title'   => 'lorem',

@@ -69,7 +69,7 @@ class SqlInsertTest extends SqlTestCase
         $this->assertEquals($result, $body);
 
         // check whether the entry was inserted
-        $row    = $this->connection->fetchAssoc('SELECT id, title, price, content, image, posted, date FROM app_news WHERE id = :id', ['id' => $body['id']]);
+        $row    = $this->connection->fetchAssociative('SELECT id, title, price, content, image, posted, date FROM app_news WHERE id = :id', ['id' => $body['id']]);
         $expect = [
             'id'      => 4,
             'title'   => 'lorem',
@@ -111,7 +111,7 @@ class SqlInsertTest extends SqlTestCase
         $action->handle($this->getRequest('POST', [], [], [], $body), $parameters, $this->getContext());
 
         // check whether the entry was inserted
-        $row    = $this->connection->fetchAssoc('SELECT * FROM app_insert WHERE id = :id', ['id' => 1]);
+        $row    = $this->connection->fetchAssociative('SELECT * FROM app_insert WHERE id = :id', ['id' => 1]);
         
         $this->assertEquals(1, $row['id']);
         $this->assertEquals('Test content', $row['content']);

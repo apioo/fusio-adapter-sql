@@ -56,7 +56,7 @@ class SqlDeleteTest extends SqlTestCase
         $this->assertEquals([], $response->getHeaders());
         $this->assertEquals($result, $response->getBody());
 
-        $row = $this->connection->fetchAssoc('SELECT id, title, content, date FROM app_news WHERE id = 1');
+        $row = $this->connection->fetchAssociative('SELECT id, title, content, date FROM app_news WHERE id = 1');
 
         $this->assertEmpty($row);
     }
