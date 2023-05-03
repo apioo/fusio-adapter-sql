@@ -25,7 +25,7 @@ use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types;
 use PSX\Schema\Document\Type;
-use PSX\Schema\Type\TypeAbstract;
+use PSX\Schema\Format;
 
 /**
  * SchemaBuilder
@@ -155,11 +155,11 @@ class SchemaBuilder
         $schema['type'] = $this->getSchemaType($type);
 
         if ($type instanceof Types\DateTimeType) {
-            $schema['format'] = TypeAbstract::FORMAT_DATETIME;
+            $schema['format'] = Format::DATETIME;
         } elseif ($type instanceof Types\DateType) {
-            $schema['format'] = TypeAbstract::FORMAT_DATE;
+            $schema['format'] = Format::DATE;
         } elseif ($type instanceof Types\TimeType) {
-            $schema['format'] = TypeAbstract::FORMAT_TIME;
+            $schema['format'] = Format::TIME;
         }
 
         $length = $column->getLength();

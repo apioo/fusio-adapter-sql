@@ -187,7 +187,7 @@ class SqlTable implements ProviderInterface
         ]);
     }
 
-    protected function getConnection($connectionId): Connection
+    protected function getConnection(string|int $connectionId): Connection
     {
         $connection = $this->connector->getConnection($connectionId);
         if ($connection instanceof Connection) {
