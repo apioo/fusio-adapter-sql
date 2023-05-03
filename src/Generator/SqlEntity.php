@@ -71,7 +71,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $connection = $this->getConnection($configuration->get('connection'));
         $document = Document::from($configuration->get('schema'));
 
-        $schemaManager = $connection->getSchemaManager();
+        $schemaManager = $connection->createSchemaManager();
 
         $schemaParameters = $setup->addSchema('SQL_Table_Parameters', $this->schemaBuilder->getParameters());
         $schemaResponse = $setup->addSchema('SQL_Table_Response', $this->schemaBuilder->getResponse());
@@ -193,8 +193,8 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $connection = $this->getConnection($configuration->get('connection'));
         $document = Document::from($configuration->get('schema'));
 
-        $schemaManager = $connection->getSchemaManager();
-        $schema = $schemaManager->createSchema();
+        $schemaManager = $connection->createSchemaManager();
+        $schema = $schemaManager->introspectSchema();
         $tableNames = $this->getTableNames($document, $schemaManager);
 
         $types = $document->getTypes();
@@ -210,9 +210,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
             $table->addForeignKeyConstraint($schema->getTable($foreignTable), $localColumns, $foreignColumns);
         }
 
-        $from = $schemaManager->createSchema();
-        $queries = $from->getMigrateToSql($schema, $connection->getDatabasePlatform());
-
+        $queries = $schema->toSql($connection->getDatabasePlatform());
         foreach ($queries as $query) {
             $connection->executeQuery($query);
         }

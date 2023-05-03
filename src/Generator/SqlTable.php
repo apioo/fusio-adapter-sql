@@ -63,7 +63,7 @@ class SqlTable implements ProviderInterface
     {
         $connectionName = $configuration->get('connection');
         $tableName = $configuration->get('table');
-        $schemaManager = $this->getConnection($connectionName)->getSchemaManager();
+        $schemaManager = $this->getConnection($connectionName)->createSchemaManager();
 
         $this->generateForTable($schemaManager, $connectionName, $tableName, $setup);
     }
@@ -80,7 +80,7 @@ class SqlTable implements ProviderInterface
             throw new \RuntimeException('Provided table does not exist');
         }
 
-        $table = $schemaManager->listTableDetails($tableName);
+        $table = $schemaManager->introspectTable($tableName);
 
         $path = '';
         $prefix = '';
@@ -190,7 +190,6 @@ class SqlTable implements ProviderInterface
     protected function getConnection($connectionId): Connection
     {
         $connection = $this->connector->getConnection($connectionId);
-
         if ($connection instanceof Connection) {
             return $connection;
         } else {

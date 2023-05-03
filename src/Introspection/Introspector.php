@@ -44,12 +44,12 @@ class Introspector implements IntrospectorInterface
 
     public function getEntities(): array
     {
-        return $this->connection->getSchemaManager()->listTableNames();
+        return $this->connection->createSchemaManager()->listTableNames();
     }
 
     public function getEntity(string $entityName): Entity
     {
-        $table = $this->connection->getSchemaManager()->listTableDetails($entityName);
+        $table = $this->connection->createSchemaManager()->introspectTable($entityName);
         $entity = new Entity($table->getName(), [
             'Name',
             'Type',
