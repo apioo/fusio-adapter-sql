@@ -22,6 +22,7 @@
 namespace Fusio\Adapter\Sql\Action\Query;
 
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
@@ -46,7 +47,7 @@ class SqlQueryAll extends SqlQueryAbstract
     {
         $connection = $this->getConnection($configuration);
 
-        $sql   = $configuration->get('sql');
+        $sql   = $configuration->get('sql') ?? throw new ConfigurationException('No sql configured');
         $limit = (int) $configuration->get('limit');
 
         [$query, $params] = $this->parseSql($sql, $request);
@@ -58,10 +59,10 @@ class SqlQueryAll extends SqlQueryAbstract
         $limit      = $limit <= 0 ? 16 : $limit;
         $count      = $count >= 1 && $count <= $limit ? $count : $limit;
 
-        $totalResults = (int) $connection->fetchColumn('SELECT COUNT(*) AS cnt FROM (' . $query . ') res', $params);
+        $totalResults = (int) $connection->fetchOne('SELECT COUNT(*) AS cnt FROM (' . $query . ') res', $params);
 
         $query = $connection->getDatabasePlatform()->modifyLimitQuery($query, $count, $startIndex);
-        $data  = $connection->fetchAll($query, $params);
+        $data  = $connection->fetchAllAssociative($query, $params);
 
         $result = [
             'totalResults' => $totalResults,

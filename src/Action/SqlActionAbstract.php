@@ -56,10 +56,9 @@ abstract class SqlActionAbstract extends ActionAbstract
         $table = $this->cache->get($key);
 
         if ($table === null) {
-            $sm = $connection->getSchemaManager();
-
-            if ($sm->tablesExist([$tableName])) {
-                $table = $sm->listTableDetails($tableName);
+            $schemaManager = $connection->createSchemaManager();
+            if ($schemaManager->tablesExist([$tableName])) {
+                $table = $schemaManager->introspectTable($tableName);
                 $this->cache->set($key, $table);
             } else {
                 throw new StatusCode\InternalServerErrorException('Table ' . $tableName . ' does not exist on connection');

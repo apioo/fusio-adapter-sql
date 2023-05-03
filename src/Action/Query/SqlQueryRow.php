@@ -22,6 +22,7 @@
 namespace Fusio\Adapter\Sql\Action\Query;
 
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
@@ -45,11 +46,11 @@ class SqlQueryRow extends SqlQueryAbstract
     {
         $connection = $this->getConnection($configuration);
 
-        $sql = $configuration->get('sql');
+        $sql = $configuration->get('sql') ?? throw new ConfigurationException('No sql configured');
 
         [$query, $params] = $this->parseSql($sql, $request);
 
-        $result = $connection->fetchAssoc($query, $params);
+        $result = $connection->fetchAssociative($query, $params);
 
         if (empty($result)) {
             throw new StatusCode\NotFoundException('Entry not found');
