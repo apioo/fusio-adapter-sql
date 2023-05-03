@@ -21,12 +21,8 @@
 
 namespace Fusio\Adapter\Sql\Generator;
 
-use Doctrine\DBAL\Schema\Column;
-use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types;
 use PSX\Schema\Document\Document;
 use PSX\Schema\Document\Type;
-use PSX\Schema\Type\TypeAbstract;
 
 /**
  * JqlBuilder

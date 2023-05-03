@@ -25,7 +25,6 @@ use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Tests\SqlTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\Exception\BadRequestException;
-use PSX\Http\Exception\MethodNotAllowedException;
 use PSX\Record\Record;
 
 /**

@@ -21,8 +21,6 @@
 
 namespace Fusio\Adapter\Sql\Action;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Schema\Table;
 use Fusio\Engine\ContextInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;

@@ -22,14 +22,7 @@
 namespace Fusio\Adapter\Sql\Action;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types;
-use Fusio\Engine\ActionAbstract;
-use Fusio\Engine\Exception\ConfigurationException;
-use Fusio\Engine\Form\BuilderInterface;
-use Fusio\Engine\Form\ElementFactoryInterface;
-use Fusio\Engine\ParametersInterface;
 use PSX\Http\Exception as StatusCode;
 use PSX\Record\RecordInterface;
 
