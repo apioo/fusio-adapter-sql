@@ -22,6 +22,7 @@
 namespace Fusio\Adapter\Sql\Introspection;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Types\Type;
 use Fusio\Engine\Connection\Introspection\Entity;
 use Fusio\Engine\Connection\Introspection\IntrospectorInterface;
 use Fusio\Engine\Connection\Introspection\Row;
@@ -59,7 +60,7 @@ class Introspector implements IntrospectorInterface
         foreach ($table->getColumns() as $column) {
             $entity->addRow(new Row([
                 $column->getName(),
-                $column->getType()->getName(),
+                Type::getTypeRegistry()->lookupName($column->getType()),
                 $column->getComment(),
             ]));
         }
