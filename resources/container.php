@@ -1,5 +1,7 @@
 <?php
 
+use Fusio\Adapter\Sql\Action\Query\SqlQueryAll;
+use Fusio\Adapter\Sql\Action\Query\SqlQueryRow;
 use Fusio\Adapter\Sql\Action\SqlBuilder;
 use Fusio\Adapter\Sql\Action\SqlDelete;
 use Fusio\Adapter\Sql\Action\SqlInsert;
@@ -18,6 +20,8 @@ return static function (ContainerConfigurator $container) {
     $services = ServiceBuilder::build($container);
     $services->set(Sql::class);
     $services->set(SqlAdvanced::class);
+    $services->set(SqlQueryAll::class);
+    $services->set(SqlQueryRow::class);
     $services->set(SqlBuilder::class);
     $services->set(SqlDelete::class);
     $services->set(SqlInsert::class);

@@ -24,7 +24,11 @@ namespace Fusio\Adapter\Sql\Connection;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception;
+use Fusio\Adapter\Sql\Introspection\Introspector;
+use Fusio\Engine\Connection\IntrospectableInterface;
+use Fusio\Engine\Connection\Introspection\IntrospectorInterface;
 use Fusio\Engine\Connection\PingableInterface;
+use Fusio\Engine\ConnectionAbstract;
 use Fusio\Engine\ConnectionInterface;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
@@ -37,7 +41,7 @@ use Fusio\Engine\ParametersInterface;
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class SqlAdvanced implements ConnectionInterface, PingableInterface
+class SqlAdvanced extends ConnectionAbstract implements PingableInterface, IntrospectableInterface
 {
     public function getName(): string
     {
@@ -68,5 +72,10 @@ class SqlAdvanced implements ConnectionInterface, PingableInterface
         } else {
             return false;
         }
+    }
+
+    public function getIntrospector(mixed $connection): IntrospectorInterface
+    {
+        return new Introspector($connection);
     }
 }
