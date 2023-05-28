@@ -27,13 +27,13 @@ use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\Exception\NotFoundException;
 
 /**
- * SqlTableTest
+ * SqlSelectRowTest
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class SqlTableTest extends SqlTestCase
+class SqlSelectRowTest extends SqlTestCase
 {
     public function testHandle()
     {
