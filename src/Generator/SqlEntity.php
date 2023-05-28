@@ -97,8 +97,8 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
             $mapping = $this->entityExecutor->getMapping($type, $tableNames);
 
             $prefix = substr($tableName, 4);
-            $collectionName = $prefix . '_SQL_GetAll';
-            $entityName = $prefix . '_SQL_Get';
+            $collectionName = self::SCHEMA_GET_ALL;
+            $entityName = self::SCHEMA_GET;
 
             $schemaPrefix = ucfirst($prefix) . '_';
             $actionPrefix = ucfirst($prefix) . '_';
@@ -113,11 +113,11 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
             $setup->addAction($this->makeUpdateAction($configuration, $tableName, $mapping, $actionPrefix));
             $setup->addAction($this->makeDeleteAction($configuration, $tableName, $mapping, $actionPrefix));
 
-            $setup->addOperation($this->makeGetAllOperation($routeName, $type, $operationPrefix));
-            $setup->addOperation($this->makeGetOperation($routeName, $type, $operationPrefix));
-            $setup->addOperation($this->makeInsertOperation($routeName, $type, $operationPrefix));
-            $setup->addOperation($this->makeUpdateOperation($routeName, $type, $operationPrefix));
-            $setup->addOperation($this->makeDeleteOperation($routeName, $type, $operationPrefix));
+            $setup->addOperation($this->makeGetAllOperation($routeName, $type, $operationPrefix, $actionPrefix, $schemaPrefix));
+            $setup->addOperation($this->makeGetOperation($routeName, $type, $operationPrefix, $actionPrefix, $schemaPrefix));
+            $setup->addOperation($this->makeInsertOperation($routeName, $type, $operationPrefix, $actionPrefix));
+            $setup->addOperation($this->makeUpdateOperation($routeName, $type, $operationPrefix, $actionPrefix));
+            $setup->addOperation($this->makeDeleteOperation($routeName, $type, $operationPrefix, $actionPrefix));
         }
     }
 
@@ -223,7 +223,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $action;
     }
 
-    private function makeGetAllOperation(string $basePath, Type $type, string $prefix): OperationCreate
+    private function makeGetAllOperation(string $basePath, Type $type, string $prefix, string $actionPrefix, string $schemaPrefix): OperationCreate
     {
         $operation = new OperationCreate();
         $operation->setName($prefix . 'getAll');
@@ -231,12 +231,12 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $operation->setHttpMethod('GET');
         $operation->setHttpPath($basePath . '/');
         $operation->setHttpCode(200);
-        $operation->setOutgoing(self::SCHEMA_GET_ALL);
-        $operation->setAction(self::ACTION_GET_ALL);
+        $operation->setOutgoing($schemaPrefix . self::SCHEMA_GET_ALL);
+        $operation->setAction($actionPrefix . self::ACTION_GET_ALL);
         return $operation;
     }
 
-    private function makeGetOperation(string $basePath, Type $type, string $prefix): OperationCreate
+    private function makeGetOperation(string $basePath, Type $type, string $prefix, string $actionPrefix, string $schemaPrefix): OperationCreate
     {
         $operation = new OperationCreate();
         $operation->setName($prefix . 'get');
@@ -244,12 +244,12 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $operation->setHttpMethod('GET');
         $operation->setHttpPath($basePath . '/:id');
         $operation->setHttpCode(200);
-        $operation->setOutgoing(self::SCHEMA_GET);
-        $operation->setAction(self::ACTION_GET);
+        $operation->setOutgoing($schemaPrefix . self::SCHEMA_GET);
+        $operation->setAction($actionPrefix . self::ACTION_GET);
         return $operation;
     }
 
-    private function makeInsertOperation(string $basePath, Type $type, string $prefix): OperationCreate
+    private function makeInsertOperation(string $basePath, Type $type, string $prefix, string $actionPrefix): OperationCreate
     {
         $operation = new OperationCreate();
         $operation->setName($prefix . 'create');
@@ -258,11 +258,11 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $operation->setHttpPath($basePath . '/');
         $operation->setHttpCode(200);
         $operation->setOutgoing(SchemaName::MESSAGE);
-        $operation->setAction(self::ACTION_INSERT);
+        $operation->setAction($actionPrefix . self::ACTION_INSERT);
         return $operation;
     }
 
-    private function makeUpdateOperation(string $basePath, Type $type, string $prefix): OperationCreate
+    private function makeUpdateOperation(string $basePath, Type $type, string $prefix, string $actionPrefix): OperationCreate
     {
         $operation = new OperationCreate();
         $operation->setName($prefix . 'update');
@@ -271,11 +271,11 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $operation->setHttpPath($basePath . '/:id');
         $operation->setHttpCode(200);
         $operation->setOutgoing(SchemaName::MESSAGE);
-        $operation->setAction(self::ACTION_UPDATE);
+        $operation->setAction($actionPrefix . self::ACTION_UPDATE);
         return $operation;
     }
 
-    private function makeDeleteOperation(string $basePath, Type $type, string $prefix): OperationCreate
+    private function makeDeleteOperation(string $basePath, Type $type, string $prefix, string $actionPrefix): OperationCreate
     {
         $operation = new OperationCreate();
         $operation->setName($prefix . 'delete');
@@ -284,7 +284,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $operation->setHttpPath($basePath . '/:id');
         $operation->setHttpCode(200);
         $operation->setOutgoing(SchemaName::MESSAGE);
-        $operation->setAction(self::ACTION_DELETE);
+        $operation->setAction($actionPrefix . self::ACTION_DELETE);
         return $operation;
     }
 
