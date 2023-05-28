@@ -67,7 +67,7 @@ class TableBuilder
         ];
     }
 
-    public function getEntity(Table $table, string $entityName): \stdClass
+    public function getEntity(Table $table, string $entityName): object
     {
         $properties = [];
         $columns = $table->getColumns();

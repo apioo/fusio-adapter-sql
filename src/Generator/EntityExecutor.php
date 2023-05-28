@@ -37,7 +37,7 @@ use PSX\Schema\Document\Type;
  */
 class EntityExecutor
 {
-    public function execute(Connection $connection, Document $document)
+    public function execute(Connection $connection, Document $document): void
     {
         $schemaManager = $connection->createSchemaManager();
         $schema = $schemaManager->introspectSchema();

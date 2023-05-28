@@ -29,7 +29,9 @@ use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Request\HttpRequest;
+use Fusio\Engine\Request\HttpRequestContext;
 use Fusio\Engine\Request\RpcRequest;
+use Fusio\Engine\Request\RpcRequestContext;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\Exception as StatusCode;
@@ -73,9 +75,9 @@ class SqlBuilder extends ActionAbstract
     private function getContext(RequestInterface $request): array
     {
         $requestContext = $request->getContext();
-        if ($requestContext instanceof HttpRequest) {
-            return array_merge($requestContext->getUriFragments(), $requestContext->getParameters());
-        } elseif ($requestContext instanceof RpcRequest) {
+        if ($requestContext instanceof HttpRequestContext) {
+            return array_merge($requestContext->getParameters(), $requestContext->getRequest()->getUri()->getParameters());
+        } elseif ($requestContext instanceof RpcRequestContext) {
             return [];
         } else {
             return [];

@@ -152,7 +152,7 @@ class SqlTable implements ProviderInterface
 
         $schema = new Schema();
         $schema->setName($prefix . self::SCHEMA_GET);
-        $schema->setSource(SchemaSource::fromStdClass($type));
+        $schema->setSource(SchemaSource::fromObject($type));
         return $schema;
     }
 
@@ -162,7 +162,7 @@ class SqlTable implements ProviderInterface
         $action->setName($prefix . self::ACTION_GET_ALL);
         $action->setClass(SqlSelectAll::class);
         $action->setEngine(PhpClass::class);
-        $action->setConfig(ActionConfig::fromArray([
+        $action->setConfig(ActionConfig::fromIterable([
             'connection' => $connectionName,
             'table' => $tableName,
         ]));
@@ -175,7 +175,7 @@ class SqlTable implements ProviderInterface
         $action->setName($prefix . self::ACTION_GET);
         $action->setClass(SqlSelectRow::class);
         $action->setEngine(PhpClass::class);
-        $action->setConfig(ActionConfig::fromArray([
+        $action->setConfig(ActionConfig::fromIterable([
             'connection' => $connectionName,
             'table' => $tableName,
         ]));
@@ -188,7 +188,7 @@ class SqlTable implements ProviderInterface
         $action->setName($prefix . self::ACTION_INSERT);
         $action->setClass(SqlInsert::class);
         $action->setEngine(PhpClass::class);
-        $action->setConfig(ActionConfig::fromArray([
+        $action->setConfig(ActionConfig::fromIterable([
             'connection' => $connectionName,
             'table' => $tableName,
         ]));
@@ -201,7 +201,7 @@ class SqlTable implements ProviderInterface
         $action->setName($prefix . self::ACTION_UPDATE);
         $action->setClass(SqlUpdate::class);
         $action->setEngine(PhpClass::class);
-        $action->setConfig(ActionConfig::fromArray([
+        $action->setConfig(ActionConfig::fromIterable([
             'connection' => $connectionName,
             'table' => $tableName,
         ]));
@@ -214,7 +214,7 @@ class SqlTable implements ProviderInterface
         $action->setName($prefix . self::ACTION_DELETE);
         $action->setClass(SqlDelete::class);
         $action->setEngine(PhpClass::class);
-        $action->setConfig(ActionConfig::fromArray([
+        $action->setConfig(ActionConfig::fromIterable([
             'connection' => $connectionName,
             'table' => $tableName,
         ]));
