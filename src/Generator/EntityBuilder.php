@@ -21,51 +21,50 @@
 
 namespace Fusio\Adapter\Sql\Generator;
 
-use Doctrine\DBAL\Schema\Column;
-use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types;
 use PSX\Schema\Document\Type;
-use PSX\Schema\Format;
 
 /**
- * SchemaBuilder
+ * EntityBuilder
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.gnu.org/licenses/agpl-3.0
  * @link    https://www.fusio-project.org/
  */
-class SchemaBuilder
+class EntityBuilder
 {
-    public function getParameters(): array
+    public function getCollection(string $collectionName, string $entityName): object
     {
-        return $this->readSchema(__DIR__ . '/schema/sql-table/parameters.json');
-    }
-
-    public function getResponse(): array
-    {
-        return $this->readSchema(__DIR__ . '/schema/sql-table/response.json');
-    }
-
-    public function getEntityByTable(Table $table, string $entityName): array
-    {
-        $properties = [];
-        $columns = $table->getColumns();
-        foreach ($columns as $name => $column) {
-            $properties[$name] = $this->getSchemaByColumn($column);
-        }
-
-        return [
+        return (object) [
+            '$import' => [
+                'entity' => 'schema:///' . $entityName
+            ],
             'definitions' => [
-                $entityName => [
+                $collectionName => [
                     'type' => 'object',
-                    'properties' => $properties,
+                    'properties' => [
+                        'totalResults' => [
+                            'type' => 'integer'
+                        ],
+                        'itemsPerPage' => [
+                            'type' => 'integer'
+                        ],
+                        'startIndex' => [
+                            'type' => 'integer'
+                        ],
+                        'entry' => [
+                            'type' => 'array',
+                            'items' => [
+                                '$ref' => 'entity:' . $entityName
+                            ],
+                        ],
+                    ],
                 ]
             ],
-            '$ref' => $entityName
+            '$ref' => $collectionName
         ];
     }
 
-    public function getEntityByType(Type $property, string $entityName, array $typeSchema, array $typeMapping): array
+    public function getEntity(Type $property, string $entityName, array $typeSchema, array $typeMapping): object
     {
         $schema = $typeSchema['definitions'][$property->getName() ?? ''] ?? null;
         if (empty($schema)) {
@@ -111,98 +110,13 @@ class SchemaBuilder
             $schema['properties'] = $properties;
         }
 
-        return [
+        return (object) [
             '$import' => $import,
             'definitions' => [
                 $entityName => $schema
             ],
             '$ref' => $entityName
         ];
-    }
-
-    public function getCollection(string $collectionName, string $entityName): array
-    {
-        return [
-            '$import' => [
-                'entity' => 'schema:///' . $entityName
-            ],
-            'definitions' => [
-                $collectionName => [
-                    'type' => 'object',
-                    'properties' => [
-                        'totalResults' => [
-                            'type' => 'integer'
-                        ],
-                        'itemsPerPage' => [
-                            'type' => 'integer'
-                        ],
-                        'startIndex' => [
-                            'type' => 'integer'
-                        ],
-                        'entry' => [
-                            'type' => 'array',
-                            'items' => [
-                                '$ref' => 'entity:' . $entityName
-                            ],
-                        ],
-                    ],
-                ]
-            ],
-            '$ref' => $collectionName
-        ];
-    }
-
-    private function getSchemaByColumn(Column $column): array
-    {
-        $type = $column->getType();
-
-        $schema = [];
-        $schema['type'] = $this->getSchemaType($type);
-
-        if ($type instanceof Types\DateTimeType) {
-            $schema['format'] = Format::DATETIME;
-        } elseif ($type instanceof Types\DateType) {
-            $schema['format'] = Format::DATE;
-        } elseif ($type instanceof Types\TimeType) {
-            $schema['format'] = Format::TIME;
-        }
-
-        $length = $column->getLength();
-        if (!empty($length)) {
-            if ($type instanceof Types\IntegerType) {
-                $schema['maximum'] = $length;
-            } elseif ($type instanceof Types\SmallIntType) {
-                $schema['maximum'] = $length;
-            } elseif ($type instanceof Types\BigIntType) {
-                $schema['maximum'] = $length;
-            } elseif ($type instanceof Types\StringType) {
-                $schema['maxLength'] = $length;
-            }
-        }
-
-        $comment = $column->getComment();
-        if (!empty($comment)) {
-            $schema['description'] = $comment;
-        }
-
-        return $schema;
-    }
-
-    private function getSchemaType(Types\Type $type): string
-    {
-        if ($type instanceof Types\IntegerType) {
-            return 'integer';
-        } elseif ($type instanceof Types\SmallIntType) {
-            return 'integer';
-        } elseif ($type instanceof Types\BigIntType) {
-            return 'integer';
-        } elseif ($type instanceof Types\FloatType) {
-            return 'number';
-        } elseif ($type instanceof Types\BooleanType) {
-            return 'boolean';
-        }
-
-        return 'string';
     }
 
     private function resolveRefs(array $types, array $typeMapping): array
@@ -228,8 +142,8 @@ class SchemaBuilder
         }
     }
 
-    private function readSchema(string $file): array
+    public static function underscore(string $id): string
     {
-        return \json_decode(\file_get_contents($file), true);
+        return strtolower(preg_replace(array('/([A-Z]+)([A-Z][a-z])/', '/([a-z\d])([A-Z])/'), array('\\1_\\2', '\\1_\\2'), strtr($id, '_', '.')));
     }
 }

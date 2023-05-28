@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\Schema\Table;
 use Fusio\Adapter\Sql\Action\SqlDelete;
 use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Action\SqlSelectAll;
@@ -36,6 +37,13 @@ use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\Generator\ProviderInterface;
 use Fusio\Engine\Generator\SetupInterface;
 use Fusio\Engine\ParametersInterface;
+use Fusio\Engine\Schema\SchemaBuilder;
+use Fusio\Engine\Schema\SchemaName;
+use Fusio\Model\Backend\Action;
+use Fusio\Model\Backend\ActionConfig;
+use Fusio\Model\Backend\Operation;
+use Fusio\Model\Backend\Schema;
+use Fusio\Model\Backend\SchemaSource;
 
 /**
  * SqlTable
@@ -46,13 +54,21 @@ use Fusio\Engine\ParametersInterface;
  */
 class SqlTable implements ProviderInterface
 {
+    private const SCHEMA_GET_ALL = 'SQL_GetAll';
+    private const SCHEMA_GET = 'SQL_Get';
+    private const ACTION_GET_ALL = 'SQL_GetAll';
+    private const ACTION_GET = 'SQL_Get';
+    private const ACTION_INSERT = 'SQL_Insert';
+    private const ACTION_UPDATE = 'SQL_Update';
+    private const ACTION_DELETE = 'SQL_Delete';
+
     private ConnectorInterface $connector;
-    private SchemaBuilder $schemaBuilder;
+    private TableBuilder $tableBuilder;
 
     public function __construct(ConnectorInterface $connector)
     {
         $this->connector = $connector;
-        $this->schemaBuilder = new SchemaBuilder();
+        $this->tableBuilder = new TableBuilder();
     }
 
     public function getName(): string
@@ -83,109 +99,31 @@ class SqlTable implements ProviderInterface
 
         $table = $schemaManager->introspectTable($tableName);
 
-        $path = '';
-        $prefix = '';
+        $basePath = '';
+        $schemaPrefix = '';
+        $actionPrefix = '';
+        $operationPrefix = '';
         if (!empty($name)) {
-            $path = '/' . $name;
-            $prefix = ucfirst($name) . '_';
+            $basePath = '/' . $name;
+            $schemaPrefix = ucfirst($name) . '_';
+            $actionPrefix = ucfirst($name) . '_';
+            $operationPrefix = $name . '.';
         }
 
-        $collectionName = $prefix . 'SQL_Collection';
-        $entityName = $prefix . 'SQL_Entity';
+        $setup->addSchema($this->makeGetAllSchema($table, $schemaPrefix));
+        $setup->addSchema($this->makeGetSchema($table, $schemaPrefix));
 
-        $schemaParameters = $setup->addSchema($prefix . 'SQL_Table_Parameters', $this->schemaBuilder->getParameters());
-        $schemaResponse = $setup->addSchema($prefix . 'SQL_Table_Response', $this->schemaBuilder->getResponse());
-        $schemaCollection = $setup->addSchema($collectionName, $this->schemaBuilder->getCollection($collectionName, $entityName));
-        $schemaEntity = $setup->addSchema($entityName, $this->schemaBuilder->getEntityByTable($table, $entityName));
+        $setup->addAction($this->makeGetAllAction($connectionName, $tableName, $actionPrefix));
+        $setup->addAction($this->makeGetAction($connectionName, $tableName, $actionPrefix));
+        $setup->addAction($this->makeInsertAction($connectionName, $tableName, $actionPrefix));
+        $setup->addAction($this->makeUpdateAction($connectionName, $tableName, $actionPrefix));
+        $setup->addAction($this->makeDeleteAction($connectionName, $tableName, $actionPrefix));
 
-        $fetchAllAction = $setup->addAction($prefix . 'SQL_Select_All', SqlSelectAll::class, PhpClass::class, [
-            'connection' => $connectionName,
-            'table' => $tableName,
-        ]);
-
-        $fetchRowAction = $setup->addAction($prefix . 'SQL_Select_Row', SqlSelectRow::class, PhpClass::class, [
-            'connection' => $connectionName,
-            'table' => $tableName,
-        ]);
-
-        $deleteAction = $setup->addAction($prefix . 'SQL_Delete', SqlDelete::class, PhpClass::class, [
-            'connection' => $connectionName,
-            'table' => $tableName,
-        ]);
-
-        $insertAction = $setup->addAction($prefix . 'SQL_Insert', SqlInsert::class, PhpClass::class, [
-            'connection' => $connectionName,
-            'table' => $tableName,
-        ]);
-
-        $updateAction = $setup->addAction($prefix . 'SQL_Update', SqlUpdate::class, PhpClass::class, [
-            'connection' => $connectionName,
-            'table' => $tableName,
-        ]);
-
-        $setup->addRoute(1, $path . '/', 'Fusio\Impl\Controller\SchemaApiController', [], [
-            [
-                'version' => 1,
-                'methods' => [
-                    'GET' => [
-                        'active' => true,
-                        'public' => true,
-                        'description' => 'Returns a collection of entities',
-                        'parameters' => $schemaParameters,
-                        'responses' => [
-                            200 => $schemaCollection,
-                        ],
-                        'action' => $fetchAllAction,
-                    ],
-                    'POST' => [
-                        'active' => true,
-                        'public' => false,
-                        'description' => 'Creates a new entity',
-                        'request' => $schemaEntity,
-                        'responses' => [
-                            201 => $schemaResponse,
-                        ],
-                        'action' => $insertAction,
-                    ]
-                ],
-            ]
-        ]);
-
-        $setup->addRoute(1, $path . '/:id', 'Fusio\Impl\Controller\SchemaApiController', [], [
-            [
-                'version' => 1,
-                'methods' => [
-                    'GET' => [
-                        'active' => true,
-                        'public' => true,
-                        'description' => 'Returns a single entity',
-                        'responses' => [
-                            200 => $schemaEntity,
-                        ],
-                        'action' => $fetchRowAction,
-                    ],
-                    'PUT' => [
-                        'active' => true,
-                        'public' => false,
-                        'description' => 'Updates an existing entity',
-                        'request' => $schemaEntity,
-                        'responses' => [
-                            200 => $schemaResponse,
-                        ],
-                        'action' => $updateAction,
-                    ],
-                    'DELETE' => [
-                        'active' => true,
-                        'public' => false,
-                        'description' => 'Deletes an existing entity',
-                        'responses' => [
-                            200 => $schemaResponse,
-                        ],
-                        'action' => $deleteAction,
-                    ]
-                ],
-            ]
-        ]);
+        $setup->addOperation($this->makeGetAllOperation($basePath, $operationPrefix));
+        $setup->addOperation($this->makeGetOperation($basePath, $operationPrefix));
+        $setup->addOperation($this->makeInsertOperation($basePath, $operationPrefix));
+        $setup->addOperation($this->makeUpdateOperation($basePath, $operationPrefix));
+        $setup->addOperation($this->makeDeleteOperation($basePath, $operationPrefix));
     }
 
     protected function getConnection(mixed $connectionId): Connection
@@ -196,5 +134,155 @@ class SqlTable implements ProviderInterface
         } else {
             throw new ConfigurationException('Invalid selected connection');
         }
+    }
+
+    private function makeGetAllSchema(Table $table, string $prefix): Schema
+    {
+        $type = $this->tableBuilder->getEntity($table, self::SCHEMA_GET_ALL);
+
+        $schema = new Schema();
+        $schema->setName($prefix . self::SCHEMA_GET_ALL);
+        $schema->setSource(SchemaBuilder::makeCollectionResponse(self::SCHEMA_GET_ALL, $type));
+        return $schema;
+    }
+
+    private function makeGetSchema(Table $table, string $prefix): Schema
+    {
+        $type = $this->tableBuilder->getEntity($table, self::SCHEMA_GET);
+
+        $schema = new Schema();
+        $schema->setName($prefix . self::SCHEMA_GET);
+        $schema->setSource(SchemaSource::fromStdClass($type));
+        return $schema;
+    }
+
+    private function makeGetAllAction(string $connectionName, string $tableName, string $prefix): Action
+    {
+        $action = new Action();
+        $action->setName($prefix . self::ACTION_GET_ALL);
+        $action->setClass(SqlSelectAll::class);
+        $action->setEngine(PhpClass::class);
+        $action->setConfig(ActionConfig::fromArray([
+            'connection' => $connectionName,
+            'table' => $tableName,
+        ]));
+        return $action;
+    }
+
+    private function makeGetAction(string $connectionName, string $tableName, string $prefix): Action
+    {
+        $action = new Action();
+        $action->setName($prefix . self::ACTION_GET);
+        $action->setClass(SqlSelectRow::class);
+        $action->setEngine(PhpClass::class);
+        $action->setConfig(ActionConfig::fromArray([
+            'connection' => $connectionName,
+            'table' => $tableName,
+        ]));
+        return $action;
+    }
+
+    private function makeInsertAction(string $connectionName, string $tableName, string $prefix): Action
+    {
+        $action = new Action();
+        $action->setName($prefix . self::ACTION_INSERT);
+        $action->setClass(SqlInsert::class);
+        $action->setEngine(PhpClass::class);
+        $action->setConfig(ActionConfig::fromArray([
+            'connection' => $connectionName,
+            'table' => $tableName,
+        ]));
+        return $action;
+    }
+
+    private function makeUpdateAction(string $connectionName, string $tableName, string $prefix): Action
+    {
+        $action = new Action();
+        $action->setName($prefix . self::ACTION_UPDATE);
+        $action->setClass(SqlUpdate::class);
+        $action->setEngine(PhpClass::class);
+        $action->setConfig(ActionConfig::fromArray([
+            'connection' => $connectionName,
+            'table' => $tableName,
+        ]));
+        return $action;
+    }
+
+    private function makeDeleteAction(string $connectionName, string $tableName, string $prefix): Action
+    {
+        $action = new Action();
+        $action->setName($prefix . self::ACTION_DELETE);
+        $action->setClass(SqlDelete::class);
+        $action->setEngine(PhpClass::class);
+        $action->setConfig(ActionConfig::fromArray([
+            'connection' => $connectionName,
+            'table' => $tableName,
+        ]));
+        return $action;
+    }
+
+    private function makeGetAllOperation(string $basePath, string $prefix): Operation
+    {
+        $operation = new Operation();
+        $operation->setName($prefix . 'getAll');
+        $operation->setDescription('Returns a collection of rows');
+        $operation->setHttpMethod('GET');
+        $operation->setHttpPath($basePath . '/');
+        $operation->setHttpCode(200);
+        $operation->setOutgoing(self::SCHEMA_GET_ALL);
+        $operation->setAction(self::ACTION_GET_ALL);
+        return $operation;
+    }
+
+    private function makeGetOperation(string $basePath, string $prefix): Operation
+    {
+        $operation = new Operation();
+        $operation->setName($prefix . 'get');
+        $operation->setDescription('Returns a single row');
+        $operation->setHttpMethod('GET');
+        $operation->setHttpPath($basePath . '/:id');
+        $operation->setHttpCode(200);
+        $operation->setOutgoing(self::SCHEMA_GET);
+        $operation->setAction(self::ACTION_GET);
+        return $operation;
+    }
+
+    private function makeInsertOperation(string $basePath, string $prefix): Operation
+    {
+        $operation = new Operation();
+        $operation->setName($prefix . 'create');
+        $operation->setDescription('Creates a new row');
+        $operation->setHttpMethod('POST');
+        $operation->setHttpPath($basePath . '/');
+        $operation->setHttpCode(201);
+        $operation->setOutgoing(SchemaName::MESSAGE);
+        $operation->setAction(self::ACTION_INSERT);
+        return $operation;
+    }
+
+    private function makeUpdateOperation(string $basePath, string $prefix): Operation
+    {
+        $operation = new Operation();
+        $operation->setName($prefix . 'update');
+        $operation->setDescription('Updates an existing row');
+        $operation->setHttpMethod('PUT');
+        $operation->setHttpPath($basePath . '/:id');
+        $operation->setHttpCode(200);
+        $operation->setOutgoing(SchemaName::MESSAGE);
+        $operation->setAction(self::ACTION_UPDATE);
+        return $operation;
+    }
+
+    private function makeDeleteOperation(string $basePath, string $prefix): Operation
+    {
+        $operation = new Operation();
+        $operation->setName($prefix . 'delete');
+        $operation->setDescription('Deletes an existing row');
+        $operation->setHttpMethod('DELETE');
+        $operation->setHttpPath($basePath . '/:id');
+        $operation->setHttpCode(200);
+        $operation->setOutgoing(SchemaName::MESSAGE);
+        $operation->setAction(self::ACTION_DELETE);
+        return $operation;
     }
 }

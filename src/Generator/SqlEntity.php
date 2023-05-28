@@ -22,10 +22,7 @@
 namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Schema\Schema;
 use Fusio\Adapter\Sql\Action\SqlBuilder;
-use Fusio\Adapter\Sql\Action\SqlDelete;
 use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Action\SqlUpdate;
 use Fusio\Engine\ConnectorInterface;
@@ -36,9 +33,14 @@ use Fusio\Engine\Generator\ExecutableInterface;
 use Fusio\Engine\Generator\ProviderInterface;
 use Fusio\Engine\Generator\SetupInterface;
 use Fusio\Engine\ParametersInterface;
+use Fusio\Engine\Schema\SchemaName;
+use Fusio\Model\Backend\Action;
+use Fusio\Model\Backend\ActionConfig;
+use Fusio\Model\Backend\Operation;
+use Fusio\Model\Backend\Schema;
+use Fusio\Model\Backend\SchemaSource;
 use PSX\Schema\Document\Document;
 use PSX\Schema\Document\Generator;
-use PSX\Schema\Document\Property;
 use PSX\Schema\Document\Type;
 
 /**
@@ -50,14 +52,24 @@ use PSX\Schema\Document\Type;
  */
 class SqlEntity implements ProviderInterface, ExecutableInterface
 {
+    private const SCHEMA_GET_ALL = 'SQL_GetAll';
+    private const SCHEMA_GET = 'SQL_Get';
+    private const ACTION_GET_ALL = 'SQL_GetAll';
+    private const ACTION_GET = 'SQL_Get';
+    private const ACTION_INSERT = 'SQL_Insert';
+    private const ACTION_UPDATE = 'SQL_Update';
+    private const ACTION_DELETE = 'SQL_Delete';
+
     private ConnectorInterface $connector;
-    private SchemaBuilder $schemaBuilder;
+    private EntityExecutor $entityExecutor;
+    private EntityBuilder $entityBuilder;
     private JqlBuilder $jqlBuilder;
 
     public function __construct(ConnectorInterface $connector)
     {
         $this->connector = $connector;
-        $this->schemaBuilder = new SchemaBuilder();
+        $this->entityExecutor = new EntityExecutor();
+        $this->entityBuilder = new EntityBuilder();
         $this->jqlBuilder = new JqlBuilder();
     }
 
@@ -73,118 +85,39 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
 
         $schemaManager = $connection->createSchemaManager();
 
-        $schemaParameters = $setup->addSchema('SQL_Table_Parameters', $this->schemaBuilder->getParameters());
-        $schemaResponse = $setup->addSchema('SQL_Table_Response', $this->schemaBuilder->getResponse());
-
         $typeSchema = \json_decode((new Generator())->generate($document), true);
 
         $types = $document->getTypes();
-        $tableNames = $this->getTableNames($document, $schemaManager);
-        $typeMapping = $this->getTypeMapping($document, $tableNames);
+        $tableNames = $this->entityExecutor->getTableNames($document, $schemaManager);
+        $typeMapping = $this->entityExecutor->getTypeMapping($document, $tableNames);
 
         foreach ($types as $type) {
             $tableName = $tableNames[$type->getName() ?? ''] ?? '';
-            $routeName = $this->getRouteName($type);
-            $mapping = $this->getMapping($type, $tableNames);
+            $routeName = $this->entityExecutor->getRouteName($type);
+            $mapping = $this->entityExecutor->getMapping($type, $tableNames);
 
-            $prefix = ucfirst(substr($tableName, 4));
-            $collectionName = $prefix . '_SQL_Collection';
-            $entityName = $prefix . '_SQL_Entity';
+            $prefix = substr($tableName, 4);
+            $collectionName = $prefix . '_SQL_GetAll';
+            $entityName = $prefix . '_SQL_Get';
 
-            $schemaCollection = $setup->addSchema($collectionName, $this->schemaBuilder->getCollection($collectionName, $entityName));
-            $schemaEntity = $setup->addSchema($entityName, $this->schemaBuilder->getEntityByType($type, $entityName, $typeSchema, $typeMapping));
+            $schemaPrefix = ucfirst($prefix) . '_';
+            $actionPrefix = ucfirst($prefix) . '_';
+            $operationPrefix = $prefix . '.';
 
-            $fetchAllAction = $setup->addAction($prefix . '_SQL_Select_All', SqlBuilder::class, PhpClass::class, [
-                'connection' => $configuration->get('connection'),
-                'jql' => $this->jqlBuilder->getCollection($type, $tableNames, $document),
-            ]);
+            $setup->addSchema($this->makeGetAllSchema($collectionName, $entityName, $schemaPrefix));
+            $setup->addSchema($this->makeGetSchema($entityName, $type, $typeSchema, $typeMapping, $schemaPrefix));
 
-            $fetchRowAction = $setup->addAction($prefix . '_SQL_Select_Row', SqlBuilder::class, PhpClass::class, [
-                'connection' => $configuration->get('connection'),
-                'jql' => $this->jqlBuilder->getEntity($type, $tableNames, $document),
-            ]);
+            $setup->addAction($this->makeGetAllAction($configuration, $type, $tableNames, $document, $actionPrefix));
+            $setup->addAction($this->makeGetAction($configuration, $type, $tableNames, $document, $actionPrefix));
+            $setup->addAction($this->makeInsertAction($configuration, $tableName, $mapping, $actionPrefix));
+            $setup->addAction($this->makeUpdateAction($configuration, $tableName, $mapping, $actionPrefix));
+            $setup->addAction($this->makeDeleteAction($configuration, $tableName, $mapping, $actionPrefix));
 
-            $deleteAction = $setup->addAction($prefix . '_SQL_Delete', SqlDelete::class, PhpClass::class, [
-                'connection' => $configuration->get('connection'),
-                'table' => $tableName,
-                'mapping' => $mapping,
-            ]);
-
-            $insertAction = $setup->addAction($prefix . '_SQL_Insert', SqlInsert::class, PhpClass::class, [
-                'connection' => $configuration->get('connection'),
-                'table' => $tableName,
-                'mapping' => $mapping,
-            ]);
-
-            $updateAction = $setup->addAction($prefix . '_SQL_Update', SqlUpdate::class, PhpClass::class, [
-                'connection' => $configuration->get('connection'),
-                'table' => $tableName,
-                'mapping' => $mapping,
-            ]);
-
-            $setup->addRoute(1, '/' . $routeName, 'Fusio\Impl\Controller\SchemaApiController', [], [
-                [
-                    'version' => 1,
-                    'methods' => [
-                        'GET' => [
-                            'active' => true,
-                            'public' => true,
-                            'description' => 'Returns a collection of ' . $type->getName(),
-                            'parameters' => $schemaParameters,
-                            'responses' => [
-                                200 => $schemaCollection,
-                            ],
-                            'action' => $fetchAllAction,
-                        ],
-                        'POST' => [
-                            'active' => true,
-                            'public' => false,
-                            'description' => 'Creates a new ' . $type->getName(),
-                            'request' => $schemaEntity,
-                            'responses' => [
-                                201 => $schemaResponse,
-                            ],
-                            'action' => $insertAction,
-                        ]
-                    ],
-                ]
-            ]);
-
-            $setup->addRoute(1, '/' . $routeName . '/:id', 'Fusio\Impl\Controller\SchemaApiController', [], [
-                [
-                    'version' => 1,
-                    'methods' => [
-                        'GET' => [
-                            'active' => true,
-                            'public' => true,
-                            'description' => 'Returns a single ' . $type->getName(),
-                            'responses' => [
-                                200 => $schemaEntity,
-                            ],
-                            'action' => $fetchRowAction,
-                        ],
-                        'PUT' => [
-                            'active' => true,
-                            'public' => false,
-                            'description' => 'Updates an existing ' . $type->getName(),
-                            'request' => $schemaEntity,
-                            'responses' => [
-                                200 => $schemaResponse,
-                            ],
-                            'action' => $updateAction,
-                        ],
-                        'DELETE' => [
-                            'active' => true,
-                            'public' => false,
-                            'description' => 'Deletes an existing ' . $type->getName(),
-                            'responses' => [
-                                200 => $schemaResponse,
-                            ],
-                            'action' => $deleteAction,
-                        ]
-                    ],
-                ]
-            ]);
+            $setup->addOperation($this->makeGetAllOperation($routeName, $type, $operationPrefix));
+            $setup->addOperation($this->makeGetOperation($routeName, $type, $operationPrefix));
+            $setup->addOperation($this->makeInsertOperation($routeName, $type, $operationPrefix));
+            $setup->addOperation($this->makeUpdateOperation($routeName, $type, $operationPrefix));
+            $setup->addOperation($this->makeDeleteOperation($routeName, $type, $operationPrefix));
         }
     }
 
@@ -193,33 +126,166 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $connection = $this->getConnection($configuration->get('connection'));
         $document = Document::from($configuration->get('schema'));
 
-        $schemaManager = $connection->createSchemaManager();
-        $schema = $schemaManager->introspectSchema();
-        $tableNames = $this->getTableNames($document, $schemaManager);
-
-        $types = $document->getTypes();
-        $relations = [];
-        foreach ($types as $type) {
-            $this->createTableFromType($schema, $type, $tableNames, $relations);
-        }
-
-        foreach ($relations as $relation) {
-            [$tableName, $foreignTable, $localColumns, $foreignColumns] = $relation;
-
-            $table = $schema->getTable($tableName);
-            $table->addForeignKeyConstraint($schema->getTable($foreignTable), $localColumns, $foreignColumns);
-        }
-
-        $queries = $schema->toSql($connection->getDatabasePlatform());
-        foreach ($queries as $query) {
-            $connection->executeQuery($query);
-        }
+        $this->entityExecutor->execute($connection, $document);
     }
 
     public function configure(BuilderInterface $builder, ElementFactoryInterface $elementFactory): void
     {
         $builder->add($elementFactory->newConnection('connection', 'Connection', 'The SQL connection which should be used'));
         $builder->add($elementFactory->newTypeSchema('schema', 'Schema', 'TypeSchema specification'));
+    }
+
+    private function makeGetAllSchema(string $collectionName, string $entityName, string $prefix): Schema
+    {
+        $type = $this->entityBuilder->getCollection($collectionName, $entityName);
+
+        $schema = new Schema();
+        $schema->setName($prefix . $collectionName);
+        $schema->setSource(SchemaSource::fromStdClass($type));
+        return $schema;
+    }
+
+    private function makeGetSchema(string $entityName, Type $type, array $typeSchema, array $typeMapping, string $prefix): Schema
+    {
+        $type = $this->entityBuilder->getEntity($type, $entityName, $typeSchema, $typeMapping);
+
+        $schema = new Schema();
+        $schema->setName($prefix . $entityName);
+        $schema->setSource(SchemaSource::fromStdClass($type));
+        return $schema;
+    }
+
+    private function makeGetAllAction(ParametersInterface $configuration, Type $type, array $tableNames, Document $document, string $prefix): Action
+    {
+        $action = new Action();
+        $action->setName($prefix . self::ACTION_GET_ALL);
+        $action->setClass(SqlBuilder::class);
+        $action->setEngine(PhpClass::class);
+        $action->setConfig(ActionConfig::fromArray([
+            'connection' => $configuration->get('connection'),
+            'jql' => $this->jqlBuilder->getCollection($type, $tableNames, $document),
+        ]));
+        return $action;
+    }
+
+    private function makeGetAction(ParametersInterface $configuration, Type $type, array $tableNames, Document $document, string $prefix): Action
+    {
+        $action = new Action();
+        $action->setName($prefix . self::ACTION_GET);
+        $action->setClass(SqlBuilder::class);
+        $action->setEngine(PhpClass::class);
+        $action->setConfig(ActionConfig::fromArray([
+            'connection' => $configuration->get('connection'),
+            'jql' => $this->jqlBuilder->getEntity($type, $tableNames, $document),
+        ]));
+        return $action;
+    }
+
+    private function makeInsertAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): Action
+    {
+        $action = new Action();
+        $action->setName($prefix . self::ACTION_INSERT);
+        $action->setClass(SqlInsert::class);
+        $action->setEngine(PhpClass::class);
+        $action->setConfig(ActionConfig::fromArray([
+            'connection' => $configuration->get('connection'),
+            'table' => $tableName,
+            'mapping' => $mapping,
+        ]));
+        return $action;
+    }
+
+    private function makeUpdateAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): Action
+    {
+        $action = new Action();
+        $action->setName($prefix . self::ACTION_UPDATE);
+        $action->setClass(SqlUpdate::class);
+        $action->setEngine(PhpClass::class);
+        $action->setConfig(ActionConfig::fromArray([
+            'connection' => $configuration->get('connection'),
+            'table' => $tableName,
+            'mapping' => $mapping,
+        ]));
+        return $action;
+    }
+
+    private function makeDeleteAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): Action
+    {
+        $action = new Action();
+        $action->setName($prefix . self::ACTION_DELETE);
+        $action->setClass(SqlUpdate::class);
+        $action->setEngine(PhpClass::class);
+        $action->setConfig(ActionConfig::fromArray([
+            'connection' => $configuration->get('connection'),
+            'table' => $tableName,
+            'mapping' => $mapping,
+        ]));
+        return $action;
+    }
+
+    private function makeGetAllOperation(string $basePath, Type $type, string $prefix): Operation
+    {
+        $operation = new Operation();
+        $operation->setName($prefix . 'getAll');
+        $operation->setDescription('Returns a collection of ' . $type->getName());
+        $operation->setHttpMethod('GET');
+        $operation->setHttpPath($basePath . '/');
+        $operation->setHttpCode(200);
+        $operation->setOutgoing(self::SCHEMA_GET_ALL);
+        $operation->setAction(self::ACTION_GET_ALL);
+        return $operation;
+    }
+
+    private function makeGetOperation(string $basePath, Type $type, string $prefix): Operation
+    {
+        $operation = new Operation();
+        $operation->setName($prefix . 'get');
+        $operation->setDescription('Returns a single ' . $type->getName());
+        $operation->setHttpMethod('GET');
+        $operation->setHttpPath($basePath . '/:id');
+        $operation->setHttpCode(200);
+        $operation->setOutgoing(self::SCHEMA_GET);
+        $operation->setAction(self::ACTION_GET);
+        return $operation;
+    }
+
+    private function makeInsertOperation(string $basePath, Type $type, string $prefix): Operation
+    {
+        $operation = new Operation();
+        $operation->setName($prefix . 'create');
+        $operation->setDescription('Creates a new ' . $type->getName());
+        $operation->setHttpMethod('POST');
+        $operation->setHttpPath($basePath . '/');
+        $operation->setHttpCode(200);
+        $operation->setOutgoing(SchemaName::MESSAGE);
+        $operation->setAction(self::ACTION_INSERT);
+        return $operation;
+    }
+
+    private function makeUpdateOperation(string $basePath, Type $type, string $prefix): Operation
+    {
+        $operation = new Operation();
+        $operation->setName($prefix . 'update');
+        $operation->setDescription('Updates an existing ' . $type->getName());
+        $operation->setHttpMethod('PUT');
+        $operation->setHttpPath($basePath . '/:id');
+        $operation->setHttpCode(200);
+        $operation->setOutgoing(SchemaName::MESSAGE);
+        $operation->setAction(self::ACTION_UPDATE);
+        return $operation;
+    }
+
+    private function makeDeleteOperation(string $basePath, Type $type, string $prefix): Operation
+    {
+        $operation = new Operation();
+        $operation->setName($prefix . 'delete');
+        $operation->setDescription('Deletes an existing ' . $type->getName());
+        $operation->setHttpMethod('DELETE');
+        $operation->setHttpPath($basePath . '/:id');
+        $operation->setHttpCode(200);
+        $operation->setOutgoing(SchemaName::MESSAGE);
+        $operation->setAction(self::ACTION_DELETE);
+        return $operation;
     }
 
     private function getConnection(mixed $connectionId): Connection
@@ -230,214 +296,5 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         } else {
             throw new \RuntimeException('Invalid selected connection');
         }
-    }
-
-    private function getTableName(AbstractSchemaManager $schemaManager, string $typeName): string
-    {
-        $i = 0;
-        $format = strtolower('app_' . $typeName . '_%s');
-
-        do {
-            $tableName = sprintf($format, $i);
-            $i++;
-        } while ($schemaManager->tablesExist($tableName));
-
-        return $tableName;
-    }
-
-    private function getTableNames(Document $document, AbstractSchemaManager $schemaManager): array
-    {
-        $types = $document->getTypes();
-        $tableNames = [];
-        foreach ($types as $type) {
-            $tableName = $this->getTableName($schemaManager, $type->getName() ?? '');
-            $tableNames[$type->getName() ?? ''] = $tableName;
-        }
-
-        return $tableNames;
-    }
-
-    private function getTypeMapping(Document $document, array $tableNames): array
-    {
-        $types = $document->getTypes();
-        $typeMapping = [];
-        foreach ($types as $type) {
-            $tableName = $tableNames[$type->getName() ?? ''];
-
-            $prefix = ucfirst(substr($tableName, 4));
-            $entityName = $prefix . '_SQL_Entity';
-
-            $typeMapping[$type->getName() ?? ''] = $entityName;
-        }
-
-        return $typeMapping;
-    }
-
-    private function createTableFromType(Schema $schema, Type $type, array $tableNames, array &$relations): void
-    {
-        $tableName = $tableNames[$type->getName() ?? ''] ?? '';
-        $table = $schema->createTable($tableName);
-        $table->addColumn('id', 'integer', ['autoincrement' => true]);
-        $table->setPrimaryKey(['id']);
-
-        foreach ($type->getProperties() as $property) {
-            $columnType = $this->getColumnType($property);
-            if ($columnType !== null) {
-                $columnName = $this->getColumnName($property);
-                $columnOptions = $this->getColumnOptions($property);
-
-                $table->addColumn($columnName, $columnType, $columnOptions);
-
-                if ($property->getType() === 'object' && isset($tableNames[$property->getFirstRef()])) {
-                    $relations[] = [$tableName, $tableNames[$property->getFirstRef() ?? ''], [$columnName], ['id']];
-                }
-            } elseif (in_array($property->getType(), ['map', 'array'])) {
-                $config = $this->getRelationConfig($type, $property, $tableNames);
-                [$propertyName, $typeName, $relationTableName, $typeColumn, $foreignColumn] = $config;
-
-                $relationTable = $schema->createTable($relationTableName);
-                $relationTable->addColumn('id', 'integer', ['autoincrement' => true]);
-                $relationTable->addColumn($typeColumn, 'integer');
-                if ($typeName === 'map') {
-                    $relationTable->addColumn('name', 'string');
-                }
-                $relationTable->addColumn($foreignColumn, 'integer');
-                $relationTable->setPrimaryKey(['id']);
-
-                if (isset($tableNames[$property->getFirstRef()])) {
-                    $relations[] = [$relationTableName, $tableName, [$typeColumn], ['id']];
-                    $relations[] = [$relationTableName, $tableNames[$property->getFirstRef() ?? ''], [$foreignColumn], ['id']];
-                }
-            }
-        }
-    }
-
-    private function getColumnOptions(Property $property): array
-    {
-        $options = ['notnull' => false];
-
-        if ($property->getType() === 'integer' || $property->getType() === 'number') {
-            $maximum = (int) $property->getMaximum();
-            if ($maximum > 0) {
-                $options['length'] = $maximum;
-            }
-        } elseif ($property->getType() === 'string') {
-            $maxLength = (int) $property->getMaxLength();
-            if ($maxLength > 0) {
-                $options['length'] = $maxLength;
-            }
-        }
-
-        return $options;
-    }
-
-    private function getMapping(Type $type, array $tableNames): array
-    {
-        $mapping = [];
-        foreach ($type->getProperties() as $property) {
-            if (self::isScalar($property->getType() ?? '')) {
-                $mapping[$this->getColumnName($property)] = $property->getName();
-            } elseif ($property->getType() === 'object') {
-                $mapping[$this->getColumnName($property)] = implode(':', [$property->getName(), $property->getType()]);
-            } elseif ($property->getType() === 'array') {
-                if (self::isScalar($property->getFirstRef() ?? '')) {
-                    $mapping[$this->getColumnName($property)] = $property->getName();
-                } else {
-                    $config = $this->getRelationConfig($type, $property, $tableNames);
-                    $mapping[$this->getColumnName($property)] = implode(':', $config);
-                }
-            } elseif ($property->getType() === 'map') {
-                if (self::isScalar($property->getFirstRef() ?? '')) {
-                    $mapping[$this->getColumnName($property)] = $property->getName();
-                } else {
-                    $config = $this->getRelationConfig($type, $property, $tableNames);
-                    $mapping[$this->getColumnName($property)] = implode(':', $config);
-                }
-            }
-        }
-
-        return $mapping;
-    }
-
-    private function getRouteName(Type $type): string
-    {
-        return self::underscore($type->getName() ?? '');
-    }
-
-    private function getRelationConfig(Type $type, Property $property, array $tableNames): array
-    {
-        $tableName = $tableNames[$type->getName() ?? ''] ?? '';
-        $foreignTableName = $tableName . '_' . self::underscore($property->getFirstRef() ?? '');
-        $typeColumn = self::underscore($type->getName() ?? '') . '_id';
-        $foreignColumn = self::underscore($property->getFirstRef() ?? '') . '_id';
-
-        return [
-            $property->getName(),
-            $property->getType(),
-            $foreignTableName,
-            $typeColumn,
-            $foreignColumn,
-        ];
-    }
-
-    public static function getColumnName(Property $property): string
-    {
-        if ($property->getType() === 'object') {
-            // reference to a different entity
-            $ref = $property->getFirstRef();
-            if (!empty($ref)) {
-                return self::underscore($ref) . '_id';
-            }
-        }
-
-        return self::underscore($property->getName() ?? '');
-    }
-
-    public static function getColumnType(Property $property): ?string
-    {
-        if ($property->getType() === 'boolean') {
-            return 'boolean';
-        } elseif ($property->getType() === 'integer') {
-            return 'integer';
-        } elseif ($property->getType() === 'number') {
-            return 'float';
-        } elseif ($property->getType() === 'string') {
-            if ($property->getFormat() === 'date') {
-                return 'date';
-            } elseif ($property->getFormat() === 'date-time') {
-                return 'datetime';
-            } elseif ($property->getFormat() === 'time') {
-                return 'time';
-            } else {
-                return $property->getMaxLength() > 500 ? 'text' : 'string';
-            }
-        } elseif ($property->getType() === 'object') {
-            // reference to a different entity
-            return 'integer';
-        } elseif (in_array($property->getType(), ['map', 'array'])) {
-            if (self::isScalar($property->getFirstRef() ?? '')) {
-                // if we have a scalar array we use a json property
-                return 'json';
-            } else {
-                // if we have a reference to an object
-                return null;
-            }
-        } elseif ($property->getType() === 'union') {
-            return null;
-        } elseif ($property->getType() === 'intersection') {
-            return null;
-        }
-
-        return null;
-    }
-
-    public static function isScalar(string $ref): bool
-    {
-        return in_array($ref, ['boolean', 'integer', 'number', 'string']);
-    }
-
-    public static function underscore(string $id): string
-    {
-        return strtolower(preg_replace(array('/([A-Z]+)([A-Z][a-z])/', '/([a-z\d])([A-Z])/'), array('\\1_\\2', '\\1_\\2'), strtr($id, '_', '.')));
     }
 }
