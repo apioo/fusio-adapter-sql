@@ -39,10 +39,10 @@ use Fusio\Engine\Generator\SetupInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Schema\SchemaBuilder;
 use Fusio\Engine\Schema\SchemaName;
-use Fusio\Model\Backend\Action;
 use Fusio\Model\Backend\ActionConfig;
-use Fusio\Model\Backend\Operation;
-use Fusio\Model\Backend\Schema;
+use Fusio\Model\Backend\ActionCreate;
+use Fusio\Model\Backend\OperationCreate;
+use Fusio\Model\Backend\SchemaCreate;
 use Fusio\Model\Backend\SchemaSource;
 
 /**
@@ -136,29 +136,29 @@ class SqlTable implements ProviderInterface
         }
     }
 
-    private function makeGetAllSchema(Table $table, string $prefix): Schema
+    private function makeGetAllSchema(Table $table, string $prefix): SchemaCreate
     {
         $type = $this->tableBuilder->getEntity($table, self::SCHEMA_GET_ALL);
 
-        $schema = new Schema();
+        $schema = new SchemaCreate();
         $schema->setName($prefix . self::SCHEMA_GET_ALL);
         $schema->setSource(SchemaBuilder::makeCollectionResponse(self::SCHEMA_GET_ALL, $type));
         return $schema;
     }
 
-    private function makeGetSchema(Table $table, string $prefix): Schema
+    private function makeGetSchema(Table $table, string $prefix): SchemaCreate
     {
         $type = $this->tableBuilder->getEntity($table, self::SCHEMA_GET);
 
-        $schema = new Schema();
+        $schema = new SchemaCreate();
         $schema->setName($prefix . self::SCHEMA_GET);
         $schema->setSource(SchemaSource::fromObject($type));
         return $schema;
     }
 
-    private function makeGetAllAction(string $connectionName, string $tableName, string $prefix): Action
+    private function makeGetAllAction(string $connectionName, string $tableName, string $prefix): ActionCreate
     {
-        $action = new Action();
+        $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_GET_ALL);
         $action->setClass(SqlSelectAll::class);
         $action->setEngine(PhpClass::class);
@@ -169,9 +169,9 @@ class SqlTable implements ProviderInterface
         return $action;
     }
 
-    private function makeGetAction(string $connectionName, string $tableName, string $prefix): Action
+    private function makeGetAction(string $connectionName, string $tableName, string $prefix): ActionCreate
     {
-        $action = new Action();
+        $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_GET);
         $action->setClass(SqlSelectRow::class);
         $action->setEngine(PhpClass::class);
@@ -182,9 +182,9 @@ class SqlTable implements ProviderInterface
         return $action;
     }
 
-    private function makeInsertAction(string $connectionName, string $tableName, string $prefix): Action
+    private function makeInsertAction(string $connectionName, string $tableName, string $prefix): ActionCreate
     {
-        $action = new Action();
+        $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_INSERT);
         $action->setClass(SqlInsert::class);
         $action->setEngine(PhpClass::class);
@@ -195,9 +195,9 @@ class SqlTable implements ProviderInterface
         return $action;
     }
 
-    private function makeUpdateAction(string $connectionName, string $tableName, string $prefix): Action
+    private function makeUpdateAction(string $connectionName, string $tableName, string $prefix): ActionCreate
     {
-        $action = new Action();
+        $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_UPDATE);
         $action->setClass(SqlUpdate::class);
         $action->setEngine(PhpClass::class);
@@ -208,9 +208,9 @@ class SqlTable implements ProviderInterface
         return $action;
     }
 
-    private function makeDeleteAction(string $connectionName, string $tableName, string $prefix): Action
+    private function makeDeleteAction(string $connectionName, string $tableName, string $prefix): ActionCreate
     {
-        $action = new Action();
+        $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_DELETE);
         $action->setClass(SqlDelete::class);
         $action->setEngine(PhpClass::class);
@@ -221,9 +221,9 @@ class SqlTable implements ProviderInterface
         return $action;
     }
 
-    private function makeGetAllOperation(string $basePath, string $prefix): Operation
+    private function makeGetAllOperation(string $basePath, string $prefix): OperationCreate
     {
-        $operation = new Operation();
+        $operation = new OperationCreate();
         $operation->setName($prefix . 'getAll');
         $operation->setDescription('Returns a collection of rows');
         $operation->setHttpMethod('GET');
@@ -234,9 +234,9 @@ class SqlTable implements ProviderInterface
         return $operation;
     }
 
-    private function makeGetOperation(string $basePath, string $prefix): Operation
+    private function makeGetOperation(string $basePath, string $prefix): OperationCreate
     {
-        $operation = new Operation();
+        $operation = new OperationCreate();
         $operation->setName($prefix . 'get');
         $operation->setDescription('Returns a single row');
         $operation->setHttpMethod('GET');
@@ -247,9 +247,9 @@ class SqlTable implements ProviderInterface
         return $operation;
     }
 
-    private function makeInsertOperation(string $basePath, string $prefix): Operation
+    private function makeInsertOperation(string $basePath, string $prefix): OperationCreate
     {
-        $operation = new Operation();
+        $operation = new OperationCreate();
         $operation->setName($prefix . 'create');
         $operation->setDescription('Creates a new row');
         $operation->setHttpMethod('POST');
@@ -260,9 +260,9 @@ class SqlTable implements ProviderInterface
         return $operation;
     }
 
-    private function makeUpdateOperation(string $basePath, string $prefix): Operation
+    private function makeUpdateOperation(string $basePath, string $prefix): OperationCreate
     {
-        $operation = new Operation();
+        $operation = new OperationCreate();
         $operation->setName($prefix . 'update');
         $operation->setDescription('Updates an existing row');
         $operation->setHttpMethod('PUT');
@@ -273,9 +273,9 @@ class SqlTable implements ProviderInterface
         return $operation;
     }
 
-    private function makeDeleteOperation(string $basePath, string $prefix): Operation
+    private function makeDeleteOperation(string $basePath, string $prefix): OperationCreate
     {
-        $operation = new Operation();
+        $operation = new OperationCreate();
         $operation->setName($prefix . 'delete');
         $operation->setDescription('Deletes an existing row');
         $operation->setHttpMethod('DELETE');

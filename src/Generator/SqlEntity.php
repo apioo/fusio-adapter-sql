@@ -34,10 +34,10 @@ use Fusio\Engine\Generator\ProviderInterface;
 use Fusio\Engine\Generator\SetupInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\Schema\SchemaName;
-use Fusio\Model\Backend\Action;
 use Fusio\Model\Backend\ActionConfig;
-use Fusio\Model\Backend\Operation;
-use Fusio\Model\Backend\Schema;
+use Fusio\Model\Backend\ActionCreate;
+use Fusio\Model\Backend\OperationCreate;
+use Fusio\Model\Backend\SchemaCreate;
 use Fusio\Model\Backend\SchemaSource;
 use PSX\Schema\Document\Document;
 use PSX\Schema\Document\Generator;
@@ -135,29 +135,29 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $builder->add($elementFactory->newTypeSchema('schema', 'Schema', 'TypeSchema specification'));
     }
 
-    private function makeGetAllSchema(string $collectionName, string $entityName, string $prefix): Schema
+    private function makeGetAllSchema(string $collectionName, string $entityName, string $prefix): SchemaCreate
     {
         $type = $this->entityBuilder->getCollection($collectionName, $entityName);
 
-        $schema = new Schema();
+        $schema = new SchemaCreate();
         $schema->setName($prefix . $collectionName);
         $schema->setSource(SchemaSource::fromObject($type));
         return $schema;
     }
 
-    private function makeGetSchema(string $entityName, Type $type, array $typeSchema, array $typeMapping, string $prefix): Schema
+    private function makeGetSchema(string $entityName, Type $type, array $typeSchema, array $typeMapping, string $prefix): SchemaCreate
     {
         $type = $this->entityBuilder->getEntity($type, $entityName, $typeSchema, $typeMapping);
 
-        $schema = new Schema();
+        $schema = new SchemaCreate();
         $schema->setName($prefix . $entityName);
         $schema->setSource(SchemaSource::fromObject($type));
         return $schema;
     }
 
-    private function makeGetAllAction(ParametersInterface $configuration, Type $type, array $tableNames, Document $document, string $prefix): Action
+    private function makeGetAllAction(ParametersInterface $configuration, Type $type, array $tableNames, Document $document, string $prefix): ActionCreate
     {
-        $action = new Action();
+        $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_GET_ALL);
         $action->setClass(SqlBuilder::class);
         $action->setEngine(PhpClass::class);
@@ -168,9 +168,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $action;
     }
 
-    private function makeGetAction(ParametersInterface $configuration, Type $type, array $tableNames, Document $document, string $prefix): Action
+    private function makeGetAction(ParametersInterface $configuration, Type $type, array $tableNames, Document $document, string $prefix): ActionCreate
     {
-        $action = new Action();
+        $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_GET);
         $action->setClass(SqlBuilder::class);
         $action->setEngine(PhpClass::class);
@@ -181,9 +181,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $action;
     }
 
-    private function makeInsertAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): Action
+    private function makeInsertAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): ActionCreate
     {
-        $action = new Action();
+        $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_INSERT);
         $action->setClass(SqlInsert::class);
         $action->setEngine(PhpClass::class);
@@ -195,9 +195,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $action;
     }
 
-    private function makeUpdateAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): Action
+    private function makeUpdateAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): ActionCreate
     {
-        $action = new Action();
+        $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_UPDATE);
         $action->setClass(SqlUpdate::class);
         $action->setEngine(PhpClass::class);
@@ -209,9 +209,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $action;
     }
 
-    private function makeDeleteAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): Action
+    private function makeDeleteAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): ActionCreate
     {
-        $action = new Action();
+        $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_DELETE);
         $action->setClass(SqlUpdate::class);
         $action->setEngine(PhpClass::class);
@@ -223,9 +223,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $action;
     }
 
-    private function makeGetAllOperation(string $basePath, Type $type, string $prefix): Operation
+    private function makeGetAllOperation(string $basePath, Type $type, string $prefix): OperationCreate
     {
-        $operation = new Operation();
+        $operation = new OperationCreate();
         $operation->setName($prefix . 'getAll');
         $operation->setDescription('Returns a collection of ' . $type->getName());
         $operation->setHttpMethod('GET');
@@ -236,9 +236,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $operation;
     }
 
-    private function makeGetOperation(string $basePath, Type $type, string $prefix): Operation
+    private function makeGetOperation(string $basePath, Type $type, string $prefix): OperationCreate
     {
-        $operation = new Operation();
+        $operation = new OperationCreate();
         $operation->setName($prefix . 'get');
         $operation->setDescription('Returns a single ' . $type->getName());
         $operation->setHttpMethod('GET');
@@ -249,9 +249,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $operation;
     }
 
-    private function makeInsertOperation(string $basePath, Type $type, string $prefix): Operation
+    private function makeInsertOperation(string $basePath, Type $type, string $prefix): OperationCreate
     {
-        $operation = new Operation();
+        $operation = new OperationCreate();
         $operation->setName($prefix . 'create');
         $operation->setDescription('Creates a new ' . $type->getName());
         $operation->setHttpMethod('POST');
@@ -262,9 +262,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $operation;
     }
 
-    private function makeUpdateOperation(string $basePath, Type $type, string $prefix): Operation
+    private function makeUpdateOperation(string $basePath, Type $type, string $prefix): OperationCreate
     {
-        $operation = new Operation();
+        $operation = new OperationCreate();
         $operation->setName($prefix . 'update');
         $operation->setDescription('Updates an existing ' . $type->getName());
         $operation->setHttpMethod('PUT');
@@ -275,9 +275,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $operation;
     }
 
-    private function makeDeleteOperation(string $basePath, Type $type, string $prefix): Operation
+    private function makeDeleteOperation(string $basePath, Type $type, string $prefix): OperationCreate
     {
-        $operation = new Operation();
+        $operation = new OperationCreate();
         $operation->setName($prefix . 'delete');
         $operation->setDescription('Deletes an existing ' . $type->getName());
         $operation->setHttpMethod('DELETE');
