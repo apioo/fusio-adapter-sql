@@ -78,7 +78,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return 'SQL-Entity';
     }
 
-    public function setup(SetupInterface $setup, string $basePath, ParametersInterface $configuration): void
+    public function setup(SetupInterface $setup, ParametersInterface $configuration): void
     {
         $connection = $this->getConnection($configuration->get('connection'));
         $document = Document::from($configuration->get('schema'));

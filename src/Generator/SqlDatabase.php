@@ -40,7 +40,7 @@ class SqlDatabase extends SqlTable
         return 'SQL-Database';
     }
 
-    public function setup(SetupInterface $setup, string $basePath, ParametersInterface $configuration): void
+    public function setup(SetupInterface $setup, ParametersInterface $configuration): void
     {
         $connectionName = $configuration->get('connection');
         $prefix = $configuration->get('prefix') ?? '';

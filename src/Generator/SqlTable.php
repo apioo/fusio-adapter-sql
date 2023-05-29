@@ -76,7 +76,7 @@ class SqlTable implements ProviderInterface
         return 'SQL-Table';
     }
 
-    public function setup(SetupInterface $setup, string $basePath, ParametersInterface $configuration): void
+    public function setup(SetupInterface $setup, ParametersInterface $configuration): void
     {
         $connectionName = $configuration->get('connection') ?? throw new ConfigurationException('No connection provided');
         $tableName = $configuration->get('table') ?? throw new ConfigurationException('No table provided');

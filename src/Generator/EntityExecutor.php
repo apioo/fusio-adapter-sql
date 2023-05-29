@@ -56,7 +56,8 @@ class EntityExecutor
             $table->addForeignKeyConstraint($schema->getTable($foreignTable), $localColumns, $foreignColumns);
         }
 
-        $queries = $schema->toSql($connection->getDatabasePlatform());
+        $diff = $schemaManager->createComparator()->compareSchemas($schemaManager->introspectSchema(), $schema);
+        $queries = $connection->getDatabasePlatform()->getAlterSchemaSQL($diff);
         foreach ($queries as $query) {
             $connection->executeQuery($query);
         }
