@@ -113,7 +113,7 @@ abstract class SqlActionAbstract extends ActionAbstract
                 } elseif ($column->getType() instanceof Types\TimeType) {
                     $value = $value->format($platform->getTimeFormatString());
                 }
-            } elseif (is_array($value) || $value instanceof \stdClass) {
+            } elseif (is_array($value) || $value instanceof \stdClass || $value instanceof RecordInterface) {
                 if ($column->getType() instanceof Types\IntegerType && $type === 'object') {
                     $object = Record::from($value);
                     if ($object->containsKey('id')) {

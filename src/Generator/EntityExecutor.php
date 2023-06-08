@@ -124,7 +124,7 @@ class EntityExecutor
             $tableName = $tableNames[$type->getName() ?? ''];
 
             $prefix = ucfirst(substr($tableName, 4));
-            $entityName = $prefix . '_SQL_Entity';
+            $entityName = $prefix . '_SQL_Get';
 
             $typeMapping[$type->getName() ?? ''] = $entityName;
         }
@@ -134,7 +134,7 @@ class EntityExecutor
 
     public function getRouteName(Type $type): string
     {
-        return self::underscore($type->getName() ?? '');
+        return '/' . self::underscore($type->getName() ?? '');
     }
 
     private function getRelationConfig(Type $type, Property $property, array $tableNames): array

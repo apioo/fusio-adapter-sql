@@ -93,19 +93,16 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
 
         foreach ($types as $type) {
             $tableName = $tableNames[$type->getName() ?? ''] ?? '';
-            $routeName = $this->entityExecutor->getRouteName($type);
+            $basePath = $this->entityExecutor->getRouteName($type);
             $mapping = $this->entityExecutor->getMapping($type, $tableNames);
 
             $prefix = substr($tableName, 4);
-            $collectionName = self::SCHEMA_GET_ALL;
-            $entityName = self::SCHEMA_GET;
-
             $schemaPrefix = ucfirst($prefix) . '_';
             $actionPrefix = ucfirst($prefix) . '_';
             $operationPrefix = $prefix . '.';
 
-            $setup->addSchema($this->makeGetAllSchema($collectionName, $entityName, $schemaPrefix));
-            $setup->addSchema($this->makeGetSchema($entityName, $type, $typeSchema, $typeMapping, $schemaPrefix));
+            $setup->addSchema($this->makeGetAllSchema($schemaPrefix));
+            $setup->addSchema($this->makeGetSchema($type, $typeSchema, $typeMapping, $schemaPrefix));
 
             $setup->addAction($this->makeGetAllAction($configuration, $type, $tableNames, $document, $actionPrefix));
             $setup->addAction($this->makeGetAction($configuration, $type, $tableNames, $document, $actionPrefix));
@@ -113,11 +110,11 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
             $setup->addAction($this->makeUpdateAction($configuration, $tableName, $mapping, $actionPrefix));
             $setup->addAction($this->makeDeleteAction($configuration, $tableName, $mapping, $actionPrefix));
 
-            $setup->addOperation($this->makeGetAllOperation($routeName, $type, $operationPrefix, $actionPrefix, $schemaPrefix));
-            $setup->addOperation($this->makeGetOperation($routeName, $type, $operationPrefix, $actionPrefix, $schemaPrefix));
-            $setup->addOperation($this->makeInsertOperation($routeName, $type, $operationPrefix, $actionPrefix));
-            $setup->addOperation($this->makeUpdateOperation($routeName, $type, $operationPrefix, $actionPrefix));
-            $setup->addOperation($this->makeDeleteOperation($routeName, $type, $operationPrefix, $actionPrefix));
+            $setup->addOperation($this->makeGetAllOperation($basePath, $type, $operationPrefix, $actionPrefix, $schemaPrefix));
+            $setup->addOperation($this->makeGetOperation($basePath, $type, $operationPrefix, $actionPrefix, $schemaPrefix));
+            $setup->addOperation($this->makeInsertOperation($basePath, $type, $operationPrefix, $actionPrefix, $schemaPrefix));
+            $setup->addOperation($this->makeUpdateOperation($basePath, $type, $operationPrefix, $actionPrefix, $schemaPrefix));
+            $setup->addOperation($this->makeDeleteOperation($basePath, $type, $operationPrefix, $actionPrefix));
         }
     }
 
@@ -135,22 +132,24 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $builder->add($elementFactory->newTypeSchema('schema', 'Schema', 'TypeSchema specification'));
     }
 
-    private function makeGetAllSchema(string $collectionName, string $entityName, string $prefix): SchemaCreate
+    private function makeGetAllSchema(string $prefix): SchemaCreate
     {
-        $type = $this->entityBuilder->getCollection($collectionName, $entityName);
+        $name = $prefix . self::SCHEMA_GET_ALL;
+        $type = $this->entityBuilder->getCollection($name, $prefix . self::SCHEMA_GET);
 
         $schema = new SchemaCreate();
-        $schema->setName($prefix . $collectionName);
+        $schema->setName($name);
         $schema->setSource(SchemaSource::fromObject($type));
         return $schema;
     }
 
-    private function makeGetSchema(string $entityName, Type $type, array $typeSchema, array $typeMapping, string $prefix): SchemaCreate
+    private function makeGetSchema(Type $type, array $typeSchema, array $typeMapping, string $prefix): SchemaCreate
     {
-        $type = $this->entityBuilder->getEntity($type, $entityName, $typeSchema, $typeMapping);
+        $name = $prefix . self::SCHEMA_GET;
+        $type = $this->entityBuilder->getEntity($type, $name, $typeSchema, $typeMapping);
 
         $schema = new SchemaCreate();
-        $schema->setName($prefix . $entityName);
+        $schema->setName($name);
         $schema->setSource(SchemaSource::fromObject($type));
         return $schema;
     }
@@ -249,7 +248,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $operation;
     }
 
-    private function makeInsertOperation(string $basePath, Type $type, string $prefix, string $actionPrefix): OperationCreate
+    private function makeInsertOperation(string $basePath, Type $type, string $prefix, string $actionPrefix, string $schemaPrefix): OperationCreate
     {
         $operation = new OperationCreate();
         $operation->setName($prefix . 'create');
@@ -257,12 +256,13 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $operation->setHttpMethod('POST');
         $operation->setHttpPath($basePath . '/');
         $operation->setHttpCode(200);
+        $operation->setIncoming($schemaPrefix . self::SCHEMA_GET);
         $operation->setOutgoing(SchemaName::MESSAGE);
         $operation->setAction($actionPrefix . self::ACTION_INSERT);
         return $operation;
     }
 
-    private function makeUpdateOperation(string $basePath, Type $type, string $prefix, string $actionPrefix): OperationCreate
+    private function makeUpdateOperation(string $basePath, Type $type, string $prefix, string $actionPrefix, string $schemaPrefix): OperationCreate
     {
         $operation = new OperationCreate();
         $operation->setName($prefix . 'update');
@@ -270,6 +270,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $operation->setHttpMethod('PUT');
         $operation->setHttpPath($basePath . '/:id');
         $operation->setHttpCode(200);
+        $operation->setIncoming($schemaPrefix . self::SCHEMA_GET);
         $operation->setOutgoing(SchemaName::MESSAGE);
         $operation->setAction($actionPrefix . self::ACTION_UPDATE);
         return $operation;
