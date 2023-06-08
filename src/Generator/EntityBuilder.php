@@ -76,7 +76,10 @@ class EntityBuilder
             throw new \RuntimeException('Could not resolve type name');
         }
 
-        $selfMapping[$typeName] = $typeMapping[$typeName];
+        $selfMapping = [];
+        if (isset($typeMapping[$typeName])) {
+            $selfMapping[$typeName] = $typeMapping[$typeName];
+        }
 
         $import = [];
         foreach ($typeMapping as $importTypeName => $realName) {
