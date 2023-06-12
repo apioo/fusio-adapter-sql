@@ -30,6 +30,9 @@ use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
+use PSX\DateTime\LocalDate;
+use PSX\DateTime\LocalDateTime;
+use PSX\DateTime\LocalTime;
 use PSX\Http\Exception as StatusCode;
 use PSX\Record\Record;
 use PSX\Record\RecordInterface;
@@ -102,7 +105,11 @@ abstract class SqlActionAbstract extends ActionAbstract
                 throw new StatusCode\BadRequestException('Property ' . $name . ' must not be null');
             }
 
-            if ($value instanceof \DateTime) {
+            if ($value instanceof LocalDateTime || $value instanceof LocalDate || $value instanceof LocalTime) {
+                $value = $value->toDateTime();
+            }
+
+            if ($value instanceof \DateTimeInterface) {
                 $platform = $connection->getDatabasePlatform();
                 if ($column->getType() instanceof Types\DateType) {
                     $value = $value->format($platform->getDateFormatString());
