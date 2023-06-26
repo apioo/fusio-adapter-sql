@@ -161,7 +161,6 @@ class SqlTable implements ProviderInterface
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_GET_ALL);
         $action->setClass(SqlSelectAll::class);
-        $action->setEngine(PhpClass::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $connectionName,
             'table' => $tableName,
@@ -174,7 +173,6 @@ class SqlTable implements ProviderInterface
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_GET);
         $action->setClass(SqlSelectRow::class);
-        $action->setEngine(PhpClass::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $connectionName,
             'table' => $tableName,
@@ -187,7 +185,6 @@ class SqlTable implements ProviderInterface
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_INSERT);
         $action->setClass(SqlInsert::class);
-        $action->setEngine(PhpClass::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $connectionName,
             'table' => $tableName,
@@ -200,7 +197,6 @@ class SqlTable implements ProviderInterface
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_UPDATE);
         $action->setClass(SqlUpdate::class);
-        $action->setEngine(PhpClass::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $connectionName,
             'table' => $tableName,
@@ -213,7 +209,6 @@ class SqlTable implements ProviderInterface
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_DELETE);
         $action->setClass(SqlDelete::class);
-        $action->setEngine(PhpClass::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $connectionName,
             'table' => $tableName,

@@ -159,7 +159,6 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_GET_ALL);
         $action->setClass(SqlBuilder::class);
-        $action->setEngine(PhpClass::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $configuration->get('connection'),
             'jql' => $this->jqlBuilder->getCollection($type, $tableNames, $document),
@@ -172,7 +171,6 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_GET);
         $action->setClass(SqlBuilder::class);
-        $action->setEngine(PhpClass::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $configuration->get('connection'),
             'jql' => $this->jqlBuilder->getEntity($type, $tableNames, $document),
@@ -185,7 +183,6 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_INSERT);
         $action->setClass(SqlInsert::class);
-        $action->setEngine(PhpClass::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $configuration->get('connection'),
             'table' => $tableName,
@@ -199,7 +196,6 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_UPDATE);
         $action->setClass(SqlUpdate::class);
-        $action->setEngine(PhpClass::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $configuration->get('connection'),
             'table' => $tableName,
@@ -213,7 +209,6 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_DELETE);
         $action->setClass(SqlUpdate::class);
-        $action->setEngine(PhpClass::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $configuration->get('connection'),
             'table' => $tableName,
