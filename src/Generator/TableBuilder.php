@@ -94,11 +94,11 @@ class TableBuilder
         $schema['type'] = $this->getSchemaType($type);
 
         if ($type instanceof Types\DateTimeType) {
-            $schema['format'] = Format::DATETIME;
+            $schema['format'] = 'date-time';
         } elseif ($type instanceof Types\DateType) {
-            $schema['format'] = Format::DATE;
+            $schema['format'] = 'date';
         } elseif ($type instanceof Types\TimeType) {
-            $schema['format'] = Format::TIME;
+            $schema['format'] = 'time';
         }
 
         $length = $column->getLength();
