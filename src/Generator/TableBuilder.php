@@ -39,7 +39,7 @@ class TableBuilder
     {
         return (object) [
             '$import' => [
-                'entity' => 'schema:///' . $entityName
+                'entity' => 'schema://' . $entityName
             ],
             'definitions' => [
                 $collectionName => [

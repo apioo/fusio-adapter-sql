@@ -138,17 +138,17 @@ class SqlTable implements ProviderInterface
 
     private function makeGetAllSchema(Table $table, string $prefix): SchemaCreate
     {
-        $type = $this->tableBuilder->getEntity($table, self::SCHEMA_GET_ALL);
+        $type = $this->tableBuilder->getCollection($prefix . self::SCHEMA_GET_ALL, $prefix . self::SCHEMA_GET);
 
         $schema = new SchemaCreate();
         $schema->setName($prefix . self::SCHEMA_GET_ALL);
-        $schema->setSource(SchemaBuilder::makeCollectionResponse(self::SCHEMA_GET_ALL, $type));
+        $schema->setSource(SchemaSource::from($type));
         return $schema;
     }
 
     private function makeGetSchema(Table $table, string $prefix): SchemaCreate
     {
-        $type = $this->tableBuilder->getEntity($table, self::SCHEMA_GET);
+        $type = $this->tableBuilder->getEntity($table, $prefix . self::SCHEMA_GET);
 
         $schema = new SchemaCreate();
         $schema->setName($prefix . self::SCHEMA_GET);
