@@ -142,7 +142,7 @@ class SqlTable implements ProviderInterface
 
         $schema = new SchemaCreate();
         $schema->setName($prefix . self::SCHEMA_GET_ALL);
-        $schema->setSource(SchemaSource::from($type));
+        $schema->setSource(SchemaSource::fromObject($type));
         return $schema;
     }
 
