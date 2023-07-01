@@ -119,11 +119,11 @@ class SqlTable implements ProviderInterface
         $setup->addAction($this->makeUpdateAction($connectionName, $tableName, $actionPrefix));
         $setup->addAction($this->makeDeleteAction($connectionName, $tableName, $actionPrefix));
 
-        $setup->addOperation($this->makeGetAllOperation($basePath, $operationPrefix));
-        $setup->addOperation($this->makeGetOperation($basePath, $operationPrefix));
-        $setup->addOperation($this->makeInsertOperation($basePath, $operationPrefix));
-        $setup->addOperation($this->makeUpdateOperation($basePath, $operationPrefix));
-        $setup->addOperation($this->makeDeleteOperation($basePath, $operationPrefix));
+        $setup->addOperation($this->makeGetAllOperation($basePath, $schemaPrefix, $actionPrefix, $operationPrefix));
+        $setup->addOperation($this->makeGetOperation($basePath, $schemaPrefix, $actionPrefix, $operationPrefix));
+        $setup->addOperation($this->makeInsertOperation($basePath, $schemaPrefix, $actionPrefix, $operationPrefix));
+        $setup->addOperation($this->makeUpdateOperation($basePath, $schemaPrefix, $actionPrefix, $operationPrefix));
+        $setup->addOperation($this->makeDeleteOperation($basePath, $schemaPrefix, $actionPrefix, $operationPrefix));
     }
 
     protected function getConnection(mixed $connectionId): Connection
@@ -216,68 +216,68 @@ class SqlTable implements ProviderInterface
         return $action;
     }
 
-    private function makeGetAllOperation(string $basePath, string $prefix): OperationCreate
+    private function makeGetAllOperation(string $basePath, string $schemaPrefix, string $actionPrefix, string $operationPrefix): OperationCreate
     {
         $operation = new OperationCreate();
-        $operation->setName($prefix . 'getAll');
+        $operation->setName($operationPrefix . 'getAll');
         $operation->setDescription('Returns a collection of rows');
         $operation->setHttpMethod('GET');
         $operation->setHttpPath($basePath . '/');
         $operation->setHttpCode(200);
-        $operation->setOutgoing(self::SCHEMA_GET_ALL);
-        $operation->setAction(self::ACTION_GET_ALL);
+        $operation->setOutgoing($schemaPrefix . self::SCHEMA_GET_ALL);
+        $operation->setAction($actionPrefix . self::ACTION_GET_ALL);
         return $operation;
     }
 
-    private function makeGetOperation(string $basePath, string $prefix): OperationCreate
+    private function makeGetOperation(string $basePath, string $schemaPrefix, string $actionPrefix, string $operationPrefix): OperationCreate
     {
         $operation = new OperationCreate();
-        $operation->setName($prefix . 'get');
+        $operation->setName($operationPrefix . 'get');
         $operation->setDescription('Returns a single row');
         $operation->setHttpMethod('GET');
         $operation->setHttpPath($basePath . '/:id');
         $operation->setHttpCode(200);
-        $operation->setOutgoing(self::SCHEMA_GET);
-        $operation->setAction(self::ACTION_GET);
+        $operation->setOutgoing($schemaPrefix . self::SCHEMA_GET);
+        $operation->setAction($actionPrefix . self::ACTION_GET);
         return $operation;
     }
 
-    private function makeInsertOperation(string $basePath, string $prefix): OperationCreate
+    private function makeInsertOperation(string $basePath, string $schemaPrefix, string $actionPrefix, string $operationPrefix): OperationCreate
     {
         $operation = new OperationCreate();
-        $operation->setName($prefix . 'create');
+        $operation->setName($operationPrefix . 'create');
         $operation->setDescription('Creates a new row');
         $operation->setHttpMethod('POST');
         $operation->setHttpPath($basePath . '/');
         $operation->setHttpCode(201);
         $operation->setOutgoing(SchemaName::MESSAGE);
-        $operation->setAction(self::ACTION_INSERT);
+        $operation->setAction($actionPrefix . self::ACTION_INSERT);
         return $operation;
     }
 
-    private function makeUpdateOperation(string $basePath, string $prefix): OperationCreate
+    private function makeUpdateOperation(string $basePath, string $schemaPrefix, string $actionPrefix, string $operationPrefix): OperationCreate
     {
         $operation = new OperationCreate();
-        $operation->setName($prefix . 'update');
+        $operation->setName($operationPrefix . 'update');
         $operation->setDescription('Updates an existing row');
         $operation->setHttpMethod('PUT');
         $operation->setHttpPath($basePath . '/:id');
         $operation->setHttpCode(200);
         $operation->setOutgoing(SchemaName::MESSAGE);
-        $operation->setAction(self::ACTION_UPDATE);
+        $operation->setAction($actionPrefix . self::ACTION_UPDATE);
         return $operation;
     }
 
-    private function makeDeleteOperation(string $basePath, string $prefix): OperationCreate
+    private function makeDeleteOperation(string $basePath, string $schemaPrefix, string $actionPrefix, string $operationPrefix): OperationCreate
     {
         $operation = new OperationCreate();
-        $operation->setName($prefix . 'delete');
+        $operation->setName($operationPrefix . 'delete');
         $operation->setDescription('Deletes an existing row');
         $operation->setHttpMethod('DELETE');
         $operation->setHttpPath($basePath . '/:id');
         $operation->setHttpCode(200);
         $operation->setOutgoing(SchemaName::MESSAGE);
-        $operation->setAction(self::ACTION_DELETE);
+        $operation->setAction($actionPrefix . self::ACTION_DELETE);
         return $operation;
     }
 }
