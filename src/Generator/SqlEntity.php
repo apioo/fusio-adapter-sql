@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Connection;
 use Fusio\Adapter\Sql\Action\SqlBuilder;
+use Fusio\Adapter\Sql\Action\SqlDelete;
 use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Action\SqlUpdate;
 use Fusio\Engine\ConnectorInterface;
@@ -208,7 +209,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
     {
         $action = new ActionCreate();
         $action->setName($prefix . self::ACTION_DELETE);
-        $action->setClass(SqlUpdate::class);
+        $action->setClass(SqlDelete::class);
         $action->setConfig(ActionConfig::fromIterable([
             'connection' => $configuration->get('connection'),
             'table' => $tableName,
