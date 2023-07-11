@@ -250,6 +250,7 @@ class SqlTable implements ProviderInterface
         $operation->setHttpMethod('POST');
         $operation->setHttpPath($basePath . '/');
         $operation->setHttpCode(201);
+        $operation->setIncoming(SchemaName::PASSTHRU);
         $operation->setOutgoing(SchemaName::MESSAGE);
         $operation->setAction($actionPrefix . self::ACTION_INSERT);
         return $operation;
@@ -263,6 +264,7 @@ class SqlTable implements ProviderInterface
         $operation->setHttpMethod('PUT');
         $operation->setHttpPath($basePath . '/:id');
         $operation->setHttpCode(200);
+        $operation->setIncoming(SchemaName::PASSTHRU);
         $operation->setOutgoing(SchemaName::MESSAGE);
         $operation->setAction($actionPrefix . self::ACTION_UPDATE);
         return $operation;
