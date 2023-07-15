@@ -3,7 +3,7 @@
   "description": "Provides actions and connections to work with relational databases",
   "homepage": "https://www.fusio-project.org",
   "keywords": ["fusio-adapter"],
-  "license": "AGPL-3.0",
+  "license": "Apache-2.0",
   "authors": [
     {
       "name": "Christoph Kappestein",
