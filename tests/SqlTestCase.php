@@ -30,6 +30,7 @@ use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Action\SqlSelectAll;
 use Fusio\Adapter\Sql\Action\SqlSelectRow;
 use Fusio\Adapter\Sql\Action\SqlUpdate;
+use Fusio\Adapter\Sql\Adapter;
 use Fusio\Adapter\Sql\Connection\Sql;
 use Fusio\Adapter\Sql\Connection\SqlAdvanced;
 use Fusio\Adapter\Sql\Generator\SqlDatabase;
@@ -56,23 +57,6 @@ class SqlTestCase extends TestCase
 {
     use EngineTestCaseTrait;
     use DatabaseTestCaseTrait;
-
-    protected function configure(Runtime $runtime, Container $container): void
-    {
-        $container->set(Sql::class, new Sql());
-        $container->set(SqlAdvanced::class, new SqlAdvanced());
-        $container->set(SqlQueryAll::class, new SqlQueryAll($runtime));
-        $container->set(SqlQueryRow::class, new SqlQueryRow($runtime));
-        $container->set(SqlBuilder::class, new SqlBuilder($runtime));
-        $container->set(SqlDelete::class, new SqlDelete($runtime));
-        $container->set(SqlInsert::class, new SqlInsert($runtime));
-        $container->set(SqlSelectAll::class, new SqlSelectAll($runtime));
-        $container->set(SqlSelectRow::class, new SqlSelectRow($runtime));
-        $container->set(SqlUpdate::class, new SqlUpdate($runtime));
-        $container->set(SqlDatabase::class, new SqlDatabase($container->get(ConnectorInterface::class)));
-        $container->set(SqlEntity::class, new SqlEntity($container->get(ConnectorInterface::class)));
-        $container->set(SqlTable::class, new SqlTable($container->get(ConnectorInterface::class)));
-    }
 
     protected function setUp(): void
     {
@@ -144,5 +128,10 @@ class SqlTestCase extends TestCase
         } catch (\Exception $e) {
             $this->markTestSkipped('SQL connection not available');
         }
+    }
+
+    protected function getAdapterClass(): string
+    {
+        return Adapter::class;
     }
 }
