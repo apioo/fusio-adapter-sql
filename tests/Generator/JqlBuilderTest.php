@@ -22,7 +22,7 @@ namespace Fusio\Adapter\Sql\Tests;
 
 use Fusio\Adapter\Sql\Generator\JqlBuilder;
 use PHPUnit\Framework\TestCase;
-use PSX\Schema\Document\Document;
+use TypeAPI\Editor\Model\Document;
 
 /**
  * JqlBuilderTest

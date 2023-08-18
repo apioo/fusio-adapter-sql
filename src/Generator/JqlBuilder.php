@@ -108,7 +108,7 @@ class JqlBuilder
                     continue;
                 }
 
-                $index = $document->indexOf($property->getFirstRef() ?? '');
+                $index = $document->indexOfType($property->getFirstRef() ?? '');
                 if ($index === null) {
                     continue;
                 }
@@ -153,7 +153,7 @@ class JqlBuilder
                         continue;
                     }
 
-                    $index = $document->indexOf($property->getFirstRef() ?? '');
+                    $index = $document->indexOfType($property->getFirstRef() ?? '');
                     if ($index === null) {
                         continue;
                     }
@@ -207,7 +207,7 @@ class JqlBuilder
                         continue;
                     }
 
-                    $index = $document->indexOf($property->getFirstRef() ?? '');
+                    $index = $document->indexOfType($property->getFirstRef() ?? '');
                     if ($index === null) {
                         continue;
                     }
