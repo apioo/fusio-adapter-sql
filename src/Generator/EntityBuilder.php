@@ -20,7 +20,7 @@
 
 namespace Fusio\Adapter\Sql\Generator;
 
-use PSX\Schema\Document\Type;
+use TypeAPI\Editor\Model\Type;
 
 /**
  * EntityBuilder

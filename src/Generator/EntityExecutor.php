@@ -23,9 +23,9 @@ namespace Fusio\Adapter\Sql\Generator;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Schema;
-use PSX\Schema\Document\Document;
-use PSX\Schema\Document\Property;
-use PSX\Schema\Document\Type;
+use TypeAPI\Editor\Model\Document;
+use TypeAPI\Editor\Model\Property;
+use TypeAPI\Editor\Model\Type;
 
 /**
  * EntityExecutor

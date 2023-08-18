@@ -20,8 +20,8 @@
 
 namespace Fusio\Adapter\Sql\Generator;
 
-use PSX\Schema\Document\Document;
-use PSX\Schema\Document\Type;
+use TypeAPI\Editor\Model\Document;
+use TypeAPI\Editor\Model\Type;
 
 /**
  * JqlBuilder

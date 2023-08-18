@@ -26,7 +26,6 @@ use Fusio\Adapter\Sql\Action\SqlDelete;
 use Fusio\Adapter\Sql\Action\SqlInsert;
 use Fusio\Adapter\Sql\Action\SqlUpdate;
 use Fusio\Engine\ConnectorInterface;
-use Fusio\Engine\Factory\Resolver\PhpClass;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\Generator\ExecutableInterface;
@@ -39,9 +38,9 @@ use Fusio\Model\Backend\ActionCreate;
 use Fusio\Model\Backend\OperationCreate;
 use Fusio\Model\Backend\SchemaCreate;
 use Fusio\Model\Backend\SchemaSource;
-use PSX\Schema\Document\Document;
-use PSX\Schema\Document\Generator;
-use PSX\Schema\Document\Type;
+use TypeAPI\Editor\Generator;
+use TypeAPI\Editor\Model\Document;
+use TypeAPI\Editor\Model\Type;
 
 /**
  * SqlEntity
