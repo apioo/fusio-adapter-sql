@@ -33,11 +33,11 @@ use Doctrine\DBAL\Types;
  */
 class TableBuilder
 {
-    public function getCollection(string $collectionName, string $entityName): object
+    public function getCollection(string $collectionName, string $schemaName, string $entityName): object
     {
         return (object) [
             '$import' => [
-                'entity' => 'schema://' . $entityName
+                'entity' => 'schema://' . $schemaName
             ],
             'definitions' => [
                 $collectionName => [

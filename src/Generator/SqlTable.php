@@ -135,7 +135,8 @@ class SqlTable implements ProviderInterface
 
     private function makeGetAllSchema(Table $table, string $prefix): SchemaCreate
     {
-        $type = $this->tableBuilder->getCollection($prefix . self::SCHEMA_GET_ALL, $prefix . self::SCHEMA_GET);
+        $tableName = $this->normalizeTableName($table);
+        $type = $this->tableBuilder->getCollection($tableName . '_Collection', $prefix . self::SCHEMA_GET, $tableName);
 
         $schema = new SchemaCreate();
         $schema->setName($prefix . self::SCHEMA_GET_ALL);
@@ -145,7 +146,8 @@ class SqlTable implements ProviderInterface
 
     private function makeGetSchema(Table $table, string $prefix): SchemaCreate
     {
-        $type = $this->tableBuilder->getEntity($table, $prefix . self::SCHEMA_GET);
+        $tableName = $this->normalizeTableName($table);
+        $type = $this->tableBuilder->getEntity($table, $tableName);
 
         $schema = new SchemaCreate();
         $schema->setName($prefix . self::SCHEMA_GET);
@@ -247,7 +249,7 @@ class SqlTable implements ProviderInterface
         $operation->setHttpMethod('POST');
         $operation->setHttpPath($basePath . '/');
         $operation->setHttpCode(201);
-        $operation->setIncoming(SchemaName::PASSTHRU);
+        $operation->setIncoming($schemaPrefix . self::SCHEMA_GET);
         $operation->setOutgoing(SchemaName::MESSAGE);
         $operation->setAction($actionPrefix . self::ACTION_INSERT);
         return $operation;
@@ -261,7 +263,7 @@ class SqlTable implements ProviderInterface
         $operation->setHttpMethod('PUT');
         $operation->setHttpPath($basePath . '/:id');
         $operation->setHttpCode(200);
-        $operation->setIncoming(SchemaName::PASSTHRU);
+        $operation->setIncoming($schemaPrefix . self::SCHEMA_GET);
         $operation->setOutgoing(SchemaName::MESSAGE);
         $operation->setAction($actionPrefix . self::ACTION_UPDATE);
         return $operation;
@@ -278,5 +280,10 @@ class SqlTable implements ProviderInterface
         $operation->setOutgoing(SchemaName::MESSAGE);
         $operation->setAction($actionPrefix . self::ACTION_DELETE);
         return $operation;
+    }
+
+    private function normalizeTableName(Table $table): string
+    {
+        return strtr(ucwords(strtr($table->getName(), ['_' => ' '])), [' ' => '_']);
     }
 }
