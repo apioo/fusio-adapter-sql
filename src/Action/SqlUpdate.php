@@ -63,7 +63,7 @@ class SqlUpdate extends SqlManipulationAbstract
         $connection->beginTransaction();
 
         try {
-            $affected = $connection->update($table->getName(), $data, [$key => $existingId]);
+            $connection->update($table->getName(), $data, [$key => $existingId]);
 
             $this->insertRelations($connection, $existingId, $body, $mapping);
 
@@ -75,10 +75,9 @@ class SqlUpdate extends SqlManipulationAbstract
         }
 
         return $this->response->build(200, [], [
-            'success'  => true,
-            'message'  => 'Entry successfully updated',
-            'id'       => $existingId,
-            'affected' => $affected,
+            'success' => true,
+            'message' => 'Entry successfully updated',
+            'id'      => '' . $existingId,
         ]);
     }
 }

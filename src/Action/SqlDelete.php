@@ -62,7 +62,7 @@ class SqlDelete extends SqlManipulationAbstract
         try {
             $this->deleteRelations($connection, $existingId, $mapping);
 
-            $affected = $connection->delete($table->getName(), [$key => $existingId]);
+            $connection->delete($table->getName(), [$key => $existingId]);
 
             $connection->commit();
         } catch (\Exception $e) {
@@ -73,10 +73,9 @@ class SqlDelete extends SqlManipulationAbstract
 
 
         return $this->response->build(200, [], [
-            'success'  => true,
-            'message'  => 'Entry successfully deleted',
-            'id'       => $existingId,
-            'affected' => $affected,
+            'success' => true,
+            'message' => 'Entry successfully deleted',
+            'id'      => '' . $existingId,
         ]);
     }
 }

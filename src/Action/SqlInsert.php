@@ -54,7 +54,7 @@ class SqlInsert extends SqlManipulationAbstract
         $connection->beginTransaction();
 
         try {
-            $affected = $connection->insert($table->getName(), $data);
+            $connection->insert($table->getName(), $data);
 
             $lastInsertId = (int) $connection->lastInsertId();
 
@@ -68,10 +68,9 @@ class SqlInsert extends SqlManipulationAbstract
         }
 
         return $this->response->build(201, [], [
-            'success'  => true,
-            'message'  => 'Entry successfully created',
-            'id'       => $lastInsertId,
-            'affected' => $affected,
+            'success' => true,
+            'message' => 'Entry successfully created',
+            'id'      => '' . $lastInsertId,
         ]);
     }
 }
