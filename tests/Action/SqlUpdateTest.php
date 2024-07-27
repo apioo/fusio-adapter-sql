@@ -50,10 +50,9 @@ class SqlUpdateTest extends SqlTestCase
         $response = $action->handle($this->getRequest('PUT', ['id' => 1], [], [], $body), $parameters, $this->getContext());
 
         $result = [
-            'success'  => true,
-            'message'  => 'Entry successfully updated',
-            'id'       => 1,
-            'affected' => 1,
+            'success' => true,
+            'message' => 'Entry successfully updated',
+            'id'      => '1',
         ];
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);

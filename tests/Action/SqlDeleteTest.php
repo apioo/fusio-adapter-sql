@@ -44,10 +44,9 @@ class SqlDeleteTest extends SqlTestCase
         $response = $action->handle($this->getRequest('DELETE', ['id' => 1]), $parameters, $this->getContext());
 
         $result = [
-            'success'  => true,
-            'message'  => 'Entry successfully deleted',
-            'id'       => 1,
-            'affected' => 1,
+            'success' => true,
+            'message' => 'Entry successfully deleted',
+            'id'      => '1',
         ];
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);

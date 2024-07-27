@@ -55,10 +55,9 @@ class SqlInsertTest extends SqlTestCase
         $body     = $response->getBody();
 
         $result = [
-            'success'  => true,
-            'message'  => 'Entry successfully created',
-            'id'       => 4,
-            'affected' => 1,
+            'success' => true,
+            'message' => 'Entry successfully created',
+            'id'      => '4',
         ];
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
