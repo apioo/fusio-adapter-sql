@@ -16,7 +16,7 @@
     "fusio/engine": "^6.0",
     "psx/sql": "^3.0|^4.0",
     "psx/nested": "^0.1",
-    "symfony/uid": "^7.0",
+    "symfony/uid": "^6.0|^7.0",
     "typeapi/editor": "^0.2"
   },
   "require-dev": {
