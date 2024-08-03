@@ -93,6 +93,47 @@ JSON;
         $this->assertEquals([], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
+    public function testHandleColumnTypes()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_column_test',
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlSelectRow::class);
+        $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+
+        $expect = <<<JSON
+{
+    "id": 1,
+    "col_bigint": "68719476735",
+    "col_binary": "Zm9v",
+    "col_blob": "Zm9vYmFy",
+    "col_boolean": true,
+    "col_datetime": "2015-01-21T23:59:59+00:00",
+    "col_datetimetz": "2015-01-21T23:59:59+00:00",
+    "col_date": "2015-01-21",
+    "col_decimal": "10",
+    "col_float": 10.37,
+    "col_integer": 2147483647,
+    "col_smallint": 255,
+    "col_text": "foobar",
+    "col_time": "23:59:59",
+    "col_string": "foobar",
+    "col_json": {
+        "foo": "bar"
+    },
+    "col_guid": "ebe865da-4982-4353-bc44-dcdf7239e386"
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
 
     public function testHandleColumns()
     {

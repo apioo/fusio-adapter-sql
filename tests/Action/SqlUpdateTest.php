@@ -111,4 +111,69 @@ class SqlUpdateTest extends SqlTestCase
 
         $this->assertEquals($expect, $row);
     }
+
+    public function testHandleColumnTest()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_column_test',
+        ]);
+
+        $body = new Record();
+        $body['col_bigint'] = 68719476735;
+        $body['col_binary'] = 'foo';
+        $body['col_blob'] = 'foobar';
+        $body['col_boolean'] = 1;
+        $body['col_datetime'] = '2015-01-21 23:59:59';
+        $body['col_datetimetz'] = '2015-01-21 23:59:59';
+        $body['col_date'] = '2015-01-21';
+        $body['col_decimal'] = 10;
+        $body['col_float'] = 10.37;
+        $body['col_integer'] = 2147483647;
+        $body['col_smallint'] = 255;
+        $body['col_text'] = 'foobar';
+        $body['col_time'] = '23:59:59';
+        $body['col_string'] = 'foobar';
+        $body['col_json'] = '{"foo":"bar"}';
+        $body['col_guid'] = 'ebe865da-4982-4353-bc44-dcdf7239e386';
+
+        $action   = $this->getActionFactory()->factory(SqlUpdate::class);
+        $response = $action->handle($this->getRequest('PUT', ['id' => 1], [], [], $body), $parameters, $this->getContext());
+        $data     = $response->getBody();
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+
+        $this->assertArrayHasKey('success', $data);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Entry successfully updated', $data['message']);
+        $this->assertArrayHasKey('id', $data);
+        $this->assertNotEmpty($data['id']);
+
+        // check whether the entry was updated
+        $actual = $this->connection->fetchAssociative('SELECT * FROM app_column_test WHERE id = :id', ['id' => $data['id']]);
+        $expect = [
+            'id' => $data['id'],
+            'col_bigint' => 68719476735,
+            'col_binary' => 'foo',
+            'col_blob' => 'foobar',
+            'col_boolean' => 1,
+            'col_datetime' => '2015-01-21 23:59:59',
+            'col_datetimetz' => '2015-01-21 23:59:59',
+            'col_date' => '2015-01-21',
+            'col_decimal' => 10,
+            'col_float' => 10.37,
+            'col_integer' => 2147483647,
+            'col_smallint' => 255,
+            'col_text' => 'foobar',
+            'col_time' => '23:59:59',
+            'col_string' => 'foobar',
+            'col_json' => '{"foo":"bar"}',
+            'col_guid' => 'ebe865da-4982-4353-bc44-dcdf7239e386'
+        ];
+
+        $this->assertEquals($expect, $actual);
+    }
 }

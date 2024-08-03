@@ -21,29 +21,15 @@
 namespace Fusio\Adapter\Sql\Tests;
 
 use Doctrine\DBAL\Connection as DoctrineConnection;
-use Fusio\Adapter\Sql\Action\Query\SqlQueryAll;
-use Fusio\Adapter\Sql\Action\Query\SqlQueryRow;
-use Fusio\Adapter\Sql\Action\SqlBuilder;
-use Fusio\Adapter\Sql\Action\SqlDelete;
-use Fusio\Adapter\Sql\Action\SqlInsert;
-use Fusio\Adapter\Sql\Action\SqlSelectAll;
-use Fusio\Adapter\Sql\Action\SqlSelectRow;
-use Fusio\Adapter\Sql\Action\SqlUpdate;
+use Doctrine\DBAL\Types\Types;
 use Fusio\Adapter\Sql\Adapter;
-use Fusio\Adapter\Sql\Connection\Sql;
 use Fusio\Adapter\Sql\Connection\SqlAdvanced;
-use Fusio\Adapter\Sql\Generator\SqlDatabase;
-use Fusio\Adapter\Sql\Generator\SqlEntity;
-use Fusio\Adapter\Sql\Generator\SqlTable;
-use Fusio\Engine\Action\Runtime;
-use Fusio\Engine\ConnectorInterface;
 use Fusio\Engine\Model\Connection;
 use Fusio\Engine\Parameters;
 use Fusio\Engine\Test\CallbackConnection;
 use Fusio\Engine\Test\EngineTestCaseTrait;
 use PHPUnit\Framework\TestCase;
 use PSX\Sql\Test\DatabaseTestCaseTrait;
-use Symfony\Component\DependencyInjection\Container;
 
 /**
  * SqlTestCase
@@ -130,6 +116,26 @@ class SqlTestCase extends TestCase
             $table->addColumn('content', 'string', ['default' => 'Test content']);
             $table->addColumn('counter', 'integer', ['default' => 999]);
             $table->addColumn('created_at', 'datetime', ['default' => 'CURRENT_TIMESTAMP']);
+            $table->setPrimaryKey(['id']);
+
+            $table = $schema->createTable('app_column_test');
+            $table->addColumn('id', Types::INTEGER, ['autoincrement' => true]);
+            $table->addColumn('col_bigint', Types::BIGINT);
+            $table->addColumn('col_binary', Types::BINARY);
+            $table->addColumn('col_blob', Types::BLOB);
+            $table->addColumn('col_boolean', Types::BOOLEAN);
+            $table->addColumn('col_datetime', Types::DATETIME_MUTABLE);
+            $table->addColumn('col_datetimetz', Types::DATETIMETZ_MUTABLE);
+            $table->addColumn('col_date', Types::DATE_MUTABLE);
+            $table->addColumn('col_decimal', Types::DECIMAL);
+            $table->addColumn('col_float', Types::FLOAT);
+            $table->addColumn('col_integer', Types::INTEGER);
+            $table->addColumn('col_smallint', Types::SMALLINT);
+            $table->addColumn('col_text', Types::TEXT);
+            $table->addColumn('col_time', Types::TIME_MUTABLE);
+            $table->addColumn('col_string', Types::STRING);
+            $table->addColumn('col_json', Types::JSON);
+            $table->addColumn('col_guid', Types::GUID);
             $table->setPrimaryKey(['id']);
 
             $queries = $schema->toSql($connection->getDatabasePlatform());
