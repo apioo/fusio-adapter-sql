@@ -22,6 +22,9 @@ namespace Fusio\Adapter\Sql\Tests\Action;
 
 use Fusio\Adapter\Sql\Action\SqlUpdate;
 use Fusio\Adapter\Sql\Tests\SqlTestCase;
+use PSX\DateTime\LocalDate;
+use PSX\DateTime\LocalDateTime;
+use PSX\DateTime\LocalTime;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Record\Record;
 
@@ -119,22 +122,26 @@ class SqlUpdateTest extends SqlTestCase
             'table'      => 'app_column_test',
         ]);
 
+        $blob = \fopen('php://memory', 'a+');
+        fwrite($blob, 'foobar');
+        fseek($blob, 0);
+
         $body = new Record();
         $body['col_bigint'] = 68719476735;
         $body['col_binary'] = 'foo';
-        $body['col_blob'] = 'foobar';
+        $body['col_blob'] = $blob;
         $body['col_boolean'] = 1;
-        $body['col_datetime'] = '2015-01-21 23:59:59';
-        $body['col_datetimetz'] = '2015-01-21 23:59:59';
-        $body['col_date'] = '2015-01-21';
+        $body['col_datetime'] = LocalDateTime::parse('2015-01-21 23:59:59');
+        $body['col_datetimetz'] = LocalDateTime::parse('2015-01-21 23:59:59');
+        $body['col_date'] = LocalDate::parse('2015-01-21');
         $body['col_decimal'] = 10;
         $body['col_float'] = 10.37;
         $body['col_integer'] = 2147483647;
         $body['col_smallint'] = 255;
         $body['col_text'] = 'foobar';
-        $body['col_time'] = '23:59:59';
+        $body['col_time'] = LocalTime::parse('23:59:59');
         $body['col_string'] = 'foobar';
-        $body['col_json'] = '{"foo":"bar"}';
+        $body['col_json'] = (object) ['foo' => 'bar'];
         $body['col_guid'] = 'ebe865da-4982-4353-bc44-dcdf7239e386';
 
         $action   = $this->getActionFactory()->factory(SqlUpdate::class);

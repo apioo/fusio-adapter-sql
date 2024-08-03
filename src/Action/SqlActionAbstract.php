@@ -138,6 +138,10 @@ abstract class SqlActionAbstract extends ActionAbstract
                 } elseif ($column->getType() instanceof Types\JsonType) {
                     $value = \json_encode($value);
                 }
+            } elseif (is_resource($value)) {
+                if ($column->getType() instanceof Types\BlobType) {
+                    $value = stream_get_contents($value, offset: 0);
+                }
             }
 
             $data[$column->getName()] = $value;
