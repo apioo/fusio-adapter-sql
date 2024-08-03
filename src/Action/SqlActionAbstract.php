@@ -105,11 +105,7 @@ abstract class SqlActionAbstract extends ActionAbstract
             }
 
             if ($insert && $column->getName() === $primaryKey && $column->getType() instanceof GuidType && $value === null) {
-                if (method_exists(Uuid::class, 'v7')) {
-                    $value = Uuid::v7()->toString();
-                } else {
-                    $value = Uuid::v4()->toString();
-                }
+                $value = Uuid::v7()->toRfc4122();
             }
 
             if ($value === null && $column->getNotnull()) {
