@@ -24,6 +24,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types;
+use Doctrine\DBAL\Types\GuidType;
 use Fusio\Engine\ActionAbstract;
 use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
@@ -35,6 +36,7 @@ use PSX\DateTime\LocalTime;
 use PSX\Http\Exception as StatusCode;
 use PSX\Record\Record;
 use PSX\Record\RecordInterface;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * Action which allows you to create an API endpoint based on any database table
@@ -70,9 +72,11 @@ abstract class SqlActionAbstract extends ActionAbstract
         return $table;
     }
 
-    protected function getData(RecordInterface $body, Connection $connection, Table $table, ?bool $validateNull = false, ?array $mapping = null): array
+    protected function getData(RecordInterface $body, Connection $connection, Table $table, bool $insert, ?array $mapping = null): array
     {
         $data = [];
+
+        $primaryKey = $this->getPrimaryKey($table);
 
         $columns = $table->getColumns();
         foreach ($columns as $column) {
@@ -94,10 +98,14 @@ abstract class SqlActionAbstract extends ActionAbstract
             $value = null;
             if ($body->containsKey($name)) {
                 $value = $body->get($name);
-            } elseif (!$validateNull) {
+            } elseif (!$insert) {
                 continue;
             } elseif ($column->getDefault()) {
                 continue;
+            }
+
+            if ($insert && $column->getName() === $primaryKey && $column->getType() instanceof GuidType && $value === null) {
+                $value = Uuid::v7()->toString();
             }
 
             if ($value === null && $column->getNotnull()) {
@@ -106,9 +114,7 @@ abstract class SqlActionAbstract extends ActionAbstract
 
             if ($value instanceof LocalDateTime || $value instanceof LocalDate || $value instanceof LocalTime) {
                 $value = $value->toDateTime();
-            }
-
-            if ($value instanceof \DateTimeInterface) {
+            } elseif ($value instanceof \DateTimeInterface) {
                 $platform = $connection->getDatabasePlatform();
                 if ($column->getType() instanceof Types\DateType) {
                     $value = $value->format($platform->getDateFormatString());

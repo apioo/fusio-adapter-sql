@@ -64,6 +64,36 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
+    public function testHandleUuid()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news_uuid',
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlSelectRow::class);
+        $response = $action->handle($this->getRequest('GET', ['id' => 'b45412cb-8c50-44b8-889f-f0e78e8296ad']), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+
+        $expect = <<<JSON
+{
+    "id": "b45412cb-8c50-44b8-889f-f0e78e8296ad",
+    "title": "foo",
+    "price": 39.99,
+    "content": "bar",
+    "image": "AAAAAAAAAAAAAAAAAAAAAA==",
+    "posted": "13:37:00",
+    "date": "2015-02-27T19:59:15+00:00"
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
     public function testHandleColumns()
     {
         $parameters = $this->getParameters([

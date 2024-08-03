@@ -48,22 +48,62 @@ class SqlUpdateTest extends SqlTestCase
 
         $action   = $this->getActionFactory()->factory(SqlUpdate::class);
         $response = $action->handle($this->getRequest('PUT', ['id' => 1], [], [], $body), $parameters, $this->getContext());
-
-        $result = [
-            'success' => true,
-            'message' => 'Entry successfully updated',
-            'id'      => '1',
-        ];
+        $data     = $response->getBody();
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals([], $response->getHeaders());
-        $this->assertEquals($result, $response->getBody());
 
-        // check whether the entry was inserted
-        $row    = $this->connection->fetchAssociative('SELECT id, title, content, date FROM app_news WHERE id = 1');
+        $this->assertArrayHasKey('success', $data);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Entry successfully updated', $data['message']);
+        $this->assertArrayHasKey('id', $data);
+        $this->assertNotEmpty($data['id']);
+
+        // check whether the entry was updated
+        $row    = $this->connection->fetchAssociative('SELECT id, title, content, date FROM app_news WHERE id = :id', ['id' => $data['id']]);
         $expect = [
-            'id'      => 1,
+            'id'      => $data['id'],
+            'title'   => 'lorem',
+            'content' => 'ipsum',
+            'date'    => '2015-02-27 19:59:15',
+        ];
+
+        $this->assertEquals($expect, $row);
+    }
+
+    public function testHandleUuid()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news_uuid',
+        ]);
+
+        $body = new Record();
+        $body['title'] = 'lorem';
+        $body['content'] = 'ipsum';
+        $body['date'] = '2015-02-27 19:59:15';
+
+        $action   = $this->getActionFactory()->factory(SqlUpdate::class);
+        $response = $action->handle($this->getRequest('PUT', ['id' => 'b45412cb-8c50-44b8-889f-f0e78e8296ad'], [], [], $body), $parameters, $this->getContext());
+        $data     = $response->getBody();
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+
+        $this->assertArrayHasKey('success', $data);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Entry successfully updated', $data['message']);
+        $this->assertArrayHasKey('id', $data);
+        $this->assertNotEmpty($data['id']);
+
+        // check whether the entry was updated
+        $row    = $this->connection->fetchAssociative('SELECT id, title, content, date FROM app_news_uuid WHERE id = :id', ['id' => $data['id']]);
+        $expect = [
+            'id'      => $data['id'],
             'title'   => 'lorem',
             'content' => 'ipsum',
             'date'    => '2015-02-27 19:59:15',

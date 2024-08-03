@@ -61,6 +61,9 @@ class SqlTestCase extends TestCase
     {
         parent::setUp();
 
+        // always reset the container for each test
+        self::$container = null;
+
         $this->setUpFixture();
 
         $connection = new Connection(1, 'foo', CallbackConnection::class, [
@@ -107,6 +110,16 @@ class SqlTestCase extends TestCase
             $table->addColumn('date', 'datetime', ['notnull' => false]);
             $table->setPrimaryKey(['id']);
 
+            $table = $schema->createTable('app_news_uuid');
+            $table->addColumn('id', 'guid');
+            $table->addColumn('title', 'string');
+            $table->addColumn('price', 'float', ['notnull' => false]);
+            $table->addColumn('content', 'text', ['notnull' => false]);
+            $table->addColumn('image', 'binary', ['notnull' => false]);
+            $table->addColumn('posted', 'time', ['notnull' => false]);
+            $table->addColumn('date', 'datetime', ['notnull' => false]);
+            $table->setPrimaryKey(['id']);
+
             $table = $schema->createTable('app_invalid');
             $table->addColumn('id', 'integer');
             $table->addColumn('title', 'string');
@@ -117,6 +130,7 @@ class SqlTestCase extends TestCase
             $table->addColumn('content', 'string', ['default' => 'Test content']);
             $table->addColumn('counter', 'integer', ['default' => 999]);
             $table->addColumn('created_at', 'datetime', ['default' => 'CURRENT_TIMESTAMP']);
+            $table->setPrimaryKey(['id']);
 
             $queries = $schema->toSql($connection->getDatabasePlatform());
             foreach ($queries as $query) {

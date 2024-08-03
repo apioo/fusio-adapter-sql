@@ -22,6 +22,8 @@ namespace Fusio\Adapter\Sql\Action;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Types\IntegerType;
+use Fusio\Engine\RequestInterface;
 use PSX\Http\Exception as StatusCode;
 use PSX\Record\RecordInterface;
 
@@ -34,7 +36,7 @@ use PSX\Record\RecordInterface;
  */
 abstract class SqlManipulationAbstract extends SqlActionAbstract
 {
-    protected function insertRelations(Connection $connection, int $entityId, RecordInterface $body, ?array $mapping = null): void
+    protected function insertRelations(Connection $connection, int|string $entityId, RecordInterface $body, ?array $mapping = null): void
     {
         $configs = $this->getRelationMappingConfig($mapping);
         foreach ($configs as $config) {
@@ -88,25 +90,31 @@ abstract class SqlManipulationAbstract extends SqlActionAbstract
         }
     }
 
-    protected function deleteRelations(Connection $connection, int $entityId, ?array $mapping = null): void
+    protected function deleteRelations(Connection $connection, int|string $entityId, ?array $mapping = null): void
     {
         $configs = $this->getRelationMappingConfig($mapping);
         foreach ($configs as $config) {
             [$propertyName, $type, $relationTable, $entityIdColumn, $foreignIdColumn] = $config;
 
             $connection->delete($relationTable, [
-                $entityIdColumn  => $entityId,
+                $entityIdColumn => $entityId,
             ]);
         }
     }
 
-    protected function findExistingId(Connection $connection, string $key, Table $table, int $id): int
+    protected function findExistingId(Connection $connection, string $key, Table $table, RequestInterface $request): int|string
     {
+        $rawId = $request->get('id');
+        if (empty($rawId) || !is_scalar($rawId)) {
+            throw new StatusCode\BadRequestException('Id not available');
+        }
+
         $qb = $connection->createQueryBuilder();
         $qb->select([$key]);
         $qb->from($table->getName());
         $qb->where($key . ' = :id');
-        $existingId = (int) $connection->fetchOne($qb->getSQL(), ['id' => $id]);
+
+        $existingId = $connection->fetchOne($qb->getSQL(), ['id' => $rawId]);
         if (empty($existingId)) {
             throw new StatusCode\NotFoundException('Entry not available');
         }

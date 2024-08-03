@@ -87,6 +87,60 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
+    public function testHandleUuid()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news_uuid',
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
+        $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 3,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": "b45412cb-8c50-44b8-889f-f0e78e8296ad",
+            "title": "foo",
+            "price": 39.99,
+            "content": "bar",
+            "image": "AAAAAAAAAAAAAAAAAAAAAA==",
+            "posted": "13:37:00",
+            "date": "2015-02-27T19:59:15+00:00"
+        },
+        {
+            "id": "a50c1ee4-3e79-493e-962f-deced0c3d797",
+            "title": "baz",
+            "price": null,
+            "content": null,
+            "image": null,
+            "posted": null,
+            "date": null
+        },
+        {
+            "id": "0aeb1959-4552-4a4a-968e-61bf9d6a9ea5",
+            "title": "bar",
+            "price": 29.99,
+            "content": "foo",
+            "image": "AAAAAAAAAAAAAAAAAAAAAA==",
+            "posted": "13:37:00",
+            "date": "2015-02-27T19:59:15+00:00"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
     public function testHandleColumns()
     {
         $parameters = $this->getParameters([

@@ -35,7 +35,7 @@ use PSX\Record\Record;
  */
 class SqlInsertTest extends SqlTestCase
 {
-    public function testHandlePost()
+    public function testHandle()
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -52,23 +52,23 @@ class SqlInsertTest extends SqlTestCase
 
         $action   = $this->getActionFactory()->factory(SqlInsert::class);
         $response = $action->handle($this->getRequest('POST', [], [], [], $body), $parameters, $this->getContext());
-        $body     = $response->getBody();
-
-        $result = [
-            'success' => true,
-            'message' => 'Entry successfully created',
-            'id'      => '4',
-        ];
+        $data     = $response->getBody();
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(201, $response->getStatusCode());
         $this->assertEquals([], $response->getHeaders());
-        $this->assertEquals($result, $body);
+
+        $this->assertArrayHasKey('success', $data);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Entry successfully created', $data['message']);
+        $this->assertArrayHasKey('id', $data);
+        $this->assertNotEmpty($data['id']);
 
         // check whether the entry was inserted
-        $row    = $this->connection->fetchAssociative('SELECT id, title, price, content, image, posted, date FROM app_news WHERE id = :id', ['id' => $body['id']]);
+        $actual = $this->connection->fetchAssociative('SELECT id, title, price, content, image, posted, date FROM app_news WHERE id = :id', ['id' => $data['id']]);
         $expect = [
-            'id'      => 4,
+            'id'      => $data['id'],
             'title'   => 'lorem',
             'price'   => '59.99',
             'content' => 'ipsum',
@@ -77,7 +77,52 @@ class SqlInsertTest extends SqlTestCase
             'date'    => '2015-02-27 19:59:15',
         ];
 
-        $this->assertEquals($expect, $row);
+        $this->assertEquals($expect, $actual);
+    }
+
+    public function testHandleUuid()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news_uuid',
+        ]);
+
+        $body = new Record();
+        $body['title'] = 'lorem';
+        $body['price'] = 59.99;
+        $body['content'] = 'ipsum';
+        $body['image'] = str_repeat("\0", 16);
+        $body['posted'] = '19:59:15';
+        $body['date'] = '2015-02-27 19:59:15';
+
+        $action   = $this->getActionFactory()->factory(SqlInsert::class);
+        $response = $action->handle($this->getRequest('POST', [], [], [], $body), $parameters, $this->getContext());
+        $data     = $response->getBody();
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(201, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+
+        $this->assertArrayHasKey('success', $data);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Entry successfully created', $data['message']);
+        $this->assertArrayHasKey('id', $data);
+        $this->assertNotEmpty($data['id']);
+
+        // check whether the entry was inserted
+        $actual = $this->connection->fetchAssociative('SELECT id, title, price, content, image, posted, date FROM app_news_uuid WHERE id = :id', ['id' => $data['id']]);
+        $expect = [
+            'id'      => $data['id'],
+            'title'   => 'lorem',
+            'price'   => '59.99',
+            'content' => 'ipsum',
+            'image'   => str_repeat("\0", 16),
+            'posted'  => '19:59:15',
+            'date'    => '2015-02-27 19:59:15',
+        ];
+
+        $this->assertEquals($expect, $actual);
     }
 
     public function testHandleNoData()
@@ -108,12 +153,11 @@ class SqlInsertTest extends SqlTestCase
         $action->handle($this->getRequest('POST', [], [], [], $body), $parameters, $this->getContext());
 
         // check whether the entry was inserted
-        $row    = $this->connection->fetchAssociative('SELECT * FROM app_insert WHERE id = :id', ['id' => 1]);
+        $row = $this->connection->fetchAssociative('SELECT * FROM app_insert WHERE id = :id', ['id' => 1]);
         
         $this->assertEquals(1, $row['id']);
         $this->assertEquals('Test content', $row['content']);
         $this->assertEquals(999, $row['counter']);
         $this->assertNotNull($row['created_at']);
     }
-
 }

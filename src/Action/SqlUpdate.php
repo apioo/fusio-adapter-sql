@@ -48,17 +48,12 @@ class SqlUpdate extends SqlManipulationAbstract
         $tableName  = $this->getTableName($configuration);
         $mapping    = $this->getMapping($configuration);
 
-        $id = (int) $request->get('id');
-        if (empty($id)) {
-            throw new StatusCode\BadRequestException('Id not available');
-        }
-
         $table = $this->getTable($connection, $tableName);
         $key   = $this->getPrimaryKey($table);
         $body  = Record::from($request->getPayload());
         $data  = $this->getData($body, $connection, $table, false, $mapping);
 
-        $existingId = $this->findExistingId($connection, $key, $table, $id);
+        $existingId = $this->findExistingId($connection, $key, $table, $request);
 
         $connection->beginTransaction();
 

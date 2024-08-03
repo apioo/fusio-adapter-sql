@@ -48,6 +48,7 @@ class SqlInsert extends SqlManipulationAbstract
         $mapping    = $this->getMapping($configuration);
 
         $table = $this->getTable($connection, $tableName);
+        $key   = $this->getPrimaryKey($table);
         $body  = Record::from($request->getPayload());
         $data  = $this->getData($body, $connection, $table, true, $mapping);
 
@@ -56,9 +57,15 @@ class SqlInsert extends SqlManipulationAbstract
         try {
             $connection->insert($table->getName(), $data);
 
-            $lastInsertId = (int) $connection->lastInsertId();
+            if ($table->getColumn($key)->getAutoincrement()) {
+                $lastInsertId = $connection->lastInsertId();
+            } else {
+                $lastInsertId = $data[$key] ?? null;
+            }
 
-            $this->insertRelations($connection, $lastInsertId, $body, $mapping);
+            if (!empty($lastInsertId)) {
+                $this->insertRelations($connection, $lastInsertId, $body, $mapping);
+            }
 
             $connection->commit();
         } catch (\Exception $e) {

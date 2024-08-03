@@ -49,7 +49,7 @@ class SqlSelectRow extends SqlActionAbstract
         $tableName  = $this->getTableName($configuration);
         $mapping    = $this->getMapping($configuration);
 
-        $id      = (int) $request->get('id');
+        $id      = $request->get('id');
         $table   = $this->getTable($connection, $tableName);
         $columns = $configuration->get('columns');
 
@@ -63,7 +63,6 @@ class SqlSelectRow extends SqlActionAbstract
         $qb->setParameter('id', $id);
 
         $row = $connection->fetchAssociative($qb->getSQL(), $qb->getParameters());
-
         if (empty($row)) {
             throw new StatusCode\NotFoundException('Entry not available');
         }

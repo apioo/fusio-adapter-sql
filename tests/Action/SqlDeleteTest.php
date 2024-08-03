@@ -33,7 +33,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  */
 class SqlDeleteTest extends SqlTestCase
 {
-    public function testHandleDelete()
+    public function testHandle()
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -42,19 +42,47 @@ class SqlDeleteTest extends SqlTestCase
 
         $action   = $this->getActionFactory()->factory(SqlDelete::class);
         $response = $action->handle($this->getRequest('DELETE', ['id' => 1]), $parameters, $this->getContext());
-
-        $result = [
-            'success' => true,
-            'message' => 'Entry successfully deleted',
-            'id'      => '1',
-        ];
+        $data     = $response->getBody();
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals([], $response->getHeaders());
-        $this->assertEquals($result, $response->getBody());
 
-        $row = $this->connection->fetchAssociative('SELECT id, title, content, date FROM app_news WHERE id = 1');
+        $this->assertArrayHasKey('success', $data);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Entry successfully deleted', $data['message']);
+        $this->assertArrayHasKey('id', $data);
+        $this->assertNotEmpty($data['id']);
+
+        $row = $this->connection->fetchAssociative('SELECT id, title, content, date FROM app_news WHERE id = :id', ['id' => $data['id']]);
+
+        $this->assertEmpty($row);
+    }
+
+    public function testHandleUuid()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news_uuid',
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlDelete::class);
+        $response = $action->handle($this->getRequest('DELETE', ['id' => 'b45412cb-8c50-44b8-889f-f0e78e8296ad']), $parameters, $this->getContext());
+        $data     = $response->getBody();
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+
+        $this->assertArrayHasKey('success', $data);
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Entry successfully deleted', $data['message']);
+        $this->assertArrayHasKey('id', $data);
+        $this->assertNotEmpty($data['id']);
+
+        $row = $this->connection->fetchAssociative('SELECT id, title, content, date FROM app_news_uuid WHERE id = :id', ['id' => $data['id']]);
 
         $this->assertEmpty($row);
     }
