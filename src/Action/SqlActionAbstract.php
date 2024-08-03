@@ -114,7 +114,9 @@ abstract class SqlActionAbstract extends ActionAbstract
 
             if ($value instanceof LocalDateTime || $value instanceof LocalDate || $value instanceof LocalTime) {
                 $value = $value->toDateTime();
-            } elseif ($value instanceof \DateTimeInterface) {
+            }
+
+            if ($value instanceof \DateTimeInterface) {
                 $platform = $connection->getDatabasePlatform();
                 if ($column->getType() instanceof Types\DateType) {
                     $value = $value->format($platform->getDateFormatString());
