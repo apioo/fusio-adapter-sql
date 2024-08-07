@@ -76,8 +76,13 @@ class EntityExecutor
 
     private function getTableName(AbstractSchemaManager $schemaManager, string $typeName): string
     {
-        $i = 0;
-        $format = strtolower('app_' . $typeName . '_%s');
+        $tableName = 'app_' . $typeName;
+        if (!$schemaManager->tablesExist($tableName)) {
+            return $tableName;
+        }
+
+        $i = 1;
+        $format = strtolower($tableName . '_%s');
 
         do {
             $tableName = sprintf($format, $i);
