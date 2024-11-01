@@ -108,7 +108,7 @@ class JqlBuilder
                     continue;
                 }
 
-                $index = $document->indexOfType($property->getFirstRef() ?? '');
+                $index = $document->indexOfType($property->getReference() ?? '');
                 if ($index === null) {
                     continue;
                 }
@@ -121,7 +121,7 @@ class JqlBuilder
                     continue;
                 }
 
-                $foreignTable = $tableNames[$property->getFirstRef() ?? ''];
+                $foreignTable = $tableNames[$property->getReference() ?? ''];
 
                 $foreignColumns = [];
                 $entityDefinition = $this->getDefinition($foreignType, $tableNames, $document, $foreignColumns, $depth + 1);
@@ -140,7 +140,7 @@ class JqlBuilder
                     '$definition' => $entityDefinition,
                 ];
             } elseif ($property->getType() === 'map') {
-                if (EntityExecutor::isScalar($property->getFirstRef() ?? '')) {
+                if (EntityExecutor::isScalar($property->getReference() ?? '')) {
                     $columnName = EntityExecutor::getColumnName($property);
                     $columns[] = $columnName;
 
@@ -153,7 +153,7 @@ class JqlBuilder
                         continue;
                     }
 
-                    $index = $document->indexOfType($property->getFirstRef() ?? '');
+                    $index = $document->indexOfType($property->getReference() ?? '');
                     if ($index === null) {
                         continue;
                     }
@@ -164,8 +164,8 @@ class JqlBuilder
                     }
 
                     $table = $tableNames[$type->getName() ?? ''];
-                    $foreignTable = $tableNames[$property->getFirstRef() ?? ''];
-                    $relationTable = $table . '_' . EntityExecutor::underscore($property->getFirstRef() ?? '');
+                    $foreignTable = $tableNames[$property->getReference() ?? ''];
+                    $relationTable = $table . '_' . EntityExecutor::underscore($property->getReference() ?? '');
 
                     $foreignColumns = [];
                     $mapDefinition = $this->getDefinition($foreignType, $tableNames, $document, $foreignColumns, $depth + 1);
@@ -179,7 +179,7 @@ class JqlBuilder
                     $query = 'SELECT ' . implode(', ', $foreignColumns) . ' ';
                     $query.= 'FROM ' . $relationTable . ' rel ';
                     $query.= 'INNER JOIN ' . $foreignTable . ' entity ';
-                    $query.= 'ON entity.id = rel.' . EntityExecutor::underscore($property->getFirstRef() ?? '') . '_id ';
+                    $query.= 'ON entity.id = rel.' . EntityExecutor::underscore($property->getReference() ?? '') . '_id ';
                     $query.= 'WHERE rel.' . EntityExecutor::underscore($type->getName() ?? '') . '_id = :id ';
                     $query.= 'ORDER BY entity.id DESC ';
                     $query.= 'LIMIT 16';
@@ -196,7 +196,7 @@ class JqlBuilder
                     ];
                 }
             } elseif ($property->getType() === 'array') {
-                if (EntityExecutor::isScalar($property->getFirstRef() ?? '')) {
+                if (EntityExecutor::isScalar($property->getReference() ?? '')) {
                     $columns[] = EntityExecutor::getColumnName($property);
 
                     $value = [
@@ -207,7 +207,7 @@ class JqlBuilder
                         continue;
                     }
 
-                    $index = $document->indexOfType($property->getFirstRef() ?? '');
+                    $index = $document->indexOfType($property->getReference() ?? '');
                     if ($index === null) {
                         continue;
                     }
@@ -218,8 +218,8 @@ class JqlBuilder
                     }
 
                     $table = $tableNames[$type->getName() ?? ''];
-                    $foreignTable = $tableNames[$property->getFirstRef() ?? ''];
-                    $relationTable = $table . '_' . EntityExecutor::underscore($property->getFirstRef() ?? '');
+                    $foreignTable = $tableNames[$property->getReference() ?? ''];
+                    $relationTable = $table . '_' . EntityExecutor::underscore($property->getReference() ?? '');
 
                     $foreignColumns = [];
                     $arrayDefinition = $this->getDefinition($foreignType, $tableNames, $document, $foreignColumns, $depth + 1);
@@ -231,7 +231,7 @@ class JqlBuilder
                     $query = 'SELECT ' . implode(', ', $foreignColumns) . ' ';
                     $query.= 'FROM ' . $relationTable . ' rel ';
                     $query.= 'INNER JOIN ' . $foreignTable . ' entity ';
-                    $query.= 'ON entity.id = rel.' . EntityExecutor::underscore($property->getFirstRef() ?? '') . '_id ';
+                    $query.= 'ON entity.id = rel.' . EntityExecutor::underscore($property->getReference() ?? '') . '_id ';
                     $query.= 'WHERE rel.' . EntityExecutor::underscore($type->getName() ?? '') . '_id = :id ';
                     $query.= 'ORDER BY entity.id DESC ';
                     $query.= 'LIMIT 16';

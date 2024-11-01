@@ -101,14 +101,14 @@ class EntityExecutor
             } elseif ($property->getType() === 'object') {
                 $mapping[$this->getColumnName($property)] = implode(':', [$property->getName(), $property->getType()]);
             } elseif ($property->getType() === 'array') {
-                if (self::isScalar($property->getFirstRef() ?? '')) {
+                if (self::isScalar($property->getReference() ?? '')) {
                     $mapping[$this->getColumnName($property)] = $property->getName();
                 } else {
                     $config = $this->getRelationConfig($type, $property, $tableNames);
                     $mapping[$this->getColumnName($property)] = implode(':', $config);
                 }
             } elseif ($property->getType() === 'map') {
-                if (self::isScalar($property->getFirstRef() ?? '')) {
+                if (self::isScalar($property->getReference() ?? '')) {
                     $mapping[$this->getColumnName($property)] = $property->getName();
                 } else {
                     $config = $this->getRelationConfig($type, $property, $tableNames);
@@ -144,9 +144,9 @@ class EntityExecutor
     private function getRelationConfig(Type $type, Property $property, array $tableNames): array
     {
         $tableName = $tableNames[$type->getName() ?? ''] ?? '';
-        $foreignTableName = $tableName . '_' . self::underscore($property->getFirstRef() ?? '');
+        $foreignTableName = $tableName . '_' . self::underscore($property->getReference() ?? '');
         $typeColumn = self::underscore($type->getName() ?? '') . '_id';
-        $foreignColumn = self::underscore($property->getFirstRef() ?? '') . '_id';
+        $foreignColumn = self::underscore($property->getReference() ?? '') . '_id';
 
         return [
             $property->getName(),
@@ -172,8 +172,8 @@ class EntityExecutor
 
                 $table->addColumn($columnName, $columnType, $columnOptions);
 
-                if ($property->getType() === 'object' && isset($tableNames[$property->getFirstRef()])) {
-                    $relations[] = [$tableName, $tableNames[$property->getFirstRef() ?? ''], [$columnName], ['id']];
+                if ($property->getType() === 'object' && isset($tableNames[$property->getReference()])) {
+                    $relations[] = [$tableName, $tableNames[$property->getReference() ?? ''], [$columnName], ['id']];
                 }
             } elseif (in_array($property->getType(), ['map', 'array'])) {
                 $config = $this->getRelationConfig($type, $property, $tableNames);
@@ -188,9 +188,9 @@ class EntityExecutor
                 $relationTable->addColumn($foreignColumn, 'integer');
                 $relationTable->setPrimaryKey(['id']);
 
-                if (isset($tableNames[$property->getFirstRef()])) {
+                if (isset($tableNames[$property->getReference()])) {
                     $relations[] = [$relationTableName, $tableName, [$typeColumn], ['id']];
-                    $relations[] = [$relationTableName, $tableNames[$property->getFirstRef() ?? ''], [$foreignColumn], ['id']];
+                    $relations[] = [$relationTableName, $tableNames[$property->getReference() ?? ''], [$foreignColumn], ['id']];
                 }
             }
         }
@@ -212,13 +212,13 @@ class EntityExecutor
             } elseif ($property->getFormat() === 'time') {
                 return 'time';
             } else {
-                return $property->getMaxLength() > 500 ? 'text' : 'string';
+                return 'string';
             }
         } elseif ($property->getType() === 'object') {
             // reference to a different entity
             return 'integer';
         } elseif (in_array($property->getType(), ['map', 'array'])) {
-            if (self::isScalar($property->getFirstRef() ?? '')) {
+            if (self::isScalar($property->getReference() ?? '')) {
                 // if we have a scalar array we use a json property
                 return 'json';
             } else {
@@ -238,18 +238,6 @@ class EntityExecutor
     {
         $options = ['notnull' => false];
 
-        if ($property->getType() === 'integer' || $property->getType() === 'number') {
-            $maximum = (int) $property->getMaximum();
-            if ($maximum > 0) {
-                $options['length'] = $maximum;
-            }
-        } elseif ($property->getType() === 'string') {
-            $maxLength = (int) $property->getMaxLength();
-            if ($maxLength > 0) {
-                $options['length'] = $maxLength;
-            }
-        }
-
         return $options;
     }
 
@@ -257,7 +245,7 @@ class EntityExecutor
     {
         if ($property->getType() === 'object') {
             // reference to a different entity
-            $ref = $property->getFirstRef();
+            $ref = $property->getReference();
             if (!empty($ref)) {
                 return self::underscore($ref) . '_id';
             }
