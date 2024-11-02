@@ -36,12 +36,12 @@ class TableBuilder
     public function getCollection(string $collectionName, string $schemaName, string $entityName): object
     {
         return (object) [
-            '$import' => [
+            'import' => [
                 'entity' => 'schema://' . $schemaName
             ],
             'definitions' => [
                 $collectionName => [
-                    'type' => 'object',
+                    'type' => 'struct',
                     'properties' => [
                         'totalResults' => [
                             'type' => 'integer'
@@ -54,14 +54,15 @@ class TableBuilder
                         ],
                         'entry' => [
                             'type' => 'array',
-                            'items' => [
-                                '$ref' => 'entity:' . $entityName
+                            'schema' => [
+                                'type' => 'reference',
+                                'target' => 'entity:' . $entityName
                             ],
                         ],
                     ],
                 ]
             ],
-            '$ref' => $collectionName
+            'root' => $collectionName
         ];
     }
 
@@ -76,11 +77,11 @@ class TableBuilder
         return (object) [
             'definitions' => [
                 $entityName => [
-                    'type' => 'object',
+                    'type' => 'struct',
                     'properties' => $properties,
                 ]
             ],
-            '$ref' => $entityName
+            'root' => $entityName
         ];
     }
 
@@ -97,19 +98,6 @@ class TableBuilder
             $schema['format'] = 'date';
         } elseif ($type instanceof Types\TimeType) {
             $schema['format'] = 'time';
-        }
-
-        $length = $column->getLength();
-        if (!empty($length)) {
-            if ($type instanceof Types\IntegerType) {
-                $schema['maximum'] = $length;
-            } elseif ($type instanceof Types\SmallIntType) {
-                $schema['maximum'] = $length;
-            } elseif ($type instanceof Types\BigIntType) {
-                $schema['maximum'] = $length;
-            } elseif ($type instanceof Types\StringType) {
-                $schema['maxLength'] = $length;
-            }
         }
 
         $comment = $column->getComment();
