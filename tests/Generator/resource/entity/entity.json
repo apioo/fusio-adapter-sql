@@ -1,0 +1,54 @@
+{
+  "import": {
+    "Location": "schema:\/\/Location_SQL_Get",
+    "Category": "schema:\/\/Category_SQL_Get"
+  },
+  "definitions": {
+    "Human_SQL_Get": {
+      "description": "",
+      "type": "struct",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "firstName": {
+          "description": "",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "",
+          "type": "string"
+        },
+        "location": {
+          "description": "",
+          "type": "reference",
+          "target": "Location:Location_SQL_Get"
+        },
+        "tags": {
+          "description": "",
+          "type": "array",
+          "schema": {
+            "type": "string"
+          }
+        },
+        "categories": {
+          "description": "",
+          "type": "array",
+          "schema": {
+            "type": "reference",
+            "target": "Category:Category_SQL_Get"
+          }
+        },
+        "map": {
+          "description": "",
+          "type": "map",
+          "schema": {
+            "type": "reference",
+            "target": "Location:Location_SQL_Get"
+          }
+        }
+      }
+    }
+  },
+  "root": "Human_SQL_Get"
+}

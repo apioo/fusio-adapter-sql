@@ -20,47 +20,41 @@
 
 namespace Fusio\Adapter\Sql\Tests;
 
-use Fusio\Adapter\Sql\Generator\JqlBuilder;
+use Fusio\Adapter\Sql\Generator\EntityBuilder;
+use Fusio\Adapter\Sql\Generator\EntityExecutor;
 use PHPUnit\Framework\TestCase;
+use TypeAPI\Editor\Generator;
 use TypeAPI\Editor\Model\Document;
 
 /**
- * JqlBuilderTest
+ * EntityBuilderTest
  *
  * @author  Christoph Kappestein <christoph.kappestein@gmail.com>
  * @license http://www.apache.org/licenses/LICENSE-2.0
  * @link    https://www.fusio-project.org/
  */
-class JqlBuilderTest extends TestCase
+class EntityBuilderTest extends SqlTestCase
 {
     public function testGetCollection()
     {
-        $document = $this->getDocument();
-        $tableNames = [
-            'Human' => 'app_human_0',
-            'Location' => 'app_location_0',
-            'Category' => 'app_category_0',
-        ];
+        $actual = (new EntityBuilder())->getCollection('Human_SQL_GetAll', 'Human_SQL_Get');
+        $expect = file_get_contents(__DIR__ . '/resource/entity/collection.json');
 
-        $actual = (new JqlBuilder())->getCollection($document->getType($document->getRoot()), $tableNames, $document);
-        $expect = file_get_contents(__DIR__ . '/resource/jql/collection.json');
-
-        $this->assertJsonStringEqualsJsonString($expect, $actual);
+        $this->assertJsonStringEqualsJsonString($expect, \json_encode($actual));
     }
 
     public function testGetEntity()
     {
         $document = $this->getDocument();
-        $tableNames = [
-            'Human' => 'app_human_0',
-            'Location' => 'app_location_0',
-            'Category' => 'app_category_0',
-        ];
+        $specification = (new Generator())->toModel($document);
+        $type = $document->getType(0);
+        $tableNames = (new EntityExecutor())->getTableNames($document, $this->connection->createSchemaManager());
+        $typeMapping = (new EntityExecutor())->getTypeMapping($document, $tableNames);
 
-        $actual = (new JqlBuilder())->getEntity($document->getType($document->getRoot()), $tableNames, $document);
-        $expect = file_get_contents(__DIR__ . '/resource/jql/entity.json');
+        $actual = (new EntityBuilder())->getEntity($type, 'Human_SQL_Get', $specification, $typeMapping);
+        $expect = file_get_contents(__DIR__ . '/resource/entity/entity.json');
 
-        $this->assertJsonStringEqualsJsonString($expect, $actual);
+        $this->assertJsonStringEqualsJsonString($expect, \json_encode($actual));
     }
 
     private function getDocument(): Document

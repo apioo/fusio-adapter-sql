@@ -20,7 +20,13 @@
 
 namespace Fusio\Adapter\Sql\Generator;
 
+use PSX\Record\Record;
 use TypeAPI\Editor\Model\Type;
+use TypeAPI\Model\CollectionPropertyType;
+use TypeAPI\Model\IntegerPropertyType;
+use TypeAPI\Model\ReferencePropertyType;
+use TypeAPI\Model\StructDefinitionType;
+use TypeAPI\Model\TypeSchema;
 
 /**
  * EntityBuilder
@@ -34,12 +40,12 @@ class EntityBuilder
     public function getCollection(string $collectionName, string $entityName): object
     {
         return (object) [
-            '$import' => [
+            'import' => [
                 'Entity' => 'schema://' . $entityName
             ],
             'definitions' => [
                 $collectionName => [
-                    'type' => 'object',
+                    'type' => 'struct',
                     'properties' => [
                         'totalResults' => [
                             'type' => 'integer'
@@ -52,22 +58,23 @@ class EntityBuilder
                         ],
                         'entry' => [
                             'type' => 'array',
-                            'items' => [
-                                '$ref' => 'Entity:' . $entityName
+                            'schema' => [
+                                'type' => 'reference',
+                                'target' => 'Entity:' . $entityName
                             ],
                         ],
                     ],
                 ]
             ],
-            '$ref' => $collectionName
+            'root' => $collectionName
         ];
     }
 
-    public function getEntity(Type $property, string $entityName, array $typeSchema, array $typeMapping): object
+    public function getEntity(Type $property, string $entityName, TypeSchema $specification, array $typeMapping): object
     {
-        $schema = $typeSchema['definitions'][$property->getName() ?? ''] ?? null;
-        if (empty($schema)) {
-            throw new \RuntimeException('Could not resolve schema');
+        $type = $specification->getDefinitions()->get($property->getName() ?? '');
+        if (!$type instanceof StructDefinitionType) {
+            throw new \RuntimeException('Could not resolve type');
         }
 
         $typeName = $property->getName();
@@ -89,27 +96,28 @@ class EntityBuilder
         }
 
         $usedRefs = [];
-        if (isset($schema['properties']) && is_array($schema['properties'])) {
-            $properties = [];
-            $properties['id'] = [
-                'type' => 'integer'
-            ];
-            foreach ($schema['properties'] as $key => $property) {
-                if (isset($property['$ref']) && is_string($property['$ref'])) {
-                    $properties[$key]['$ref'] = $this->resolveRef($property, $typeMapping, $selfMapping, $usedRefs);
-                } elseif (isset($property['additionalProperties']['$ref']) && is_string($property['additionalProperties']['$ref'])) {
-                    $properties[$key]['additionalProperties']['$ref'] = $this->resolveRef($property['additionalProperties'], $typeMapping, $selfMapping, $usedRefs);
-                } elseif (isset($property['items']['$ref']) && is_string($property['items']['$ref'])) {
-                    $properties[$key]['items']['$ref'] = $this->resolveRef($property['items'], $typeMapping, $selfMapping, $usedRefs);
-                } elseif (isset($property['oneOf']) && is_array($property['oneOf'])) {
-                    $properties[$key]['oneOf'] = $this->resolveRefs($property['oneOf'], $typeMapping, $selfMapping, $usedRefs);
-                } elseif (isset($property['allOf']) && is_array($property['allOf'])) {
-                    $properties[$key]['allOf'] = $this->resolveRefs($property['allOf'], $typeMapping, $selfMapping, $usedRefs);
-                } else {
-                    $properties[$key] = $property;
+        $typeProperties = $type->getProperties();
+        if (!empty($typeProperties)) {
+            $properties = new Record();
+
+            $idType = new IntegerPropertyType();
+            $idType->setType('integer');
+            $properties->put('id', $idType);
+
+            foreach ($typeProperties as $key => $property) {
+                if ($property instanceof ReferencePropertyType) {
+                    $property->setTarget($this->resolveRef($property, $typeMapping, $selfMapping, $usedRefs));
+                } elseif ($property instanceof CollectionPropertyType) {
+                    $schema = $property->getSchema();
+                    if ($schema instanceof ReferencePropertyType) {
+                        $schema->setTarget($this->resolveRef($schema, $typeMapping, $selfMapping, $usedRefs));
+                    }
                 }
+
+                $properties->put($key, $property);
             }
-            $schema['properties'] = $properties;
+
+            $type->setProperties($properties);
         }
 
         $result = new \stdClass();
@@ -120,39 +128,25 @@ class EntityBuilder
         }
 
         if (!empty($import)) {
-            $result->{'$import'} = (object) $import;
+            $result->{'import'} = (object) $import;
         }
 
         $result->definitions = new \stdClass();
-        $result->definitions->{$entityName} = $schema;
-        $result->{'$ref'} = $entityName;
+        $result->definitions->{$entityName} = $type;
+        $result->{'root'} = $entityName;
 
         return $result;
     }
 
-    private function resolveRefs(array $types, array $typeMapping, array $selfMapping, array &$usedRefs): array
+    private function resolveRef(ReferencePropertyType $type, array $typeMapping, array $selfMapping, array &$usedRefs): string
     {
-        $return = [];
-        foreach ($types as $type) {
-            if (isset($type['$ref'])) {
-                $type['$ref'] = $this->resolveRef($type, $typeMapping, $selfMapping, $usedRefs);
-                $return[] = $type;
-            } else {
-                $return[] = $type;
-            }
-        }
-        return $return;
-    }
-
-    private function resolveRef(array|\ArrayAccess $type, array $typeMapping, array $selfMapping, array &$usedRefs): string
-    {
-        if (isset($selfMapping[$type['$ref']])) {
-            return $selfMapping[$type['$ref']];
-        } elseif (isset($typeMapping[$type['$ref']])) {
-            $usedRefs[] = $type['$ref'];
-            return $type['$ref'] . ':' . $typeMapping[$type['$ref']];
+        if (isset($selfMapping[$type->getTarget()])) {
+            return $selfMapping[$type->getTarget()];
+        } elseif (isset($typeMapping[$type->getTarget()])) {
+            $usedRefs[] = $type->getTarget();
+            return $type->getTarget() . ':' . $typeMapping[$type->getTarget()];
         } else {
-            return $type['$ref'];
+            return $type->getTarget();
         }
     }
 

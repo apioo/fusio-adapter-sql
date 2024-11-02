@@ -47,24 +47,6 @@
           "refs": [
             "Location"
           ]
-        },
-        {
-          "name": "union",
-          "description": "",
-          "type": "union",
-          "refs": [
-            "Location",
-            "Category"
-          ]
-        },
-        {
-          "name": "intersection",
-          "description": "",
-          "type": "intersection",
-          "refs": [
-            "Human",
-            "Location"
-          ]
         }
       ]
     },

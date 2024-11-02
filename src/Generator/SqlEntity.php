@@ -41,6 +41,7 @@ use Fusio\Model\Backend\SchemaSource;
 use TypeAPI\Editor\Generator;
 use TypeAPI\Editor\Model\Document;
 use TypeAPI\Editor\Model\Type;
+use TypeAPI\Model\TypeSchema;
 
 /**
  * SqlEntity
@@ -63,6 +64,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
     private EntityExecutor $entityExecutor;
     private EntityBuilder $entityBuilder;
     private JqlBuilder $jqlBuilder;
+    private Generator $generator;
 
     public function __construct(ConnectorInterface $connector)
     {
@@ -70,6 +72,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $this->entityExecutor = new EntityExecutor();
         $this->entityBuilder = new EntityBuilder();
         $this->jqlBuilder = new JqlBuilder();
+        $this->generator = new Generator();
     }
 
     public function getName(): string
@@ -83,8 +86,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         $document = Document::from($configuration->get('schema'));
 
         $schemaManager = $connection->createSchemaManager();
-
-        $typeSchema = \json_decode((new Generator())->generate($document), true);
+        $specification = $this->generator->toModel($document);
 
         $types = $document->getTypes();
         $tableNames = $this->entityExecutor->getTableNames($document, $schemaManager);
@@ -101,7 +103,7 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
             $operationPrefix = $prefix . '.';
 
             $setup->addSchema($this->makeGetAllSchema($schemaPrefix));
-            $setup->addSchema($this->makeGetSchema($type, $typeSchema, $typeMapping, $schemaPrefix));
+            $setup->addSchema($this->makeGetSchema($type, $specification, $typeMapping, $schemaPrefix));
 
             $setup->addAction($this->makeGetAllAction($configuration, $type, $tableNames, $document, $actionPrefix));
             $setup->addAction($this->makeGetAction($configuration, $type, $tableNames, $document, $actionPrefix));
@@ -142,10 +144,10 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $schema;
     }
 
-    private function makeGetSchema(Type $type, array $typeSchema, array $typeMapping, string $prefix): SchemaCreate
+    private function makeGetSchema(Type $type, TypeSchema $specification, array $typeMapping, string $prefix): SchemaCreate
     {
         $name = $prefix . self::SCHEMA_GET;
-        $type = $this->entityBuilder->getEntity($type, $name, $typeSchema, $typeMapping);
+        $type = $this->entityBuilder->getEntity($type, $name, $specification, $typeMapping);
 
         $schema = new SchemaCreate();
         $schema->setName($name);

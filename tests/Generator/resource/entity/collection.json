@@ -1,0 +1,29 @@
+{
+  "import": {
+    "Entity": "schema:\/\/Human_SQL_Get"
+  },
+  "definitions": {
+    "Human_SQL_GetAll": {
+      "type": "struct",
+      "properties": {
+        "totalResults": {
+          "type": "integer"
+        },
+        "itemsPerPage": {
+          "type": "integer"
+        },
+        "startIndex": {
+          "type": "integer"
+        },
+        "entry": {
+          "type": "array",
+          "schema": {
+            "type": "reference",
+            "target": "Entity:Human_SQL_Get"
+          }
+        }
+      }
+    }
+  },
+  "root": "Human_SQL_GetAll"
+}
