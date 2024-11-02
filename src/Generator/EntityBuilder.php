@@ -24,6 +24,7 @@ use PSX\Record\Record;
 use TypeAPI\Editor\Model\Type;
 use TypeAPI\Model\CollectionPropertyType;
 use TypeAPI\Model\IntegerPropertyType;
+use TypeAPI\Model\PropertyType;
 use TypeAPI\Model\ReferencePropertyType;
 use TypeAPI\Model\StructDefinitionType;
 use TypeAPI\Model\TypeSchema;
@@ -72,7 +73,7 @@ class EntityBuilder
 
     public function getEntity(Type $property, string $entityName, TypeSchema $specification, array $typeMapping): object
     {
-        $type = $specification->getDefinitions()->get($property->getName() ?? '');
+        $type = $specification->getDefinitions()?->get($property->getName() ?? '');
         if (!$type instanceof StructDefinitionType) {
             throw new \RuntimeException('Could not resolve type');
         }
@@ -98,6 +99,7 @@ class EntityBuilder
         $usedRefs = [];
         $typeProperties = $type->getProperties();
         if (!empty($typeProperties)) {
+            /** @var Record<PropertyType> $properties */
             $properties = new Record();
 
             $idType = new IntegerPropertyType();
@@ -140,13 +142,18 @@ class EntityBuilder
 
     private function resolveRef(ReferencePropertyType $type, array $typeMapping, array $selfMapping, array &$usedRefs): string
     {
-        if (isset($selfMapping[$type->getTarget()])) {
-            return $selfMapping[$type->getTarget()];
-        } elseif (isset($typeMapping[$type->getTarget()])) {
-            $usedRefs[] = $type->getTarget();
-            return $type->getTarget() . ':' . $typeMapping[$type->getTarget()];
+        $target = $type->getTarget();
+        if (empty($target)) {
+            throw new \RuntimeException('Provided reference has no target');
+        }
+
+        if (isset($selfMapping[$target])) {
+            return $selfMapping[$target];
+        } elseif (isset($typeMapping[$target])) {
+            $usedRefs[] = $target;
+            return $target . ':' . $typeMapping[$target];
         } else {
-            return $type->getTarget();
+            return $target;
         }
     }
 
