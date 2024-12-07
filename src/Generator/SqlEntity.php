@@ -41,7 +41,7 @@ use Fusio\Model\Backend\SchemaSource;
 use TypeAPI\Editor\Generator;
 use TypeAPI\Editor\Model\Document;
 use TypeAPI\Editor\Model\Type;
-use TypeAPI\Model\TypeSchema;
+use TypeSchema\Model\TypeSchema;
 
 /**
  * SqlEntity

@@ -22,12 +22,12 @@ namespace Fusio\Adapter\Sql\Generator;
 
 use PSX\Record\Record;
 use TypeAPI\Editor\Model\Type;
-use TypeAPI\Model\CollectionPropertyType;
-use TypeAPI\Model\IntegerPropertyType;
-use TypeAPI\Model\PropertyType;
-use TypeAPI\Model\ReferencePropertyType;
-use TypeAPI\Model\StructDefinitionType;
-use TypeAPI\Model\TypeSchema;
+use TypeSchema\Model\CollectionPropertyType;
+use TypeSchema\Model\IntegerPropertyType;
+use TypeSchema\Model\PropertyType;
+use TypeSchema\Model\ReferencePropertyType;
+use TypeSchema\Model\StructDefinitionType;
+use TypeSchema\Model\TypeSchema;
 
 /**
  * EntityBuilder
