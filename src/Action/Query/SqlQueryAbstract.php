@@ -22,6 +22,7 @@ namespace Fusio\Adapter\Sql\Action\Query;
 
 use Doctrine\DBAL\Connection;
 use Fusio\Engine\ActionAbstract;
+use Fusio\Engine\ContextInterface;
 use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
@@ -53,14 +54,23 @@ abstract class SqlQueryAbstract extends ActionAbstract
         return $connection;
     }
 
-    protected function parseSql(string $query, RequestInterface $request): array
+    protected function parseSql(string $query, RequestInterface $request, ContextInterface $context): array
     {
         $params = [];
-        $query = preg_replace_callback('/\{(\%?)(\w+)(\%?)\}/', static function($matches) use ($request, &$params){
+        $query = preg_replace_callback('/\{(\%?)([A-Za-z0-9_]+)(\%?)\}/', static function($matches) use ($request, $context, &$params){
             $left  = $matches[1];
             $name  = $matches[2];
             $right = $matches[3];
-            $value = $request->get($name);
+
+            if (str_starts_with($name, 'user_')) {
+                $value = match (substr($name, 5)) {
+                    'id' => $context->getUser()->getId(),
+                    'name' => $context->getUser()->getName(),
+                    default => throw new ConfigurationException('Provided an invalid user key'),
+                };
+            } else {
+                $value = $request->get($name);
+            }
 
             if (!empty($left)) {
                 $value = '%' . $value;

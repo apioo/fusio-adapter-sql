@@ -47,7 +47,7 @@ class SqlQueryRow extends SqlQueryAbstract
 
         $sql = $configuration->get('sql') ?? throw new ConfigurationException('No sql configured');
 
-        [$query, $params] = $this->parseSql($sql, $request);
+        [$query, $params] = $this->parseSql($sql, $request, $context);
 
         $result = $connection->fetchAssociative($query, $params);
 

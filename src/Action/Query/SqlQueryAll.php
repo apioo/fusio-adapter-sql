@@ -49,7 +49,7 @@ class SqlQueryAll extends SqlQueryAbstract
         $sql   = $configuration->get('sql') ?? throw new ConfigurationException('No sql configured');
         $limit = (int) $configuration->get('limit');
 
-        [$query, $params] = $this->parseSql($sql, $request);
+        [$query, $params] = $this->parseSql($sql, $request, $context);
 
         $startIndex = (int) $request->get('startIndex');
         $count      = (int) $request->get('count');

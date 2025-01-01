@@ -291,4 +291,39 @@ JSON;
         $this->assertEquals([], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
+
+
+    public function testHandleUser()
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'sql'        => 'SELECT id, title, price, content, date FROM app_news WHERE id = {user_id}',
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlQueryAll::class);
+        $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
+
+        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 1,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": 2,
+            "title": "baz",
+            "price": null,
+            "content": null,
+            "date": null
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
 }
