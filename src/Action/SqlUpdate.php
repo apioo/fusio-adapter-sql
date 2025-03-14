@@ -72,7 +72,7 @@ class SqlUpdate extends SqlManipulationAbstract
         return $this->response->build(200, [], [
             'success' => true,
             'message' => 'Entry successfully updated',
-            'id'      => '' . $existingId,
+            'id'      => (string) $existingId,
         ]);
     }
 }

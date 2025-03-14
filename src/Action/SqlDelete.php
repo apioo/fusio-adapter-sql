@@ -70,7 +70,7 @@ class SqlDelete extends SqlManipulationAbstract
         return $this->response->build(200, [], [
             'success' => true,
             'message' => 'Entry successfully deleted',
-            'id'      => '' . $existingId,
+            'id'      => (string) $existingId,
         ]);
     }
 }

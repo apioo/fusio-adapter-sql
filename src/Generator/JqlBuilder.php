@@ -20,6 +20,7 @@
 
 namespace Fusio\Adapter\Sql\Generator;
 
+use PSX\Json\Parser;
 use TypeAPI\Editor\Model\Document;
 use TypeAPI\Editor\Model\Type;
 
@@ -62,7 +63,7 @@ class JqlBuilder
             ]
         ];
 
-        return \json_encode($jql, JSON_PRETTY_PRINT);
+        return Parser::encode($jql, JSON_PRETTY_PRINT);
     }
 
     public function getEntity(Type $type, array $tableNames, Document $document): string
@@ -81,7 +82,7 @@ class JqlBuilder
             '$definition' => $definition
         ];
 
-        return \json_encode($jql, JSON_PRETTY_PRINT);
+        return Parser::encode($jql, JSON_PRETTY_PRINT);
     }
 
     private function getDefinition(Type $type, array $tableNames, Document $document, array &$columns, int $depth = 0): array

@@ -195,7 +195,7 @@ abstract class SqlActionAbstract extends ActionAbstract
             } elseif ($type instanceof Types\TimeType) {
                 $val = $val->format('H:i:s');
             } elseif ($type instanceof Types\BinaryType || $type instanceof Types\BlobType) {
-                $val = base64_encode(stream_get_contents($val));
+                $val = base64_encode((string) stream_get_contents($val));
             }
 
             $propertyName = $key;
