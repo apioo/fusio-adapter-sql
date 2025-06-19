@@ -46,13 +46,14 @@ class SqlSelectAll extends SqlActionAbstract
     public function handle(RequestInterface $request, ParametersInterface $configuration, ContextInterface $context): HttpResponseInterface
     {
         $connection = $this->getConnection($configuration);
-        $tableName  = $this->getTableName($configuration);
-        $mapping    = $this->getMapping($configuration);
+        $tableName = $this->getTableName($configuration);
+        $mapping = $this->getMapping($configuration);
 
-        $table   = $this->getTable($connection, $tableName);
+        $table = $this->getTable($connection, $tableName);
         $columns = $configuration->get('columns');
         $orderBy = $configuration->get('orderBy');
-        $limit   = (int) $configuration->get('limit');
+        $orderDirection = $configuration->get('orderDirection');
+        $limit = (int) $configuration->get('limit');
 
         $allColumns = $this->getColumns($table, $columns);
         $primaryKey = $this->getPrimaryKey($table);
@@ -62,7 +63,7 @@ class SqlSelectAll extends SqlActionAbstract
         $qb->from($table->getName());
 
         $this->addFilter($request, $qb, $allColumns);
-        $this->addOrderBy($request, $qb, $primaryKey, $allColumns, $orderBy);
+        $this->addOrderBy($request, $qb, $primaryKey, $allColumns, $orderBy, $orderDirection);
         $this->addLimit($request, $qb, $limit);
 
         $totalCount = (int) $connection->fetchOne('SELECT COUNT(*) FROM ' . $table->getName());
@@ -85,15 +86,21 @@ class SqlSelectAll extends SqlActionAbstract
     {
         parent::configure($builder, $elementFactory);
 
+        $options = [
+            'ASC' => 'Ascending',
+            'DESC' => 'Descending',
+        ];
+
         $builder->add($elementFactory->newCollection('columns', 'Columns', 'text', 'Columns which are selected on the table (default is *)'));
         $builder->add($elementFactory->newInput('orderBy', 'Order by', 'text', 'The default order by column (default is primary key)'));
+        $builder->add($elementFactory->newSelect('orderDirection', 'Order direction', $options, 'The order direction (default is descending)'));
         $builder->add($elementFactory->newInput('limit', 'Limit', 'number', 'The default limit of the result (default is 16)'));
     }
-    
+
     private function addFilter(RequestInterface $request, QueryBuilder $qb, array $allColumns): void
     {
-        $filterBy    = $request->get('filterBy');
-        $filterOp    = $request->get('filterOp');
+        $filterBy = $request->get('filterBy');
+        $filterOp = $request->get('filterOp');
         $filterValue = $request->get('filterValue');
 
         if (!empty($filterBy) && !empty($filterOp) && !empty($filterValue) && in_array($filterBy, $allColumns)) {
@@ -120,10 +127,12 @@ class SqlSelectAll extends SqlActionAbstract
         }
     }
 
-    private function addOrderBy(RequestInterface $request, QueryBuilder $qb, ?string $primaryKey, array $allColumns, ?string $orderBy): void
+    private function addOrderBy(RequestInterface $request, QueryBuilder $qb, ?string $primaryKey, array $allColumns, ?string $orderBy, ?string $orderDirection): void
     {
-        $sortBy    = $request->get('sortBy');
+        $sortBy = $request->get('sortBy');
         $sortOrder = $request->get('sortOrder');
+
+        $orderDirection = !empty($orderDirection) && in_array($orderDirection, ['ASC', 'DESC']) ? $orderDirection : 'DESC';
 
         if (!empty($sortBy) && !empty($sortOrder) && in_array($sortBy, $allColumns)) {
             $sortOrder = strtoupper($sortOrder);
@@ -131,16 +140,16 @@ class SqlSelectAll extends SqlActionAbstract
 
             $qb->orderBy($sortBy, $sortOrder);
         } elseif (!empty($orderBy) && in_array($orderBy, $allColumns)) {
-            $qb->orderBy($orderBy, 'DESC');
+            $qb->orderBy($orderBy, $orderDirection);
         } elseif (!empty($primaryKey)) {
-            $qb->orderBy($primaryKey, 'DESC');
+            $qb->orderBy($primaryKey, $orderDirection);
         }
     }
 
     private function addLimit(RequestInterface $request, QueryBuilder $qb, ?int $limit): void
     {
         $startIndex = (int) $request->get('startIndex');
-        $count      = (int) $request->get('count');
+        $count = (int) $request->get('count');
 
         $startIndex = $startIndex < 0 ? 0 : $startIndex;
         $limit = $limit <= 0 ? 16 : $limit;
