@@ -144,6 +144,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $schema;
     }
 
+    /**
+     * @param array<string, string> $typeMapping
+     */
     private function makeGetSchema(Type $type, TypeSchema $specification, array $typeMapping, string $prefix): SchemaCreate
     {
         $name = $prefix . self::SCHEMA_GET;
@@ -155,6 +158,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $schema;
     }
 
+    /**
+     * @param array<string, string> $tableNames
+     */
     private function makeGetAllAction(ParametersInterface $configuration, Type $type, array $tableNames, Document $document, string $prefix): ActionCreate
     {
         $action = new ActionCreate();
@@ -167,6 +173,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $action;
     }
 
+    /**
+     * @param array<string, string> $tableNames
+     */
     private function makeGetAction(ParametersInterface $configuration, Type $type, array $tableNames, Document $document, string $prefix): ActionCreate
     {
         $action = new ActionCreate();
@@ -179,6 +188,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $action;
     }
 
+    /**
+     * @param array<string, string> $mapping
+     */
     private function makeInsertAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): ActionCreate
     {
         $action = new ActionCreate();
@@ -192,6 +204,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $action;
     }
 
+    /**
+     * @param array<string, string> $mapping
+     */
     private function makeUpdateAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): ActionCreate
     {
         $action = new ActionCreate();
@@ -205,6 +220,9 @@ class SqlEntity implements ProviderInterface, ExecutableInterface
         return $action;
     }
 
+    /**
+     * @param array<string, string> $mapping
+     */
     private function makeDeleteAction(ParametersInterface $configuration, string $tableName, array $mapping, string $prefix): ActionCreate
     {
         $action = new ActionCreate();

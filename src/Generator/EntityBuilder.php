@@ -71,6 +71,9 @@ class EntityBuilder
         ];
     }
 
+    /**
+     * @param array<string, string> $typeMapping
+     */
     public function getEntity(Type $property, string $entityName, TypeSchema $specification, array $typeMapping): object
     {
         $type = $specification->getDefinitions()?->get($property->getName() ?? '');
@@ -140,6 +143,11 @@ class EntityBuilder
         return $result;
     }
 
+    /**
+     * @param array<string, string> $typeMapping
+     * @param array<string, string> $selfMapping
+     * @param list<string> $usedRefs
+     */
     private function resolveRef(ReferencePropertyType $type, array $typeMapping, array $selfMapping, array &$usedRefs): string
     {
         $target = $type->getTarget();

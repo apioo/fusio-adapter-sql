@@ -21,6 +21,7 @@
 namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Schema;
 use TypeAPI\Editor\Model\Document;
@@ -62,6 +63,10 @@ class EntityExecutor
         }
     }
 
+    /**
+     * @param AbstractSchemaManager<MySQLPlatform> $schemaManager
+     * @return array<string, string>
+     */
     public function getTableNames(Document $document, AbstractSchemaManager $schemaManager): array
     {
         $types = $document->getTypes();
@@ -74,6 +79,9 @@ class EntityExecutor
         return $tableNames;
     }
 
+    /**
+     * @param AbstractSchemaManager<MySQLPlatform> $schemaManager
+     */
     private function getTableName(AbstractSchemaManager $schemaManager, string $typeName): string
     {
         $tableName = 'app_' . strtolower($typeName);
@@ -92,24 +100,36 @@ class EntityExecutor
         return $tableName;
     }
 
+    /**
+     * @param array<string, string> $tableNames
+     * @return array<string, string>
+     */
     public function getMapping(Type $type, array $tableNames): array
     {
         $mapping = [];
         foreach ($type->getProperties() as $property) {
-            if (self::isScalar($property->getType() ?? '')) {
-                $mapping[$this->getColumnName($property)] = $property->getName();
-            } elseif ($property->getType() === 'object') {
-                $mapping[$this->getColumnName($property)] = implode(':', [$property->getName(), $property->getType()]);
-            } elseif ($property->getType() === 'array') {
-                if (self::isScalar($property->getReference() ?? '')) {
-                    $mapping[$this->getColumnName($property)] = $property->getName();
+            $propertyName = $property->getName();
+            if ($propertyName === null) {
+                continue;
+            }
+
+            $propertyType = $property->getType() ?? '';
+            $propertyReference = $property->getReference() ?? '';
+
+            if (self::isScalar($propertyType)) {
+                $mapping[$this->getColumnName($property)] = $propertyName;
+            } elseif ($propertyType === 'object') {
+                $mapping[$this->getColumnName($property)] = implode(':', [$propertyName, $propertyType]);
+            } elseif ($propertyType === 'array') {
+                if (self::isScalar($propertyReference)) {
+                    $mapping[$this->getColumnName($property)] = $propertyName;
                 } else {
                     $config = $this->getRelationConfig($type, $property, $tableNames);
                     $mapping[$this->getColumnName($property)] = implode(':', $config);
                 }
-            } elseif ($property->getType() === 'map') {
-                if (self::isScalar($property->getReference() ?? '')) {
-                    $mapping[$this->getColumnName($property)] = $property->getName();
+            } elseif ($propertyType === 'map') {
+                if (self::isScalar($propertyReference)) {
+                    $mapping[$this->getColumnName($property)] = $propertyName;
                 } else {
                     $config = $this->getRelationConfig($type, $property, $tableNames);
                     $mapping[$this->getColumnName($property)] = implode(':', $config);
@@ -120,6 +140,10 @@ class EntityExecutor
         return $mapping;
     }
 
+    /**
+     * @param array<string, string> $tableNames
+     * @return array<string, string>
+     */
     public function getTypeMapping(Document $document, array $tableNames): array
     {
         $types = $document->getTypes();
@@ -141,6 +165,10 @@ class EntityExecutor
         return '/' . self::underscore($type->getName() ?? '');
     }
 
+    /**
+     * @param array<string, string> $tableNames
+     * @return list<mixed>
+     */
     private function getRelationConfig(Type $type, Property $property, array $tableNames): array
     {
         $tableName = $tableNames[$type->getName() ?? ''] ?? '';
@@ -157,6 +185,10 @@ class EntityExecutor
         ];
     }
 
+    /**
+     * @param array<string, string> $tableNames
+     * @param list<list<mixed>> $relations
+     */
     private function createTableFromType(Schema $schema, Type $type, array $tableNames, array &$relations): void
     {
         $tableName = $tableNames[$type->getName() ?? ''] ?? '';
@@ -234,6 +266,9 @@ class EntityExecutor
         return null;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function getColumnOptions(Property $property): array
     {
         $options = ['notnull' => false];

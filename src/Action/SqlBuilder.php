@@ -69,6 +69,9 @@ class SqlBuilder extends ActionAbstract
         $builder->add($elementFactory->newTextArea('jql', 'JQL', 'json', 'The JQL to query the database'));
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function getContext(RequestInterface $request): array
     {
         $requestContext = $request->getContext();

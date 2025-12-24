@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Sql\Tests\Action\Query;
 use Fusio\Adapter\Sql\Action\Query\SqlQueryRow;
 use Fusio\Adapter\Sql\Tests\SqlTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Json\Parser;
 
 /**
  * SqlSelectRowTest
@@ -33,7 +34,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  */
 class SqlSelectRowTest extends SqlTestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -43,20 +44,8 @@ class SqlSelectRowTest extends SqlTestCase
         $action   = $this->getActionFactory()->factory(SqlQueryRow::class);
         $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
-
-        if (PHP_VERSION_ID < 80100) {
-            $expect = <<<JSON
-{
-    "id": "1",
-    "title": "foo",
-    "price": "39.99",
-    "content": "bar",
-    "date": "2015-02-27 19:59:15"
-}
-JSON;
-        } else {
-            $expect = <<<JSON
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
 {
     "id": 1,
     "title": "foo",
@@ -65,7 +54,6 @@ JSON;
     "date": "2015-02-27 19:59:15"
 }
 JSON;
-        }
 
         $this->assertInstanceOf(HttpResponseInterface::class, $response);
         $this->assertEquals(200, $response->getStatusCode());
@@ -73,7 +61,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleUser()
+    public function testHandleUser(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -83,7 +71,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlQueryRow::class);
         $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "id": 2,

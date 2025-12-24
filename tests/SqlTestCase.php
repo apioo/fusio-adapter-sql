@@ -26,6 +26,7 @@ use Fusio\Adapter\Sql\Adapter;
 use Fusio\Adapter\Sql\Connection\SqlAdvanced;
 use Fusio\Engine\Model\Connection;
 use Fusio\Engine\Parameters;
+use Fusio\Engine\Repository\ConnectionMemory;
 use Fusio\Engine\Test\CallbackConnection;
 use Fusio\Engine\Test\EngineTestCaseTrait;
 use PHPUnit\Framework\TestCase;
@@ -58,7 +59,9 @@ class SqlTestCase extends TestCase
             },
         ]);
 
-        $this->getConnectionRepository()->add($connection);
+        /** @var ConnectionMemory $repository */
+        $repository = $this->getConnectionRepository();
+        $repository->add($connection);
     }
 
     protected function getConnection(): DoctrineConnection
@@ -70,6 +73,9 @@ class SqlTestCase extends TestCase
         return $this->connection;
     }
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     protected function getDataSet(): array
     {
         return include __DIR__ . '/fixture.php';

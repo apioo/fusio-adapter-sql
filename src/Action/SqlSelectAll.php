@@ -97,6 +97,9 @@ class SqlSelectAll extends SqlActionAbstract
         $builder->add($elementFactory->newInput('limit', 'Limit', 'number', 'The default limit of the result (default is 16)'));
     }
 
+    /**
+     * @param list<string> $allColumns
+     */
     private function addFilter(RequestInterface $request, QueryBuilder $qb, array $allColumns): void
     {
         $filterBy = $request->get('filterBy');
@@ -127,6 +130,9 @@ class SqlSelectAll extends SqlActionAbstract
         }
     }
 
+    /**
+     * @param list<string> $allColumns
+     */
     private function addOrderBy(RequestInterface $request, QueryBuilder $qb, ?string $primaryKey, array $allColumns, ?string $orderBy, ?string $orderDirection): void
     {
         $sortBy = $request->get('sortBy');

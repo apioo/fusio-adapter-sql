@@ -33,7 +33,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  */
 class SqlDeleteTest extends SqlTestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -60,7 +60,7 @@ class SqlDeleteTest extends SqlTestCase
         $this->assertEmpty($row);
     }
 
-    public function testHandleUuid()
+    public function testHandleUuid(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,

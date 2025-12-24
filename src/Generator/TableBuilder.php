@@ -85,6 +85,9 @@ class TableBuilder
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function getSchemaByColumn(Column $column): array
     {
         $type = $column->getType();

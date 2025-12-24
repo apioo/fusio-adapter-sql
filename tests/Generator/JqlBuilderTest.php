@@ -22,6 +22,8 @@ namespace Fusio\Adapter\Sql\Tests;
 
 use Fusio\Adapter\Sql\Generator\JqlBuilder;
 use PHPUnit\Framework\TestCase;
+use PSX\Json\Parser;
+use RuntimeException;
 use TypeAPI\Editor\Model\Document;
 
 /**
@@ -33,7 +35,7 @@ use TypeAPI\Editor\Model\Document;
  */
 class JqlBuilderTest extends TestCase
 {
-    public function testGetCollection()
+    public function testGetCollection(): void
     {
         $document = $this->getDocument();
         $tableNames = [
@@ -42,13 +44,14 @@ class JqlBuilderTest extends TestCase
             'Category' => 'app_category_0',
         ];
 
-        $actual = (new JqlBuilder())->getCollection($document->getType($document->getRoot()), $tableNames, $document);
-        $expect = file_get_contents(__DIR__ . '/resource/jql/collection.json');
+        $root = $document->getType($document->getRoot() ?? 0) ?? throw new RuntimeException('Could not get root type');
+        $actual = (new JqlBuilder())->getCollection($root, $tableNames, $document);
+        $expect = file_get_contents(__DIR__ . '/resource/jql/collection.json') ?: throw new RuntimeException('Could not read collection.json');
 
         $this->assertJsonStringEqualsJsonString($expect, $actual);
     }
 
-    public function testGetEntity()
+    public function testGetEntity(): void
     {
         $document = $this->getDocument();
         $tableNames = [
@@ -57,15 +60,18 @@ class JqlBuilderTest extends TestCase
             'Category' => 'app_category_0',
         ];
 
-        $actual = (new JqlBuilder())->getEntity($document->getType($document->getRoot()), $tableNames, $document);
-        $expect = file_get_contents(__DIR__ . '/resource/jql/entity.json');
+        $root = $document->getType($document->getRoot() ?? 0) ?? throw new RuntimeException('Could not get root type');
+        $actual = (new JqlBuilder())->getEntity($root, $tableNames, $document);
+        $expect = file_get_contents(__DIR__ . '/resource/jql/entity.json') ?: throw new RuntimeException('Could not read entity.json');
 
         $this->assertJsonStringEqualsJsonString($expect, $actual);
     }
 
     private function getDocument(): Document
     {
-        $document = json_decode(file_get_contents(__DIR__ . '/resource/document.json'), true);
+        $json = file_get_contents(__DIR__ . '/resource/document.json') ?: throw new RuntimeException('Could not read document.json');
+
+        $document = Parser::decode($json, true);
         return Document::from($document);
     }
 }

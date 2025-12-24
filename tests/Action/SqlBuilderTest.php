@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Sql\Tests\Action;
 use Fusio\Adapter\Sql\Action\SqlBuilder;
 use Fusio\Adapter\Sql\Tests\SqlTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Json\Parser;
 
 /**
  * SqlBuilderTest
@@ -33,7 +34,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  */
 class SqlBuilderTest extends SqlTestCase
 {
-    public function testHandleGet()
+    public function testHandleGet(): void
     {
         $jql = <<<'JSON'
 {
@@ -65,7 +66,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlBuilder::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "count": 3,

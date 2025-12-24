@@ -34,7 +34,7 @@ use Fusio\Engine\Parameters;
  */
 class SqlTest extends SqlTestCase
 {
-    public function testGetConnection()
+    public function testGetConnection(): void
     {
         /** @var Sql $connectionFactory */
         $connectionFactory = $this->getConnectionFactory()->factory(Sql::class);
@@ -52,7 +52,7 @@ class SqlTest extends SqlTestCase
         $this->assertInstanceOf(Connection::class, $connection);
     }
 
-    public function testPing()
+    public function testPing(): void
     {
         /** @var Sql $connectionFactory */
         $connectionFactory = $this->getConnectionFactory()->factory(Sql::class);

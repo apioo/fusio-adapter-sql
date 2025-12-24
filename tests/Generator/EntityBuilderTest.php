@@ -23,6 +23,8 @@ namespace Fusio\Adapter\Sql\Tests;
 use Fusio\Adapter\Sql\Generator\EntityBuilder;
 use Fusio\Adapter\Sql\Generator\EntityExecutor;
 use PHPUnit\Framework\TestCase;
+use PSX\Json\Parser;
+use RuntimeException;
 use TypeAPI\Editor\Generator;
 use TypeAPI\Editor\Model\Document;
 
@@ -35,31 +37,33 @@ use TypeAPI\Editor\Model\Document;
  */
 class EntityBuilderTest extends SqlTestCase
 {
-    public function testGetCollection()
+    public function testGetCollection(): void
     {
         $actual = (new EntityBuilder())->getCollection('Human_SQL_GetAll', 'Human_SQL_Get');
-        $expect = file_get_contents(__DIR__ . '/resource/entity/collection.json');
+        $expect = file_get_contents(__DIR__ . '/resource/entity/collection.json') ?: throw new RuntimeException('Could not read collection.json');
 
-        $this->assertJsonStringEqualsJsonString($expect, \json_encode($actual));
+        $this->assertJsonStringEqualsJsonString($expect, Parser::encode($actual));
     }
 
-    public function testGetEntity()
+    public function testGetEntity(): void
     {
         $document = $this->getDocument();
         $specification = (new Generator())->toModel($document);
-        $type = $document->getType(0);
+        $type = $document->getType(0) ?? throw new RuntimeException('Could not get root type');
         $tableNames = (new EntityExecutor())->getTableNames($document, $this->connection->createSchemaManager());
         $typeMapping = (new EntityExecutor())->getTypeMapping($document, $tableNames);
 
         $actual = (new EntityBuilder())->getEntity($type, 'Human_SQL_Get', $specification, $typeMapping);
-        $expect = file_get_contents(__DIR__ . '/resource/entity/entity.json');
+        $expect = file_get_contents(__DIR__ . '/resource/entity/entity.json') ?: throw new RuntimeException('Could not read entity.json');
 
-        $this->assertJsonStringEqualsJsonString($expect, \json_encode($actual));
+        $this->assertJsonStringEqualsJsonString($expect, Parser::encode($actual));
     }
 
     private function getDocument(): Document
     {
-        $document = json_decode(file_get_contents(__DIR__ . '/resource/document.json'), true);
+        $json = file_get_contents(__DIR__ . '/resource/document.json') ?: throw new RuntimeException('Could not read document.json');
+
+        $document = json_decode($json, true);
         return Document::from($document);
     }
 }

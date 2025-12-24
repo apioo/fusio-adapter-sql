@@ -24,6 +24,7 @@ use Fusio\Adapter\Sql\Action\SqlSelectRow;
 use Fusio\Adapter\Sql\Tests\SqlTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\Exception\NotFoundException;
+use PSX\Json\Parser;
 
 /**
  * SqlSelectRowTest
@@ -34,7 +35,7 @@ use PSX\Http\Exception\NotFoundException;
  */
 class SqlSelectRowTest extends SqlTestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -44,7 +45,7 @@ class SqlSelectRowTest extends SqlTestCase
         $action   = $this->getActionFactory()->factory(SqlSelectRow::class);
         $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
 
         $expect = <<<JSON
 {
@@ -64,7 +65,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleUuid()
+    public function testHandleUuid(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -74,7 +75,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectRow::class);
         $response = $action->handle($this->getRequest('GET', ['id' => 'b45412cb-8c50-44b8-889f-f0e78e8296ad']), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
 
         $expect = <<<JSON
 {
@@ -93,7 +94,7 @@ JSON;
         $this->assertEquals([], $response->getHeaders());
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
-    public function testHandleColumnTypes()
+    public function testHandleColumnTypes(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -103,7 +104,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectRow::class);
         $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
 
         $expect = <<<JSON
 {
@@ -135,7 +136,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleColumns()
+    public function testHandleColumns(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -146,7 +147,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectRow::class);
         $response = $action->handle($this->getRequest('GET', ['id' => 1]), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "id": 1,
@@ -160,7 +161,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleInvalid()
+    public function testHandleInvalid(): void
     {
         $this->expectException(NotFoundException::class);
 

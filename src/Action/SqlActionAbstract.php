@@ -72,6 +72,11 @@ abstract class SqlActionAbstract extends ActionAbstract
         return $table;
     }
 
+    /**
+     * @param RecordInterface<mixed> $body
+     * @param array<string, string>|null $mapping
+     * @return array<string, mixed>
+     */
     protected function getData(RecordInterface $body, Connection $connection, Table $table, bool $insert, ?array $mapping = null): array
     {
         $data = [];
@@ -150,11 +155,18 @@ abstract class SqlActionAbstract extends ActionAbstract
         return $data;
     }
 
+    /**
+     * @return list<string>
+     */
     protected function getAvailableColumns(Table $table): array
     {
         return array_keys($table->getColumns());
     }
 
+    /**
+     * @param list<string>|null $columns
+     * @return list<string>
+     */
     protected function getColumns(Table $table, ?array $columns): array
     {
         $allColumns = $this->getAvailableColumns($table);
@@ -162,6 +174,7 @@ abstract class SqlActionAbstract extends ActionAbstract
             $allColumns = array_intersect($allColumns, $columns);
         }
 
+        /** @var list<string> $allColumns */
         return $allColumns;
     }
 
@@ -177,6 +190,10 @@ abstract class SqlActionAbstract extends ActionAbstract
 
     /**
      * Converts a raw database row to the correct PHP types
+     *
+     * @param array<string, mixed> $row
+     * @param array<string, string>|null $mapping
+     * @return array<string, mixed>
      */
     protected function convertRow(array $row, Connection $connection, Table $table, ?array $mapping = null): array
     {
@@ -229,6 +246,9 @@ abstract class SqlActionAbstract extends ActionAbstract
         return $tableName;
     }
 
+    /**
+     * @return array<string, string>|null
+     */
     protected function getMapping(ParametersInterface $configuration): ?array
     {
         $mapping = $configuration->get('mapping');

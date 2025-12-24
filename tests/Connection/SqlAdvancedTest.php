@@ -34,7 +34,7 @@ use Fusio\Engine\Parameters;
  */
 class SqlAdvancedTest extends SqlTestCase
 {
-    public function testGetConnection()
+    public function testGetConnection(): void
     {
         /** @var SqlAdvanced $connectionFactory */
         $connectionFactory = $this->getConnectionFactory()->factory(SqlAdvanced::class);
@@ -48,7 +48,7 @@ class SqlAdvancedTest extends SqlTestCase
         $this->assertInstanceOf(Connection::class, $connection);
     }
 
-    public function testPing()
+    public function testPing(): void
     {
         /** @var SqlAdvanced $connectionFactory */
         $connectionFactory = $this->getConnectionFactory()->factory(SqlAdvanced::class);

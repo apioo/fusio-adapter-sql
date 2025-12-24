@@ -27,6 +27,8 @@ use PSX\DateTime\LocalDateTime;
 use PSX\DateTime\LocalTime;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Record\Record;
+use RuntimeException;
+use function fopen;
 
 /**
  * SqlUpdateTest
@@ -37,13 +39,14 @@ use PSX\Record\Record;
  */
 class SqlUpdateTest extends SqlTestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
         ]);
 
+        /** @var Record<mixed> $body */
         $body = new Record();
         $body['title'] = 'lorem';
         $body['content'] = 'ipsum';
@@ -76,13 +79,14 @@ class SqlUpdateTest extends SqlTestCase
         $this->assertEquals($expect, $row);
     }
 
-    public function testHandleUuid()
+    public function testHandleUuid(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news_uuid',
         ]);
 
+        /** @var Record<mixed> $body */
         $body = new Record();
         $body['title'] = 'lorem';
         $body['content'] = 'ipsum';
@@ -115,17 +119,18 @@ class SqlUpdateTest extends SqlTestCase
         $this->assertEquals($expect, $row);
     }
 
-    public function testHandleColumnTest()
+    public function testHandleColumnTest(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_column_test',
         ]);
 
-        $blob = \fopen('php://memory', 'a+');
+        $blob = fopen('php://memory', 'a+') ?: throw new RuntimeException('Could not open file for reading');
         fwrite($blob, 'foobar');
         fseek($blob, 0);
 
+        /** @var Record<mixed> $body */
         $body = new Record();
         $body['col_bigint'] = 68719476735;
         $body['col_binary'] = 'foo';

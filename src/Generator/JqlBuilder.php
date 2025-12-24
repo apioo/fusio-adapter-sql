@@ -33,6 +33,9 @@ use TypeAPI\Editor\Model\Type;
  */
 class JqlBuilder
 {
+    /**
+     * @param array<string, string> $tableNames
+     */
     public function getCollection(Type $type, array $tableNames, Document $document): string
     {
         $tableName = $tableNames[$type->getName() ?? ''] ?? '';
@@ -66,6 +69,9 @@ class JqlBuilder
         return Parser::encode($jql, JSON_PRETTY_PRINT);
     }
 
+    /**
+     * @param array<string, string> $tableNames
+     */
     public function getEntity(Type $type, array $tableNames, Document $document): string
     {
         $tableName = $tableNames[$type->getName() ?? ''] ?? '';
@@ -85,6 +91,11 @@ class JqlBuilder
         return Parser::encode($jql, JSON_PRETTY_PRINT);
     }
 
+    /**
+     * @param array<string, string> $tableNames
+     * @param list<string> $columns
+     * @return array<string, mixed>
+     */
     private function getDefinition(Type $type, array $tableNames, Document $document, array &$columns, int $depth = 0): array
     {
         $definition = [];

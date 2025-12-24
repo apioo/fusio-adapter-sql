@@ -36,6 +36,10 @@ use PSX\Record\RecordInterface;
  */
 abstract class SqlManipulationAbstract extends SqlActionAbstract
 {
+    /**
+     * @param RecordInterface<mixed> $body
+     * @param array<string, string>|null $mapping
+     */
     protected function insertRelations(Connection $connection, int|string $entityId, RecordInterface $body, ?array $mapping = null): void
     {
         $configs = $this->getRelationMappingConfig($mapping);
@@ -90,6 +94,9 @@ abstract class SqlManipulationAbstract extends SqlActionAbstract
         }
     }
 
+    /**
+     * @param array<string, string>|null $mapping
+     */
     protected function deleteRelations(Connection $connection, int|string $entityId, ?array $mapping = null): void
     {
         $configs = $this->getRelationMappingConfig($mapping);
@@ -122,6 +129,10 @@ abstract class SqlManipulationAbstract extends SqlActionAbstract
         return $existingId;
     }
 
+    /**
+     * @param array<string, string>|null $mapping
+     * @return array<array<string>>
+     */
     private function getRelationMappingConfig(?array $mapping = null): array
     {
         if (empty($mapping)) {

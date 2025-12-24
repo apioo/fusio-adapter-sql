@@ -23,6 +23,7 @@ namespace Fusio\Adapter\Sql\Tests\Action;
 use Fusio\Adapter\Sql\Action\SqlSelectAll;
 use Fusio\Adapter\Sql\Tests\SqlTestCase;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Json\Parser;
 
 /**
  * SqlSelectAllTest
@@ -33,7 +34,7 @@ use PSX\Http\Environment\HttpResponseInterface;
  */
 class SqlSelectAllTest extends SqlTestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -43,7 +44,7 @@ class SqlSelectAllTest extends SqlTestCase
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,
@@ -87,7 +88,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleUuid()
+    public function testHandleUuid(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -97,7 +98,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,
@@ -141,7 +142,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleColumnTypes()
+    public function testHandleColumnTypes(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -151,7 +152,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 1,
@@ -189,7 +190,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleColumns()
+    public function testHandleColumns(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -200,7 +201,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,
@@ -229,7 +230,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleOrderBy()
+    public function testHandleOrderBy(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -241,7 +242,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,
@@ -270,7 +271,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleLimit()
+    public function testHandleLimit(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -281,7 +282,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,
@@ -307,7 +308,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleSortByAsc()
+    public function testHandleSortByAsc(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -318,7 +319,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(null, [], ['sortBy' => 'title', 'sortOrder' => 'asc']), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,
@@ -347,7 +348,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleSortByDesc()
+    public function testHandleSortByDesc(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -358,7 +359,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(null, [], ['sortBy' => 'title', 'sortOrder' => 'desc']), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,
@@ -387,7 +388,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleFilterContains()
+    public function testHandleFilterContains(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -398,7 +399,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(null, [], ['filterBy' => 'title', 'filterOp' => 'contains', 'filterValue' => 'fo']), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,
@@ -419,7 +420,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleFilterEquals()
+    public function testHandleFilterEquals(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -430,7 +431,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(null, [], ['filterBy' => 'title', 'filterOp' => 'equals', 'filterValue' => 'bar']), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,
@@ -451,7 +452,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleFilterStartsWith()
+    public function testHandleFilterStartsWith(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -462,7 +463,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(null, [], ['filterBy' => 'title', 'filterOp' => 'startsWith', 'filterValue' => 'ba']), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,
@@ -487,7 +488,7 @@ JSON;
         $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
     }
 
-    public function testHandleFilterPresent()
+    public function testHandleFilterPresent(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
@@ -498,7 +499,7 @@ JSON;
         $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
         $response = $action->handle($this->getRequest(null, [], ['filterBy' => 'title', 'filterOp' => 'present', 'filterValue' => 'null']), $parameters, $this->getContext());
 
-        $actual = json_encode($response->getBody(), JSON_PRETTY_PRINT);
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
     "totalResults": 3,

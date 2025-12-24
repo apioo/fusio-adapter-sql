@@ -54,6 +54,9 @@ abstract class SqlQueryAbstract extends ActionAbstract
         return $connection;
     }
 
+    /**
+     * @return array{string, array<string, mixed>}
+     */
     protected function parseSql(string $query, RequestInterface $request, ContextInterface $context): array
     {
         $params = [];
@@ -85,7 +88,7 @@ abstract class SqlQueryAbstract extends ActionAbstract
         }, $query);
 
         return [
-            $query,
+            (string) $query,
             $params,
         ];
     }

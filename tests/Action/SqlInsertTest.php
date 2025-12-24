@@ -28,6 +28,8 @@ use PSX\DateTime\LocalTime;
 use PSX\Http\Environment\HttpResponseInterface;
 use PSX\Http\Exception\BadRequestException;
 use PSX\Record\Record;
+use RuntimeException;
+use function fopen;
 
 /**
  * SqlInsertTest
@@ -38,13 +40,14 @@ use PSX\Record\Record;
  */
 class SqlInsertTest extends SqlTestCase
 {
-    public function testHandle()
+    public function testHandle(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news',
         ]);
 
+        /** @var Record<mixed> $body */
         $body = new Record();
         $body['title'] = 'lorem';
         $body['price'] = 59.99;
@@ -83,13 +86,14 @@ class SqlInsertTest extends SqlTestCase
         $this->assertEquals($expect, $actual);
     }
 
-    public function testHandleUuid()
+    public function testHandleUuid(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_news_uuid',
         ]);
 
+        /** @var Record<mixed> $body */
         $body = new Record();
         $body['title'] = 'lorem';
         $body['price'] = 59.99;
@@ -127,17 +131,18 @@ class SqlInsertTest extends SqlTestCase
 
         $this->assertEquals($expect, $actual);
     }
-    public function testHandleColumnTypes()
+    public function testHandleColumnTypes(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_column_test',
         ]);
 
-        $blob = \fopen('php://memory', 'a+');
+        $blob = fopen('php://memory', 'a+') ?: throw new RuntimeException('Could not open memory file');
         fwrite($blob, 'foobar');
         fseek($blob, 0);
 
+        /** @var Record<mixed> $body */
         $body = new Record();
         $body['col_bigint'] = 68719476735;
         $body['col_binary'] = 'foo';
@@ -196,7 +201,7 @@ class SqlInsertTest extends SqlTestCase
         $this->assertEquals($expect, $actual);
     }
 
-    public function testHandleNoData()
+    public function testHandleNoData(): void
     {
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage('Property title must not be null');
@@ -210,13 +215,14 @@ class SqlInsertTest extends SqlTestCase
         $action->handle($this->getRequest('POST'), $parameters, $this->getContext());
     }
 
-    public function testHandleDefaultsOnInsert()
+    public function testHandleDefaultsOnInsert(): void
     {
         $parameters = $this->getParameters([
             'connection' => 1,
             'table'      => 'app_insert',
         ]);
 
+        /** @var Record<mixed> $body */
         $body = new Record();
         $body['title'] = 'lorem';
 
@@ -225,7 +231,8 @@ class SqlInsertTest extends SqlTestCase
 
         // check whether the entry was inserted
         $row = $this->connection->fetchAssociative('SELECT * FROM app_insert WHERE id = :id', ['id' => 1]);
-        
+
+        $this->assertIsArray($row);
         $this->assertEquals(1, $row['id']);
         $this->assertEquals('Test content', $row['content']);
         $this->assertEquals(999, $row['counter']);
