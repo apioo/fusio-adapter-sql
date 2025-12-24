@@ -21,7 +21,7 @@
 namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 use Fusio\Adapter\Sql\Action\SqlDelete;
@@ -90,7 +90,7 @@ class SqlTable implements ProviderInterface
     }
 
     /**
-     * @param AbstractSchemaManager<MySQLPlatform> $schemaManager
+     * @param AbstractSchemaManager<AbstractPlatform> $schemaManager
      */
     protected function generateForTable(AbstractSchemaManager $schemaManager, string $connectionName, string $tableName, SetupInterface $setup, ?string $name = null): void
     {

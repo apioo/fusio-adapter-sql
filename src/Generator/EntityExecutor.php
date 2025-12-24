@@ -21,7 +21,7 @@
 namespace Fusio\Adapter\Sql\Generator;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Schema;
 use TypeAPI\Editor\Model\Document;
@@ -64,7 +64,7 @@ class EntityExecutor
     }
 
     /**
-     * @param AbstractSchemaManager<MySQLPlatform> $schemaManager
+     * @param AbstractSchemaManager<AbstractPlatform> $schemaManager
      * @return array<string, string>
      */
     public function getTableNames(Document $document, AbstractSchemaManager $schemaManager): array
@@ -80,7 +80,7 @@ class EntityExecutor
     }
 
     /**
-     * @param AbstractSchemaManager<MySQLPlatform> $schemaManager
+     * @param AbstractSchemaManager<AbstractPlatform> $schemaManager
      */
     private function getTableName(AbstractSchemaManager $schemaManager, string $typeName): string
     {
