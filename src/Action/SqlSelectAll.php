@@ -21,12 +21,17 @@
 namespace Fusio\Adapter\Sql\Action;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Types\StringType;
 use Fusio\Engine\ContextInterface;
+use Fusio\Engine\Exception\ConfigurationException;
 use Fusio\Engine\Form\BuilderInterface;
 use Fusio\Engine\Form\ElementFactoryInterface;
 use Fusio\Engine\ParametersInterface;
 use Fusio\Engine\RequestInterface;
 use PSX\Http\Environment\HttpResponseInterface;
+use PSX\Sql\Condition;
+use PSX\Sql\Filter\DoctrineBuilder;
 
 /**
  * Action which allows you to create an API endpoint based on any database
@@ -54,20 +59,29 @@ class SqlSelectAll extends SqlActionAbstract
         $orderBy = $configuration->get('orderBy');
         $orderDirection = $configuration->get('orderDirection');
         $limit = (int) $configuration->get('limit');
+        $searchColumn = $configuration->get('searchColumn');
 
         $allColumns = $this->getColumns($table, $columns);
         $primaryKey = $this->getPrimaryKey($table);
 
-        $qb = $connection->createQueryBuilder();
-        $qb->select($allColumns);
-        $qb->from($table->getName());
+        $queryBuilder = $connection->createQueryBuilder();
+        $queryBuilder->select($allColumns);
+        $queryBuilder->from($table->getName());
 
-        $this->addFilter($request, $qb, $allColumns);
-        $this->addOrderBy($request, $qb, $primaryKey, $allColumns, $orderBy, $orderDirection);
-        $this->addLimit($request, $qb, $limit);
+        $condition = $this->buildCondition($request, $allColumns, $table, $searchColumn);
+        if ($condition->hasCondition()) {
+            $queryBuilder->where($condition->getExpression($connection->getDatabasePlatform()));
+            $queryBuilder->setParameters($condition->getValues());
+        }
 
-        $totalCount = (int) $connection->fetchOne('SELECT COUNT(*) FROM ' . $table->getName());
-        $result     = $connection->fetchAllAssociative($qb->getSQL(), $qb->getParameters());
+        $countQueryBuilder = clone $queryBuilder;
+        $countQueryBuilder->select('COUNT(*) AS cnt');
+
+        $this->addOrderBy($request, $queryBuilder, $primaryKey, $allColumns, $orderBy, $orderDirection);
+        $this->addLimit($request, $queryBuilder, $limit);
+
+        $totalCount = (int) $connection->fetchOne($countQueryBuilder->getSQL(), $countQueryBuilder->getParameters());
+        $result = $connection->fetchAllAssociative($queryBuilder->getSQL(), $queryBuilder->getParameters());
 
         $data = [];
         foreach ($result as $row) {
@@ -76,8 +90,8 @@ class SqlSelectAll extends SqlActionAbstract
 
         return $this->response->build(200, [], [
             'totalResults' => $totalCount,
-            'itemsPerPage' => $qb->getMaxResults(),
-            'startIndex'   => $qb->getFirstResult(),
+            'itemsPerPage' => $queryBuilder->getMaxResults(),
+            'startIndex'   => $queryBuilder->getFirstResult(),
             'entry'        => $data,
         ]);
     }
@@ -95,39 +109,65 @@ class SqlSelectAll extends SqlActionAbstract
         $builder->add($elementFactory->newInput('orderBy', 'Order by', 'text', 'The default order by column (default is primary key)'));
         $builder->add($elementFactory->newSelect('orderDirection', 'Order direction', $options, 'The order direction (default is descending)'));
         $builder->add($elementFactory->newInput('limit', 'Limit', 'number', 'The default limit of the result (default is 16)'));
+        $builder->add($elementFactory->newInput('searchColumn', 'Search Column', 'text', 'The default search column which is used if no column was explicit specified'));
     }
 
     /**
      * @param list<string> $allColumns
      */
-    private function addFilter(RequestInterface $request, QueryBuilder $qb, array $allColumns): void
+    private function buildCondition(RequestInterface $request, array $allColumns, Table $table, ?string $searchColumn): Condition
     {
+        $search = $request->get('search');
+        if (!empty($search)) {
+            if (empty($searchColumn)) {
+                $searchColumn = $this->getSearchColumn($table);
+            }
+
+            return (new DoctrineBuilder())->build($table, $searchColumn, $search);
+        }
+
         $filterBy = $request->get('filterBy');
         $filterOp = $request->get('filterOp');
         $filterValue = $request->get('filterValue');
 
+        $condition = Condition::withAnd();
         if (!empty($filterBy) && !empty($filterOp) && !empty($filterValue) && in_array($filterBy, $allColumns)) {
             switch ($filterOp) {
                 case 'contains':
-                    $qb->where($filterBy . ' LIKE :filter');
-                    $qb->setParameter('filter', '%' . $filterValue . '%');
+                    $condition->like($filterBy, '%' . $filterValue . '%');
                     break;
 
                 case 'equals':
-                    $qb->where($filterBy . ' = :filter');
-                    $qb->setParameter('filter', $filterValue);
+                    $condition->equals($filterBy, $filterValue);
                     break;
 
                 case 'startsWith':
-                    $qb->where($filterBy . ' LIKE :filter');
-                    $qb->setParameter('filter', $filterValue . '%');
+                    $condition->like($filterBy, $filterValue . '%');
                     break;
 
                 case 'present':
-                    $qb->where($filterBy . ' IS NOT NULL');
+                    $condition->notNil($filterBy);
                     break;
             }
         }
+
+        return $condition;
+    }
+
+    private function getSearchColumn(Table $table): string
+    {
+        foreach ($table->getColumns() as $columnName => $column) {
+            $type = $column->getType();
+            if ($type instanceof StringType) {
+                return $columnName;
+            }
+        }
+
+        foreach ($table->getColumns() as $columnName => $column) {
+            return $columnName;
+        }
+
+        throw new ConfigurationException('Could not find default search column');
     }
 
     /**

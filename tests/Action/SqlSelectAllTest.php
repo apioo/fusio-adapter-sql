@@ -402,7 +402,7 @@ JSON;
         $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 3,
+    "totalResults": 1,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
@@ -434,7 +434,7 @@ JSON;
         $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 3,
+    "totalResults": 1,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
@@ -466,7 +466,7 @@ JSON;
         $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
         $expect = <<<JSON
 {
-    "totalResults": 3,
+    "totalResults": 2,
     "itemsPerPage": 16,
     "startIndex": 0,
     "entry": [
@@ -517,6 +517,42 @@ JSON;
         {
             "id": 1,
             "title": "foo"
+        }
+    ]
+}
+JSON;
+
+        $this->assertInstanceOf(HttpResponseInterface::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals([], $response->getHeaders());
+        $this->assertJsonStringEqualsJsonString($expect, $actual, $actual);
+    }
+
+    public function testHandleFilterSearch(): void
+    {
+        $parameters = $this->getParameters([
+            'connection' => 1,
+            'table'      => 'app_news',
+            'columns'    => ['id', 'title'],
+        ]);
+
+        $action   = $this->getActionFactory()->factory(SqlSelectAll::class);
+        $response = $action->handle($this->getRequest(null, [], ['search' => 'title:bar OR title:baz']), $parameters, $this->getContext());
+
+        $actual = Parser::encode($response->getBody(), JSON_PRETTY_PRINT);
+        $expect = <<<JSON
+{
+    "totalResults": 2,
+    "itemsPerPage": 16,
+    "startIndex": 0,
+    "entry": [
+        {
+            "id": 3,
+            "title": "bar"
+        },
+        {
+            "id": 2,
+            "title": "baz"
         }
     ]
 }
