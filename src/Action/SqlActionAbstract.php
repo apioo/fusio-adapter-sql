@@ -58,20 +58,20 @@ abstract class SqlActionAbstract extends ActionAbstract
     protected function getTable(Connection $connection, string $tableName): Table
     {
         if (!preg_match('/^\w+$/', $tableName)) {
-            throw new BadRequestException('Provided an invalid table');
+            throw new StatusCode\BadRequestException('Provided an invalid table name');
         }
 
-        $key   = 'fusio_sql_action_' . md5(__CLASS__ . $tableName);
+        $key = 'fusio_sql_action_' . md5(__CLASS__ . $tableName);
         $table = $this->cache->get($key);
 
         if ($table === null) {
             $schemaManager = $connection->createSchemaManager();
-            if ($schemaManager->tablesExist([$tableName])) {
-                $table = $schemaManager->introspectTable($tableName);
-                $this->cache->set($key, $table);
-            } else {
-                throw new StatusCode\InternalServerErrorException('Table ' . $tableName . ' does not exist on connection');
+            if (!$schemaManager->tablesExist([$tableName])) {
+                throw new StatusCode\BadRequestException('Table ' . $tableName . ' does not exist on connection');
             }
+
+            $table = $schemaManager->introspectTable($tableName);
+            $this->cache->set($key, $table);
         }
 
         return $table;
