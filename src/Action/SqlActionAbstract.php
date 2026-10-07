@@ -34,6 +34,7 @@ use PSX\DateTime\LocalDate;
 use PSX\DateTime\LocalDateTime;
 use PSX\DateTime\LocalTime;
 use PSX\Http\Exception as StatusCode;
+use PSX\Http\Exception\BadRequestException;
 use PSX\Record\Record;
 use PSX\Record\RecordInterface;
 use Symfony\Component\Uid\Uuid;
@@ -56,6 +57,10 @@ abstract class SqlActionAbstract extends ActionAbstract
 
     protected function getTable(Connection $connection, string $tableName): Table
     {
+        if (!preg_match('/^\w+$/', $tableName)) {
+            throw new BadRequestException('Provided an invalid table');
+        }
+
         $key   = 'fusio_sql_action_' . md5(__CLASS__ . $tableName);
         $table = $this->cache->get($key);
 
